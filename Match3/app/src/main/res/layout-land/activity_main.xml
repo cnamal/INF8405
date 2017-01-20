@@ -9,19 +9,19 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.ensipoly.match3.MainActivity"
-    android:orientation="vertical">
+    android:orientation="horizontal">
 
     <Button
         android:text="Quitter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
         android:minWidth="150dp"
         android:id="@+id/quitButton"
-        android:layout_below="@+id/RulesButton"
         style="@android:style/Widget.Button"
-        android:layout_alignStart="@+id/RulesButton"
-        android:layout_alignEnd="@+id/RulesButton" />
+        android:layout_marginStart="25dp"
+        android:layout_alignBaseline="@+id/RulesButton"
+        android:layout_alignBottom="@+id/RulesButton"
+        android:layout_toEndOf="@+id/RulesButton" />
 
     <Button
         android:text="Démarrer"
@@ -30,28 +30,30 @@
         android:id="@+id/startButton"
         style="@android:style/Widget.Button"
         android:minWidth="150dp"
-        android:layout_marginTop="250dp"
-        android:layout_centerHorizontal="true" />
+        android:layout_marginEnd="17dp"
+        android:layout_alignBaseline="@+id/RulesButton"
+        android:layout_alignBottom="@+id/RulesButton"
+        android:layout_toStartOf="@+id/RulesButton" />
 
     <Button
         android:text="Règles du jeu"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
         android:minWidth="150dp"
         android:id="@+id/RulesButton"
         style="@android:style/Widget.Button"
-        android:layout_below="@+id/startButton"
-        android:layout_centerHorizontal="true" />
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="48dp" />
 
     <TextView
         android:text="Match3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="120dp"
         android:id="@+id/title"
         android:textSize="30sp"
-        android:textStyle="normal|bold" />
+        android:textStyle="normal|bold"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="74dp" />
 </RelativeLayout>
