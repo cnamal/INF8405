@@ -10,8 +10,47 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.ensipoly.match3.MainActivity">
 
-    <TextView
+    <Button
+        android:text="Quitter"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:layout_marginTop="20dp"
+        android:minWidth="150dp"
+        android:id="@+id/quitButton"
+        android:layout_below="@+id/RulesButton"
+        style="@android:style/Widget.Button.Transparent"
+        android:layout_alignStart="@+id/RulesButton"
+        android:layout_alignEnd="@+id/RulesButton" />
+
+    <Button
+        android:text="Démarrer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/startButton"
+        style="@android:style/Widget.Button.Transparent"
+        android:minWidth="150dp"
+        android:layout_marginTop="250dp"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:text="Règles du jeu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:minWidth="150dp"
+        android:id="@+id/RulesButton"
+        style="@android:style/Widget.Button.Transparent"
+        android:layout_below="@+id/startButton"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:text="Match3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="120dp"
+        android:id="@+id/title"
+        android:textSize="30sp"
+        android:textStyle="normal|bold" />
 </RelativeLayout>
