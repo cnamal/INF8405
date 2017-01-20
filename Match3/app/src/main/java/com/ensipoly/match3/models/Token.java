@@ -1,5 +1,7 @@
 package com.ensipoly.match3.models;
 
+import java.util.Random;
+
 /**
  * Created by Adrien on 20/01/2017.
  */
@@ -21,6 +23,8 @@ public enum Token {
     YELLOW,
     PURPLE;
 
+    private static final int size = Token.values().length;
+
     public static Token convertToToken(int value){
         switch(value){
             case 0:
@@ -36,5 +40,10 @@ public enum Token {
             default:
                 return Token.PURPLE;
         }
+    }
+
+    public static Token generateRandomToken(){
+        Random rand = new Random();
+        return Token.convertToToken(rand.nextInt(size));
     }
 }
