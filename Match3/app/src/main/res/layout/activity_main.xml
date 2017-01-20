@@ -18,7 +18,7 @@
         android:minWidth="150dp"
         android:id="@+id/quitButton"
         android:layout_below="@+id/RulesButton"
-        style="@android:style/Widget.Button.Transparent"
+        style="@android:style/Widget.Button"
         android:layout_alignStart="@+id/RulesButton"
         android:layout_alignEnd="@+id/RulesButton" />
 
@@ -27,7 +27,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/startButton"
-        style="@android:style/Widget.Button.Transparent"
+        style="@android:style/Widget.Button"
         android:minWidth="150dp"
         android:layout_marginTop="250dp"
         android:layout_centerHorizontal="true" />
@@ -39,7 +39,7 @@
         android:layout_marginTop="20dp"
         android:minWidth="150dp"
         android:id="@+id/RulesButton"
-        style="@android:style/Widget.Button.Transparent"
+        style="@android:style/Widget.Button"
         android:layout_below="@+id/startButton"
         android:layout_centerHorizontal="true" />
 
