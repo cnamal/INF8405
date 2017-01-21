@@ -12,7 +12,7 @@
     android:orientation="vertical">
 
     <Button
-        android:text="Quitter"
+        android:text="@string/exit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
@@ -24,7 +24,7 @@
         android:layout_alignEnd="@+id/RulesButton" />
 
     <Button
-        android:text="Démarrer"
+        android:text="@string/play"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/startButton"
@@ -34,7 +34,7 @@
         android:layout_centerHorizontal="true" />
 
     <Button
-        android:text="Règles du jeu"
+        android:text="@string/rules"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
@@ -45,7 +45,7 @@
         android:layout_centerHorizontal="true" />
 
     <TextView
-        android:text="Match3"
+        android:text="@string/app_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
