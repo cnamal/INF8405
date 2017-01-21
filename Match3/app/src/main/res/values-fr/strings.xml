@@ -4,4 +4,6 @@
     <string name="exit">Quitter</string>
     <string name="play">Jouer</string>
     <string name="rules">Règles du jeu</string>
+    <!--TODO : write rules-->
+    <string name="rules_explained">Les règles du jeux arrivent...</string>
 </resources>

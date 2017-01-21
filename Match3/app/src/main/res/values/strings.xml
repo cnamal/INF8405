@@ -3,4 +3,6 @@
     <string name="exit">Exit</string>
     <string name="play">Play</string>
     <string name="rules">Rules</string>
+    <!--TODO : write rules-->
+    <string name="rules_explained">Rules are coming...</string>
 </resources>

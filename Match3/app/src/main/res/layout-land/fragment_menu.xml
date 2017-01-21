@@ -1,53 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/activity_main"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_width="match_parent" android:layout_height="match_parent"
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.ensipoly.match3.activities.MainActivity"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    tools:context="com.ensipoly.match3.MenuFragment">
 
     <Button
-        android:text="Quitter"
+        android:text="@string/exit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minWidth="150dp"
-        android:id="@+id/quitButton"
+        android:id="@+id/exit_button"
         style="@android:style/Widget.Button"
         android:layout_marginStart="25dp"
-        android:layout_alignBaseline="@+id/RulesButton"
-        android:layout_alignBottom="@+id/RulesButton"
-        android:layout_toEndOf="@+id/RulesButton" />
+        android:layout_alignBaseline="@+id/rules_button"
+        android:layout_alignBottom="@+id/rules_button"
+        android:layout_toEndOf="@+id/rules_button" />
 
     <Button
-        android:text="Démarrer"
+        android:text="@string/play"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/startButton"
+        android:id="@+id/play_button"
         style="@android:style/Widget.Button"
         android:minWidth="150dp"
         android:layout_marginEnd="17dp"
-        android:layout_alignBaseline="@+id/RulesButton"
-        android:layout_alignBottom="@+id/RulesButton"
-        android:layout_toStartOf="@+id/RulesButton" />
+        android:layout_alignBaseline="@+id/rules_button"
+        android:layout_alignBottom="@+id/rules_button"
+        android:layout_toStartOf="@+id/rules_button" />
 
     <Button
-        android:text="Règles du jeu"
+        android:text="@string/rules"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minWidth="150dp"
-        android:id="@+id/RulesButton"
+        android:id="@+id/rules_button"
         style="@android:style/Widget.Button"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="48dp" />
 
     <TextView
-        android:text="Match3"
+        android:text="@string/app_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/title"
