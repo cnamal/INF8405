@@ -47,6 +47,7 @@ public class GameActivity extends FragmentActivity implements Observer, EventVis
         try {
 
             grid = new Grid(new BufferedReader(new InputStreamReader(getAssets().open("level" + level + ".data"))));
+            grid.addObserver(this);
             gridLayout = (GridLayout) findViewById(R.id.grid);
             gridLayout.setRowCount(grid.getRowCount());
             gridLayout.setColumnCount(grid.getColumnCount());
