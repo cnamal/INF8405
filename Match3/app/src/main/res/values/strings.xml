@@ -5,4 +5,8 @@
     <string name="rules">Rules</string>
     <!--TODO : write rules-->
     <string name="rules_explained">Rules are coming...</string>
+    <string name="level1">Level 1</string>
+    <string name="level2">Level 2</string>
+    <string name="level3">Level 3</string>
+    <string name="level4">Level 4</string>
 </resources>

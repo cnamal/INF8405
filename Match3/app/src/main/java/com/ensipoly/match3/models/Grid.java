@@ -1,15 +1,14 @@
 package com.ensipoly.match3.models;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.util.Observable;
 
 /**
  * Created by Adrien on 20/01/2017.
  */
 
-/*
+/**
     Grid class
     The grid class contains all the information concerning a grid.
     It need to be initialized with a filename, corresponding to a formatted textfile.
@@ -17,8 +16,9 @@ import java.io.IOException;
     First line          : sizeX sizeY maxMoves scoreGoal
     sizeX next lines    : "sizeY int correponding to the color"
  */
+public class Grid extends Observable{
 
-public class Grid {
+    private static final String TAG = "Grid";
 
     private final int MIN_TOKENS_ALIGNED = 3;
     private final int THREE_ALIGNED_VALUE = 100;
@@ -31,23 +31,12 @@ public class Grid {
     private int maxMoves;
     private int scoreGoal;
 
-    public Grid(String filename){
+    public Grid(BufferedReader filename){
         parseGrid(filename);
     }
 
-    /**
-     * Parse the file and put it in the grid
-     * @param filename the filename
-     */
-    private void parseGrid(String filename){
-        FileReader input;
-        try {
-           input = new FileReader(filename);
-        } catch(FileNotFoundException e){
-            System.out.print(filename + " does not exist...");
-            return;
-        }
-        BufferedReader bufRead = new BufferedReader(input);
+
+    private void parseGrid(BufferedReader bufRead){
         try {
             // Read the first line, containing sizeX, sizeY, maxMoves and scoreGoal
             String myLine = bufRead.readLine();
@@ -69,9 +58,8 @@ public class Grid {
                 }
             }
         } catch(IOException e){
-            System.out.print(filename + " is not correctly formatted");
+            System.out.print("Not correctly formatted");
             System.out.print(e.getMessage());
-            return;
         }
     }
 
@@ -84,7 +72,7 @@ public class Grid {
     }
 
     /**
-        Switch places between [x1, y1] and [x2, y2]
+        Swap places between [x1, y1] and [x2, y2]
         Therefore calls computeCombinations on each point.
         If a combination is detected, start a combo and loop until there is
         no combination left.
@@ -95,7 +83,11 @@ public class Grid {
         @param y2 Y coordinate of the second token
         @return the score of the whole move.
      */
-    public int switchElements(int x1, int y1, int x2, int y2){
+    public int swapElements(int x1, int y1, int x2, int y2){
+        return 0;
+    }
+
+    public int swapElements(int x1, int y1, Direction direction){
         return 0;
     }
 
@@ -114,11 +106,24 @@ public class Grid {
         @param x X coordinate of the token
         @param y Y coordinate of the token
      */
-    private Boolean isCombinationPossible(int x, int y){
+    private boolean isCombinationPossible(int x, int y){
         return( this.numberOfTokensDown(x,y) >= MIN_TOKENS_ALIGNED ||
                 this.numberOfTokensUp(x,y) >= MIN_TOKENS_ALIGNED ||
                 this.numberOfTokensLeft(x,y) >= MIN_TOKENS_ALIGNED ||
                 this.numberOfTokensRight(x,y) >= MIN_TOKENS_ALIGNED);
+    }
+
+    /**
+     * Return true if you can switch the token at [x,y] with the one adjacent to it
+     * following the direction @dir.
+     * @param x
+     * @param y
+     * @param dir
+     * @return
+     */
+    public boolean isSwapPossible(int x, int y, Direction dir){
+        //TODO
+        return false;
     }
 
     /**
@@ -168,5 +173,15 @@ public class Grid {
 
     }
 
+    public int getColumnCount(){
+        return sizeY;
+    }
 
+    public int getRowCount(){
+        return sizeX;
+    }
+
+    public Token getToken(int x,int y){
+        return items[x][y];
+    }
 }

@@ -1,5 +1,7 @@
 package com.ensipoly.match3.models;
 
+import android.util.Log;
+
 import java.util.Random;
 
 /**
@@ -45,5 +47,25 @@ public enum Token {
     public static Token generateRandomToken(){
         Random rand = new Random();
         return Token.convertToToken(rand.nextInt(size));
+    }
+
+    public String toString(){
+        switch (this){
+            case RED:
+                return "red";
+            case BLUE:
+                return "blue";
+            case GREEN:
+                return "green";
+            case ORANGE:
+                return "#FFA500";
+            case YELLOW:
+                return "yellow";
+            case PURPLE:
+                return "purple";
+            default:
+                Log.e("Token","Unhandled color");
+                return "black";
+        }
     }
 }

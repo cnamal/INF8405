@@ -1,14 +1,15 @@
-package com.ensipoly.match3;
+package com.ensipoly.match3.fragments;
 
 
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+
+import com.ensipoly.match3.R;
 
 
 /**
@@ -33,25 +34,27 @@ public class MenuFragment extends Fragment implements View.OnClickListener{
 
     @Override
     public void onClick(View view) {
+        Fragment newFragment = null;
         switch (view.getId()){
             case R.id.play_button:
-                Log.d(TAG,"Play button");
+                newFragment = new GameMenuFragment();
                 break;
             case R.id.rules_button:
-                RulesFragment newFragment = new RulesFragment();
-                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                newFragment = new RulesFragment();
 
-                // Replace whatever is in the fragment_container view with this fragment,
-                // and add the transaction to the back stack so the user can navigate back
-                transaction.replace(R.id.fragment_container, newFragment);
-                transaction.addToBackStack(null);
-
-                // Commit the transaction
-                transaction.commit();
                 break;
             case R.id.exit_button:
                 getActivity().finish();
-                break;
+                return;
         }
+        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+        // Replace whatever is in the fragment_container view with this fragment,
+        // and add the transaction to the back stack so the user can navigate back
+        transaction.replace(R.id.fragment_container, newFragment);
+        transaction.addToBackStack(null);
+
+        // Commit the transaction
+        transaction.commit();
     }
 }

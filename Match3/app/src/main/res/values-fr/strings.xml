@@ -6,4 +6,8 @@
     <string name="rules">Règles du jeu</string>
     <!--TODO : write rules-->
     <string name="rules_explained">Les règles du jeux arrivent...</string>
+    <string name="level1">Niveau 1</string>
+    <string name="level2">Niveau 2</string>
+    <string name="level3">Niveau 3</string>
+    <string name="level4">Niveau 4</string>
 </resources>
