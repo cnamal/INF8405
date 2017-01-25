@@ -16,6 +16,7 @@ import com.ensipoly.match3.R;
 import com.ensipoly.match3.fragments.GameMenuFragment;
 import com.ensipoly.match3.models.Direction;
 import com.ensipoly.match3.models.Grid;
+import com.ensipoly.match3.models.Token;
 import com.ensipoly.match3.models.events.AddEvent;
 import com.ensipoly.match3.models.events.EndEvent;
 import com.ensipoly.match3.models.events.EventAcceptor;
@@ -63,11 +64,7 @@ public class GameActivity extends FragmentActivity implements Observer, EventVis
                     imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                     imageView.setAdjustViewBounds(true);
                     imageView.setPadding(8, 8, 8, 8);
-
-                    GradientDrawable shape = new GradientDrawable();
-                    shape.setShape(GradientDrawable.OVAL);
-                    shape.setColor(Color.parseColor(grid.getToken(x, y).toString()));
-                    imageView.setImageDrawable(shape);
+                    imageView.setImageDrawable(getDrawable(grid.getToken(x, y)));
                     final int xpos = x;
                     final int ypos = y;
                     imageView.setLongClickable(true);
@@ -91,24 +88,57 @@ public class GameActivity extends FragmentActivity implements Observer, EventVis
         }
     }
 
+    private GradientDrawable getDrawable(Token token){
+        GradientDrawable shape = new GradientDrawable();
+        shape.setShape(GradientDrawable.OVAL);
+        shape.setColor(Color.parseColor(token.toString()));
+        return shape;
+    }
+
     @Override
     public void visit(AddEvent add) {
-        Log.d(TAG, "Visit add :" + add.toString());
+        int x = add.getX();
+        int y = add.getY();
+        Token token = add.getToken();
+        ImageView view = ((ImageView)gridLayout.getChildAt(x*grid.getColumnCount()+y));
+        view.setImageDrawable(getDrawable(token));
+        view.setVisibility(View.VISIBLE);
     }
 
     @Override
     public void visit(RemoveEvent re) {
-        Log.d(TAG, "Visit remove :" + re.toString());
+        int x = re.getX();
+        int y = re.getY();
+        gridLayout.getChildAt(x*grid.getColumnCount()+y).setVisibility(View.INVISIBLE);
     }
 
     @Override
     public void visit(MoveEvent move) {
-        Log.d(TAG, "Visit move :" + move.toString());
+        for(int x = move.getLowestRow();x>0;x--){
+            for(int y : move.getCols()){
+                Token up = grid.getToken(x-1,y);
+                ImageView view = ((ImageView)gridLayout.getChildAt(x*grid.getColumnCount()+y));
+                view.setImageDrawable(getDrawable(up));
+                view.setVisibility(View.VISIBLE);
+            }
+        }
+        for(int y : move.getCols()){
+            gridLayout.getChildAt(y).setVisibility(View.INVISIBLE);
+        }
     }
 
     @Override
     public void visit(SwapEvent swap) {
-        Log.d(TAG, "Visit swap :" + swap.toString());
+        int x1 = swap.getX1();
+        int y1 = swap.getY1();
+        int x2 = swap.getX2();
+        int y2 = swap.getY2();
+        Token t1 = grid.getToken(x1,y1);
+        Token t2 = grid.getToken(x2,y2);
+        ImageView view = ((ImageView)gridLayout.getChildAt(x1*grid.getColumnCount()+y1));
+        view.setImageDrawable(getDrawable(t2));
+        view = ((ImageView)gridLayout.getChildAt(x2*grid.getColumnCount()+y2));
+        view.setImageDrawable(getDrawable(t1));
     }
 
     @Override
@@ -118,7 +148,7 @@ public class GameActivity extends FragmentActivity implements Observer, EventVis
 
     @Override
     public void visit(ScoreEvent score) {
-        Log.d(TAG, "Visit combo :" + score.toString());
+        Toast.makeText(GameActivity.this, score.toString(), Toast.LENGTH_SHORT).show();
     }
 
     @Override
