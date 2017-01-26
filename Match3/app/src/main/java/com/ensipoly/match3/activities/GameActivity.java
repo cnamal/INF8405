@@ -191,7 +191,10 @@ public class GameActivity extends FragmentActivity implements Observer, EventVis
                 return false;
             if(grid.isSwapPossible(x,y, dir)){
                 setClickable(false);
-                grid.swapElements(x,y,dir);
+                int score = grid.swapElements(x,y,dir);
+                Toast.makeText(GameActivity.this, "Score = " + score, Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(GameActivity.this, "Swap Impossible", Toast.LENGTH_SHORT).show();
             }
             return true;
         }
