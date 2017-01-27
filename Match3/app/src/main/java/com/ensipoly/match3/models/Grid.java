@@ -99,12 +99,12 @@ public class Grid extends Observable{
         swapItems(x1, y1, x2, y2);
 
         // Set the tokens to remove and to analyze
-        ArrayList<Pair<Integer,Integer>> tokensToRemove = new ArrayList<Pair<Integer,Integer>>();
-        ArrayList<Pair<Integer,Integer>> tokensToAnalyze = new ArrayList<Pair<Integer,Integer>>();
+        ArrayList<Pair<Integer,Integer>> tokensToRemove = new ArrayList<>();
+        ArrayList<Pair<Integer,Integer>> tokensToAnalyze = new ArrayList<>();
 
         // For the first pass (swapping), we analyze both of the swapped tokens
-        tokensToAnalyze.add(new Pair<Integer, Integer>(x1, y1));
-        tokensToAnalyze.add(new Pair<Integer, Integer>(x2, y2));
+        tokensToAnalyze.add(new Pair<>(x1, y1));
+        tokensToAnalyze.add(new Pair<>(x2, y2));
 
         // The final score
         int res = 0;
@@ -131,7 +131,7 @@ public class Grid extends Observable{
                     int numberLeft = numberOfTokensLeft(p.x, p.y);
                     int numberRight = numberOfTokensRight(p.x, p.y);
                     for (int y = p.y - numberLeft; y <= p.y + numberRight; y++) {
-                        tokensToRemove.add(new Pair<Integer, Integer>(p.x, y));
+                        tokensToRemove.add(new Pair<>(p.x, y));
                     }
 
                     res += score(numberLeft + numberRight + 1) * combo;
@@ -141,7 +141,7 @@ public class Grid extends Observable{
                     int numberUp = numberOfTokensUp(p.x, p.y);
                     int numberDown = numberOfTokensDown(p.x, p.y);
                     for (int x = p.x - numberUp; x <= p.x + numberDown; x++) {
-                        tokensToRemove.add(new Pair<Integer, Integer>(x, p.y));
+                        tokensToRemove.add(new Pair<>(x, p.y));
                     }
                     res += score(numberUp + numberDown + 1) * combo;
                 }
@@ -169,7 +169,7 @@ public class Grid extends Observable{
                 if(bottomLines[i] != -1){
                     for(int j = bottomLines[i]; j >= 0; --j){
                         if(isCombinationPossible(j,i))
-                            tokensToAnalyze.add(new Pair<Integer, Integer>(j,i));
+                            tokensToAnalyze.add(new Pair<>(j, i));
                     }
                 }
             }
