@@ -1,6 +1,6 @@
 package com.ensipoly.match3.models.events;
 
-import java.util.Arrays;
+import com.ensipoly.match3.models.Token;
 
 /**
  * Created by namalgac on 1/24/17.
@@ -9,27 +9,34 @@ import java.util.Arrays;
 public class MoveEvent implements EventAcceptor {
 
 
-    private int[] cols;
-    private int lowestRow;
+    private int prevX;
+    private int newX;
+    private int y;
+    private Token t;
 
-    /**
-     * Shift the columns in cols downwards. Shifts all rows in [0, lowestRow].
-     * Elements in row lowestRow should have been removed before.
-     * @param cols
-     * @param lowestRow
-     */
-    public MoveEvent(int[] cols,int lowestRow){
-        this.cols = cols;
-        this.lowestRow = lowestRow;
+    public MoveEvent(int prevX, int newX, int y, Token t){
+        this.prevX = prevX;
+        this.newX = newX;
+        this.y = y;
+        this.t = t;
     }
 
-    public int[] getCols() {
-        return cols;
+    public int getPrevX() {
+        return prevX;
     }
 
-    public int getLowestRow() {
-        return lowestRow;
+    public int getNewX() {
+        return newX;
     }
+
+    public int getY() {
+        return y;
+    }
+
+    public Token getToken() {
+        return t;
+    }
+
 
     @Override
     public void accept(EventVisitor ev) {
@@ -38,6 +45,6 @@ public class MoveEvent implements EventAcceptor {
 
     @Override
     public String toString(){
-        return "MoveEvent "+ Arrays.toString(cols) + " " +lowestRow;
+        return "MoveEvent ("+ prevX + "," + y+") -> (" + newX+","+y+")";
     }
 }

@@ -2,10 +2,12 @@ package com.ensipoly.match3.models;
 
 import android.util.Log;
 
-import com.ensipoly.match3.models.helpers.Pair;
-
+import com.ensipoly.match3.models.events.AddEvent;
 import com.ensipoly.match3.models.events.EndEvent;
+import com.ensipoly.match3.models.events.MoveEvent;
+import com.ensipoly.match3.models.events.RemoveEvent;
 import com.ensipoly.match3.models.events.SwapEvent;
+import com.ensipoly.match3.models.helpers.Pair;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -28,10 +30,10 @@ public class Grid extends Observable{
 
     private static final String TAG = "Grid";
 
-    private final int MIN_TOKENS_ALIGNED = 3;
-    private final int THREE_ALIGNED_VALUE = 100;
-    private final int FOUR_ALIGNED_VALUE = 200;
-    private final int FIVE_ALIGNED_VALUE = 300;
+    private static final int MIN_TOKENS_ALIGNED = 3;
+    private static final int THREE_ALIGNED_VALUE = 100;
+    private static final int FOUR_ALIGNED_VALUE = 200;
+    private static final int FIVE_ALIGNED_VALUE = 300;
 
     private int sizeX;
     private int sizeY;
@@ -93,7 +95,7 @@ public class Grid extends Observable{
     private int swapElements(int x1, int y1, int x2, int y2){
         // Notify UI to swap elements on the screen
         setChanged();
-        notifyObservers(new SwapEvent(x1, y1, x2, y2));
+        notifyObservers(new SwapEvent(x1, y1, items[x1][y1],x2, y2,items[x2][y2]));
 
         // Actually swap elements
         swapItems(x1, y1, x2, y2);
@@ -239,6 +241,8 @@ public class Grid extends Observable{
         for (Pair<Integer, Integer> p:
                 tokensToRemove) {
             items[p.x][p.y] = null;
+            setChanged();
+            notifyObservers(new RemoveEvent(p.x,p.y));
             if (res[p.y] <= p.x){
                 res[p.y] = p.x;
             }
@@ -370,16 +374,20 @@ public class Grid extends Observable{
             // We're looking up until we reach a not null token
             while(currX - lookUp >= 0){
                 if(items[currX - lookUp][c] != null) {
+                    setChanged();
+                    notifyObservers(new MoveEvent(currX - lookUp,currX,c,items[currX - lookUp][c]));
                     items[currX][c] = items[currX - lookUp][c];
                     items[currX - lookUp][c] = null;
                     break;
                 }
                 lookUp++;
-                // TODO : Can insert move here
             }
             // If we reached the top without success, generate random
-            if(items[currX][c] == null)
+            if(items[currX][c] == null) {
                 items[currX][c] = Token.generateRandomToken();
+                setChanged();
+                notifyObservers(new AddEvent(currX,c,items[currX][c]));
+            }
         }
     }
 

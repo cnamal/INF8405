@@ -3,6 +3,7 @@ package com.ensipoly.match3.activities;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.GridLayout;
 import android.util.Log;
@@ -30,6 +31,8 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 
 public class GameActivity extends FragmentActivity implements Observer, EventVisitor {
@@ -37,7 +40,8 @@ public class GameActivity extends FragmentActivity implements Observer, EventVis
     private static final String TAG = "GameActivity";
     private Grid grid;
     private GridLayout gridLayout;
-    private boolean clickable = true;
+    private Queue<EventAcceptor> listEvents = new ConcurrentLinkedQueue<>();
+    private boolean addList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,53 +102,89 @@ public class GameActivity extends FragmentActivity implements Observer, EventVis
 
     @Override
     public void visit(AddEvent add) {
-        int x = add.getX();
-        int y = add.getY();
-        Token token = add.getToken();
-        ImageView view = ((ImageView)gridLayout.getChildAt(x*grid.getColumnCount()+y));
-        view.setImageDrawable(getDrawable(token));
-        view.setVisibility(View.VISIBLE);
+        if(addList){
+            listEvents.add(add);
+        }else {
+            int x = add.getX();
+            int y = add.getY();
+            Token token = add.getToken();
+            ImageView view = ((ImageView) gridLayout.getChildAt(convert(x, y)));
+            view.setImageDrawable(getDrawable(token));
+            view.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override
     public void visit(RemoveEvent re) {
-        int x = re.getX();
-        int y = re.getY();
-        gridLayout.getChildAt(x*grid.getColumnCount()+y).setVisibility(View.INVISIBLE);
+        if(addList){
+            listEvents.add(re);
+        }else {
+            int x = re.getX();
+            int y = re.getY();
+            gridLayout.getChildAt(convert(x, y)).setVisibility(View.INVISIBLE);
+        }
     }
 
     @Override
     public void visit(MoveEvent move) {
-        for(int x = move.getLowestRow();x>0;x--){
-            for(int y : move.getCols()){
-                Token up = grid.getToken(x-1,y);
-                ImageView view = ((ImageView)gridLayout.getChildAt(x*grid.getColumnCount()+y));
-                view.setImageDrawable(getDrawable(up));
-                view.setVisibility(View.VISIBLE);
-            }
-        }
-        for(int y : move.getCols()){
-            gridLayout.getChildAt(y).setVisibility(View.INVISIBLE);
+        if(addList){
+            listEvents.add(move);
+        }else {
+            int prevX = move.getPrevX();
+            int newX = move.getNewX();
+            int y = move.getY();
+            Token prevToken = move.getToken();
+            ImageView view = ((ImageView) gridLayout.getChildAt(convert(newX, y)));
+            view.setImageDrawable(getDrawable(prevToken));
+            view.setVisibility(View.VISIBLE);
+            gridLayout.getChildAt(convert(prevX, y)).setVisibility(View.INVISIBLE);
         }
     }
 
     @Override
     public void visit(SwapEvent swap) {
-        int x1 = swap.getX1();
-        int y1 = swap.getY1();
-        int x2 = swap.getX2();
-        int y2 = swap.getY2();
-        Token t1 = grid.getToken(x1,y1);
-        Token t2 = grid.getToken(x2,y2);
-        ImageView view = ((ImageView)gridLayout.getChildAt(x1*grid.getColumnCount()+y1));
-        view.setImageDrawable(getDrawable(t2));
-        view = ((ImageView)gridLayout.getChildAt(x2*grid.getColumnCount()+y2));
-        view.setImageDrawable(getDrawable(t1));
+        if(addList){
+            listEvents.add(swap);
+        }else {
+            int x1 = swap.getX1();
+            int y1 = swap.getY1();
+            int x2 = swap.getX2();
+            int y2 = swap.getY2();
+            Token t1 = swap.getT1();
+            Token t2 = swap.getT2();
+            ImageView view = ((ImageView) gridLayout.getChildAt(convert(x1, y1)));
+            view.setImageDrawable(getDrawable(t2));
+            view = ((ImageView) gridLayout.getChildAt(convert(x2, y2)));
+            view.setImageDrawable(getDrawable(t1));
+        }
     }
 
     @Override
     public void visit(EndEvent end) {
-        setClickable(true);
+        if(addList){
+            addList= false;
+            listEvents.add(end);
+            doEvents();
+        }else {
+            setClickable(true);
+
+        }
+    }
+
+    private void doEvents(){
+        if(listEvents.size()==0)
+            return;
+        EventAcceptor event = listEvents.poll();
+        event.accept(this);
+        ///if(prevEvent==null || !prevEvent.getClass().equals(event.getClass())) {
+            //prevEvent = event;
+            Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                public void run() {
+                    doEvents();
+                }
+            }, 300);
+        //}
     }
 
     @Override
@@ -191,6 +231,7 @@ public class GameActivity extends FragmentActivity implements Observer, EventVis
                 return false;
             if(grid.isSwapPossible(x,y, dir)){
                 setClickable(false);
+                addList = true;
                 int score = grid.swapElements(x,y,dir);
                 Toast.makeText(GameActivity.this, "Score = " + score, Toast.LENGTH_SHORT).show();
             } else {
@@ -209,4 +250,9 @@ public class GameActivity extends FragmentActivity implements Observer, EventVis
         for(int i=0;i<gridLayout.getChildCount();i++)
             gridLayout.getChildAt(i).setLongClickable(clickable);
     }
+
+    private int convert(int x,int y){
+        return x*grid.getColumnCount()+y;
+    }
+
 }

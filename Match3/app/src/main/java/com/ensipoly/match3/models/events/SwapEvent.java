@@ -1,5 +1,7 @@
 package com.ensipoly.match3.models.events;
 
+import com.ensipoly.match3.models.Token;
+
 /**
  * Created by namalgac on 1/24/17.
  */
@@ -10,12 +12,16 @@ public class SwapEvent implements EventAcceptor {
     private int y1;
     private int x2;
     private int y2;
+    private Token t1;
+    private Token t2;
 
-    public SwapEvent(int x1,int y1,int x2,int y2){
+    public SwapEvent(int x1,int y1,Token t1,int x2,int y2,Token t2){
         this.x1 = x1;
         this.y1 = y1;
+        this.t1 = t1;
         this.x2 = x2;
         this.y2 = y2;
+        this.t2 = t2;
     }
 
     public int getX1() {
@@ -26,12 +32,20 @@ public class SwapEvent implements EventAcceptor {
         return y1;
     }
 
+    public Token getT1() {
+        return t1;
+    }
+
     public int getX2() {
         return x2;
     }
 
     public int getY2() {
         return y2;
+    }
+
+    public Token getT2() {
+        return t2;
     }
 
     @Override
