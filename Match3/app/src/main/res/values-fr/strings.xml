@@ -10,4 +10,8 @@
     <string name="level2">Niveau 2</string>
     <string name="level3">Niveau 3</string>
     <string name="level4">Niveau 4</string>
+    <string name="combo">Combo :</string>
+    <string name="min_score">Objectif de score pour passer au niveau suivant</string>
+    <string name="score">Score :</string>
+    <string name="turns_left">Tours restants :</string>
 </resources>

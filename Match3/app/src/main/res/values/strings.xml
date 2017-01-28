@@ -9,4 +9,10 @@
     <string name="level2">Level 2</string>
     <string name="level3">Level 3</string>
     <string name="level4">Level 4</string>
+    <string name="score">Score:</string>
+    <string name="combo">Combo:</string>
+    <string name="min_score">Minimal score to unlock next level:</string>
+    <string name="turns_left">Turns left:</string>
+    <string name="restart">Restart</string>
+    <string name="joker">Joker</string>
 </resources>

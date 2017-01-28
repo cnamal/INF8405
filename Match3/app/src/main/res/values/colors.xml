@@ -4,4 +4,5 @@
     <color name="primary_dark">#303F9F</color>
     <color name="primary_light">#C5CAE9</color>
     <color name="accent">#03A9F4</color>
+    <color name="gray_overlay">#88676767</color>
 </resources>
