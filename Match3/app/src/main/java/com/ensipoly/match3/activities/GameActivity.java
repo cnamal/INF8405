@@ -43,13 +43,18 @@ public class GameActivity extends FragmentActivity implements Observer, EventVis
     private Queue<EventAcceptor> listEvents = new ConcurrentLinkedQueue<>();
     private boolean addList;
 
+    private int turnsLeft;
+    private int minScore;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
+
         int level = getIntent().getIntExtra(GameMenuFragment.LEVEL, 1);
         try {
 
+            initGame(level);
             grid = new Grid(new BufferedReader(new InputStreamReader(getAssets().open("level" + level + ".data"))));
             grid.addObserver(this);
             gridLayout = (GridLayout) findViewById(R.id.grid);
@@ -99,12 +104,54 @@ public class GameActivity extends FragmentActivity implements Observer, EventVis
         }
     }
 
+    /**************************
+     *                        *
+     *    Helper functions    *
+     *                        *
+     **************************/
+
     private GradientDrawable getDrawable(Token token){
         GradientDrawable shape = new GradientDrawable();
         shape.setShape(GradientDrawable.OVAL);
         shape.setColor(Color.parseColor(token.toString()));
         return shape;
     }
+
+    private void setClickable(boolean clickable){
+        for(int i=0;i<gridLayout.getChildCount();i++)
+            gridLayout.getChildAt(i).setLongClickable(clickable);
+    }
+
+    private int convert(int x,int y){
+        return x*grid.getColumnCount()+y;
+    }
+
+    private void initGame(int level){
+        switch (level){
+            case 1:
+                turnsLeft = 6;
+                minScore = 800;
+                break;
+            case 2:
+                turnsLeft = 10;
+                minScore = 1200;
+                break;
+            case 3:
+                turnsLeft = 10;
+                minScore = 1400;
+                break;
+            case 4:
+                turnsLeft = 10;
+                minScore = 1800;
+                break;
+        }
+    }
+
+    /***************************
+     *                         *
+     *    Visitor functions    *
+     *                         *
+     ***************************/
 
     @Override
     public void visit(AddEvent add) {
@@ -180,26 +227,29 @@ public class GameActivity extends FragmentActivity implements Observer, EventVis
         }
     }
 
+    @Override
+    public void visit(ScoreEvent score) {
+        Toast.makeText(GameActivity.this, score.toString(), Toast.LENGTH_SHORT).show();
+    }
+
     private void doEvents(){
         if(listEvents.size()==0)
             return;
         EventAcceptor event = listEvents.poll();
         event.accept(this);
-        ///if(prevEvent==null || !prevEvent.getClass().equals(event.getClass())) {
-            //prevEvent = event;
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
+        Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
                 public void run() {
                     doEvents();
                 }
             }, 300);
-        //}
     }
 
-    @Override
-    public void visit(ScoreEvent score) {
-        Toast.makeText(GameActivity.this, score.toString(), Toast.LENGTH_SHORT).show();
-    }
+    /****************************
+     *                          *
+     *    Observer functions    *
+     *                          *
+     ****************************/
 
     @Override
     public void update(Observable observable, Object o) {
@@ -207,6 +257,12 @@ public class GameActivity extends FragmentActivity implements Observer, EventVis
             ((EventAcceptor) o).accept(this);
         }
     }
+
+    /***********************
+     *                     *
+     *    Gesture class    *
+     *                     *
+     ***********************/
 
     class MyGestureDetector extends GestureDetector.SimpleOnGestureListener {
         private static final int SWIPE_MIN_DISTANCE = 120;
@@ -255,13 +311,6 @@ public class GameActivity extends FragmentActivity implements Observer, EventVis
         }
     }
 
-    private void setClickable(boolean clickable){
-        for(int i=0;i<gridLayout.getChildCount();i++)
-            gridLayout.getChildAt(i).setLongClickable(clickable);
-    }
 
-    private int convert(int x,int y){
-        return x*grid.getColumnCount()+y;
-    }
 
 }
