@@ -7,31 +7,31 @@
     tools:context="com.ensipoly.match3.fragments.GameMenuFragment"
     android:weightSum="1">
 
-    <Button
+    <Button style="@style/Widget.AppCompat.Button.Colored"
         android:text="@string/level1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/level1_button" />
 
-    <Button
+    <Button style="@style/Widget.AppCompat.Button.Colored"
         android:text="@string/level2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/level2_button" />
 
-    <Button
+    <Button style="@style/Widget.AppCompat.Button.Colored"
         android:text="@string/level3"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/level3_button" />
 
-    <Button
+    <Button style="@style/Widget.AppCompat.Button.Colored"
         android:text="@string/level4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/level4_button" />
 
-    <Button
+    <Button style="@style/Widget.AppCompat.Button.Colored"
         android:text="Level 5"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

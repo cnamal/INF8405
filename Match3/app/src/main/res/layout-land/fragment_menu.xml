@@ -9,37 +9,34 @@
     android:orientation="horizontal"
     tools:context="com.ensipoly.match3.fragments.MenuFragment">
 
-    <Button
+    <Button style="@style/Widget.AppCompat.Button.Colored"
         android:text="@string/exit"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minWidth="150dp"
         android:id="@+id/exit_button"
-        style="@android:style/Widget.Button"
         android:layout_marginStart="25dp"
         android:layout_alignBaseline="@+id/rules_button"
         android:layout_alignBottom="@+id/rules_button"
         android:layout_toEndOf="@+id/rules_button" />
 
-    <Button
+    <Button style="@style/Widget.AppCompat.Button.Colored"
         android:text="@string/play"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/play_button"
-        style="@android:style/Widget.Button"
         android:minWidth="150dp"
         android:layout_marginEnd="17dp"
         android:layout_alignBaseline="@+id/rules_button"
         android:layout_alignBottom="@+id/rules_button"
         android:layout_toStartOf="@+id/rules_button" />
 
-    <Button
+    <Button style="@style/Widget.AppCompat.Button.Colored"
         android:text="@string/rules"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:minWidth="150dp"
         android:id="@+id/rules_button"
-        style="@android:style/Widget.Button"
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="48dp" />
