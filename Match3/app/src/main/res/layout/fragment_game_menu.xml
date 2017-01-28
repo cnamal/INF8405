@@ -4,7 +4,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    tools:context="com.ensipoly.match3.fragments.GameMenuFragment">
+    tools:context="com.ensipoly.match3.fragments.GameMenuFragment"
+    android:weightSum="1">
 
     <!-- TODO: Update blank fragment layout -->
     <Button
@@ -30,5 +31,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/level4_button" />
+
+    <Button
+        android:text="Level 5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/level5_button" />
 
 </LinearLayout>

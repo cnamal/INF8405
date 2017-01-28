@@ -182,8 +182,7 @@ public class Grid extends Observable{
             combo++;
         }
 
-        // TODO check if any combinations are still possible or not
-        boolean endGame = false; // FIXME
+        boolean endGame = !isThereAnyCombinationRemaining();
         // End of the event
         setChanged();
         notifyObservers(new EndEvent(endGame));
@@ -249,16 +248,6 @@ public class Grid extends Observable{
             }
         }
         return res;
-    }
-
-    /** Check if a combination is possible on [x,y]
-        If yes, return the score.
-        If no, return 0
-        @param x X coordinate of the token
-        @param y Y coordinate of the token
-     */
-    private int computeCombinations(int x, int y){
-        return 0;
     }
 
     /**
@@ -450,6 +439,46 @@ public class Grid extends Observable{
                 return FIVE_ALIGNED_VALUE;
         }
         return 0;
+    }
+
+    public boolean isThereAnyCombinationRemaining(){
+        boolean res = false;
+        for(int i = 0; i < sizeX; ++i) {
+            for (int j = 0; j < sizeY; ++j) {
+                // Check down
+                if (i < sizeX - 1) {
+                    swapItems(i, j, i + 1, j);
+                    if (isCombinationPossible(i, j) || isCombinationPossible(i + 1, j)) {
+                        res = true;
+                    }
+                    swapItems(i, j, i + 1, j);
+                }
+                if (res)
+                    return res;
+
+                // Check right
+                if (j < sizeY - 1) {
+                    swapItems(i, j, i, j + 1);
+                    if (isCombinationPossible(i, j) || isCombinationPossible(i, j + 1)) {
+                        res = true;
+                    }
+                    swapItems(i, j, i, j + 1);
+                }
+                if (res)
+                    return res;
+            }
+        }
+        return res;
+    }
+
+    public boolean isThereAlreadyCombinations(){
+        for(int i = 0; i < sizeX; ++i) {
+            for (int j = 0; j < sizeY; ++j) {
+                if(isCombinationPossible(i,j))
+                    return true;
+            }
+        }
+        return false;
     }
 
 }

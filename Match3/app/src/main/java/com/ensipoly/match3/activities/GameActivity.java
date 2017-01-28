@@ -88,6 +88,12 @@ public class GameActivity extends FragmentActivity implements Observer, EventVis
                     gridLayout.addView(imageView);
                 }
             }
+
+            if(grid.isThereAnyCombinationRemaining())
+                Log.e(TAG, "There is combination");
+            else
+                Log.e(TAG, "There is no combination");
+
         } catch (Exception e) {
             Log.e(TAG, e.toString());
         }

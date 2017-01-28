@@ -35,6 +35,8 @@ public class GameMenuFragment extends Fragment implements View.OnClickListener{
         l3.setOnClickListener(this);
         Button l4 = (Button) view.findViewById(R.id.level4_button);
         l4.setOnClickListener(this);
+        Button l5 = (Button) view.findViewById(R.id.level5_button);
+        l5.setOnClickListener(this);
         return view;
     }
 
@@ -54,6 +56,9 @@ public class GameMenuFragment extends Fragment implements View.OnClickListener{
                 break;
             case R.id.level4_button:
                 level = 4;
+                break;
+            case R.id.level5_button:
+                level = 5;
                 break;
         }
         Intent intent = new Intent(getActivity(),GameActivity.class);
