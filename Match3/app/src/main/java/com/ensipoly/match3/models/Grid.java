@@ -157,7 +157,6 @@ public class Grid extends Observable{
 
             // Shift all lines following bottomLines returned by removeTokens
             // Add random token at the top
-            // TODO : UPDATE THE VIEW
             for (int i = 0; i < sizeY; ++i) {
                 moveTokens(i, bottomLines[i]);
             }
@@ -183,9 +182,11 @@ public class Grid extends Observable{
             combo++;
         }
 
+        // TODO check if any combinations are still possible or not
+        boolean endGame = false; // FIXME
         // End of the event
         setChanged();
-        notifyObservers(new EndEvent());
+        notifyObservers(new EndEvent(endGame));
         return res;
     }
 

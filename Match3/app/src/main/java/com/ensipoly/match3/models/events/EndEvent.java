@@ -5,6 +5,17 @@ package com.ensipoly.match3.models.events;
  */
 
 public class EndEvent implements EventAcceptor {
+
+    private boolean endGame;
+
+    public EndEvent(boolean endGame){
+        this.endGame = endGame;
+    }
+
+    public boolean isEndGame() {
+        return endGame;
+    }
+
     @Override
     public void accept(EventVisitor ev) {
         ev.visit(this);

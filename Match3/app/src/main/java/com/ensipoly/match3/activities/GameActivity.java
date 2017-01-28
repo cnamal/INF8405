@@ -166,7 +166,10 @@ public class GameActivity extends FragmentActivity implements Observer, EventVis
             listEvents.add(end);
             doEvents();
         }else {
-            setClickable(true);
+            if(end.isEndGame()){
+                //TODO
+            }else
+                setClickable(true);
 
         }
     }
