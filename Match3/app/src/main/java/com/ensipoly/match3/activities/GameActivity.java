@@ -28,6 +28,7 @@ import com.ensipoly.match3.models.events.ScoreEvent;
 import com.ensipoly.match3.models.events.SwapEvent;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Observable;
 import java.util.Observer;
@@ -38,28 +39,87 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class GameActivity extends AppCompatActivity implements Observer, EventVisitor {
 
     private static final String TAG = "GameActivity";
-    private Grid grid;
-    private GridLayout gridLayout;
+    private Grid grid = null;
+    private GridLayout gridLayout = null;
     private Queue<EventAcceptor> listEvents = new ConcurrentLinkedQueue<>();
     private boolean addList;
 
     private int turnsLeft;
     private int minScore;
+    private int level;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
-        int level = getIntent().getIntExtra(GameMenuFragment.LEVEL, 1);
-        try {
 
-            initGame(level);
+        level = getIntent().getIntExtra(GameMenuFragment.LEVEL, 1);
+        findViewById(R.id.fab).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                initGame();
+                initGrid();
+            }
+        });
+
+        initGame();
+        initGrid();
+
+    }
+
+    /**
+     * Helper functions
+     **/
+
+    private GradientDrawable getDrawable(Token token) {
+        GradientDrawable shape = new GradientDrawable();
+        shape.setShape(GradientDrawable.OVAL);
+        shape.setColor(Color.parseColor(token.toString()));
+        return shape;
+    }
+
+    private void setClickable(boolean clickable) {
+        for (int i = 0; i < gridLayout.getChildCount(); i++)
+            gridLayout.getChildAt(i).setLongClickable(clickable);
+    }
+
+    private int convert(int x, int y) {
+        return x * grid.getColumnCount() + y;
+    }
+
+    private void initGame() {
+        switch (level) {
+            case 1:
+                turnsLeft = 6;
+                minScore = 800;
+                break;
+            case 2:
+                turnsLeft = 10;
+                minScore = 1200;
+                break;
+            case 3:
+                turnsLeft = 10;
+                minScore = 1400;
+                break;
+            case 4:
+                turnsLeft = 10;
+                minScore = 1800;
+                break;
+        }
+    }
+
+    private void initGrid() {
+        try {
             grid = new Grid(new BufferedReader(new InputStreamReader(getAssets().open("level" + level + ".data"))));
             grid.addObserver(this);
-            gridLayout = (GridLayout) findViewById(R.id.grid);
-            gridLayout.setRowCount(grid.getRowCount());
-            gridLayout.setColumnCount(grid.getColumnCount());
+            if (gridLayout == null) {
+                gridLayout = (GridLayout) findViewById(R.id.grid);
+                gridLayout.setRowCount(grid.getRowCount());
+                gridLayout.setColumnCount(grid.getColumnCount());
+            } else {
+                gridLayout.removeAllViews();
+            }
             for (int x = 0; x < grid.getRowCount(); x++) {
                 for (int y = 0; y < grid.getColumnCount(); y++) {
 
@@ -94,70 +154,25 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
                 }
             }
 
-            if(grid.isThereAnyCombinationRemaining())
+            if (grid.isThereAnyCombinationRemaining())
                 Log.e(TAG, "There is combination");
             else
                 Log.e(TAG, "There is no combination");
-
-        } catch (Exception e) {
-            Log.e(TAG, e.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    /**************************
-     *                        *
-     *    Helper functions    *
-     *                        *
-     **************************/
 
-    private GradientDrawable getDrawable(Token token){
-        GradientDrawable shape = new GradientDrawable();
-        shape.setShape(GradientDrawable.OVAL);
-        shape.setColor(Color.parseColor(token.toString()));
-        return shape;
-    }
-
-    private void setClickable(boolean clickable){
-        for(int i=0;i<gridLayout.getChildCount();i++)
-            gridLayout.getChildAt(i).setLongClickable(clickable);
-    }
-
-    private int convert(int x,int y){
-        return x*grid.getColumnCount()+y;
-    }
-
-    private void initGame(int level){
-        switch (level){
-            case 1:
-                turnsLeft = 6;
-                minScore = 800;
-                break;
-            case 2:
-                turnsLeft = 10;
-                minScore = 1200;
-                break;
-            case 3:
-                turnsLeft = 10;
-                minScore = 1400;
-                break;
-            case 4:
-                turnsLeft = 10;
-                minScore = 1800;
-                break;
-        }
-    }
-
-    /***************************
-     *                         *
-     *    Visitor functions    *
-     *                         *
-     ***************************/
+    /**
+     * Visitor functions
+     **/
 
     @Override
     public void visit(AddEvent add) {
-        if(addList){
+        if (addList) {
             listEvents.add(add);
-        }else {
+        } else {
             int x = add.getX();
             int y = add.getY();
             Token token = add.getToken();
@@ -169,9 +184,9 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
 
     @Override
     public void visit(RemoveEvent re) {
-        if(addList){
+        if (addList) {
             listEvents.add(re);
-        }else {
+        } else {
             int x = re.getX();
             int y = re.getY();
             gridLayout.getChildAt(convert(x, y)).setVisibility(View.INVISIBLE);
@@ -180,9 +195,9 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
 
     @Override
     public void visit(MoveEvent move) {
-        if(addList){
+        if (addList) {
             listEvents.add(move);
-        }else {
+        } else {
             int prevX = move.getPrevX();
             int newX = move.getNewX();
             int y = move.getY();
@@ -196,9 +211,9 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
 
     @Override
     public void visit(SwapEvent swap) {
-        if(addList){
+        if (addList) {
             listEvents.add(swap);
-        }else {
+        } else {
             int x1 = swap.getX1();
             int y1 = swap.getY1();
             int x2 = swap.getX2();
@@ -214,14 +229,14 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
 
     @Override
     public void visit(EndEvent end) {
-        if(addList){
-            addList= false;
+        if (addList) {
+            addList = false;
             listEvents.add(end);
             doEvents();
-        }else {
-            if(end.isEndGame()){
+        } else {
+            if (end.isEndGame()) {
                 //TODO
-            }else
+            } else
                 setClickable(true);
 
         }
@@ -232,24 +247,22 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
         Toast.makeText(GameActivity.this, score.toString(), Toast.LENGTH_SHORT).show();
     }
 
-    private void doEvents(){
-        if(listEvents.size()==0)
+    private void doEvents() {
+        if (listEvents.size() == 0)
             return;
         EventAcceptor event = listEvents.poll();
         event.accept(this);
         Handler handler = new Handler();
         handler.postDelayed(new Runnable() {
-                public void run() {
-                    doEvents();
-                }
-            }, 300);
+            public void run() {
+                doEvents();
+            }
+        }, 300);
     }
 
-    /****************************
-     *                          *
-     *    Observer functions    *
-     *                          *
-     ****************************/
+    /**
+     * Observer functions
+     **/
 
     @Override
     public void update(Observable observable, Object o) {
@@ -258,11 +271,10 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
         }
     }
 
-    /***********************
-     *                     *
-     *    Gesture class    *
-     *                     *
-     ***********************/
+
+    /**
+     * Gesture functions
+     **/
 
     class MyGestureDetector extends GestureDetector.SimpleOnGestureListener {
         private static final int SWIPE_MIN_DISTANCE = 120;
@@ -287,17 +299,17 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
                 dir = Direction.RIGHT;
             } else if (e1.getY() - e2.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
                 Toast.makeText(GameActivity.this, "Up Swipe", Toast.LENGTH_SHORT).show();
-                dir= Direction.UP;
+                dir = Direction.UP;
             } else if (e2.getY() - e1.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
                 Toast.makeText(GameActivity.this, "Down Swipe", Toast.LENGTH_SHORT).show();
                 dir = Direction.DOWN;
             }
-            if(dir==null)
+            if (dir == null)
                 return false;
-            if(grid.isSwapPossible(x,y, dir)){
+            if (grid.isSwapPossible(x, y, dir)) {
                 setClickable(false);
                 addList = true;
-                int score = grid.swapElements(x,y,dir);
+                int score = grid.swapElements(x, y, dir);
                 Toast.makeText(GameActivity.this, "Score = " + score, Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(GameActivity.this, "Swap Impossible", Toast.LENGTH_SHORT).show();
@@ -310,7 +322,6 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
             return false;
         }
     }
-
 
 
 }
