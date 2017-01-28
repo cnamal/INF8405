@@ -1,12 +1,12 @@
 package com.ensipoly.match3.activities;
 
 import android.os.Bundle;
-import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.AppCompatActivity;
 
-import com.ensipoly.match3.fragments.MenuFragment;
 import com.ensipoly.match3.R;
+import com.ensipoly.match3.fragments.MenuFragment;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

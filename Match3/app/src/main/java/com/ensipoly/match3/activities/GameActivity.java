@@ -4,7 +4,7 @@ import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.FragmentActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayout;
 import android.util.Log;
 import android.view.GestureDetector;
@@ -35,7 +35,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 
-public class GameActivity extends FragmentActivity implements Observer, EventVisitor {
+public class GameActivity extends AppCompatActivity implements Observer, EventVisitor {
 
     private static final String TAG = "GameActivity";
     private Grid grid;

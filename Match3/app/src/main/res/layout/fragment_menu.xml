@@ -17,7 +17,6 @@
         android:minWidth="150dp"
         android:id="@+id/exit_button"
         android:layout_below="@+id/rules_button"
-        style="@android:style/Widget.Button"
         android:layout_alignStart="@+id/rules_button"
         android:layout_alignEnd="@+id/rules_button"
         />
@@ -27,7 +26,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:id="@+id/play_button"
-        style="@android:style/Widget.Button"
         android:minWidth="150dp"
         android:layout_marginTop="250dp"
         android:layout_centerHorizontal="true" />
@@ -39,7 +37,6 @@
         android:layout_marginTop="20dp"
         android:minWidth="150dp"
         android:id="@+id/rules_button"
-        style="@android:style/Widget.Button"
         android:layout_below="@+id/play_button"
         android:layout_centerHorizontal="true" />
 
