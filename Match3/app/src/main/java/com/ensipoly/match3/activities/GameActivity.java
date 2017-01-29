@@ -98,14 +98,11 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
             @Override
             public void onClick(View view) {
                 menu.close(true);
-                score = 0;
 
                 joker.setVisibility(View.VISIBLE);
                 joker.setLabelVisibility(View.VISIBLE);
                 listEvents.clear();
-                initGame();
-                initGrid();
-                updateTextViews();
+                initialize(true);
             }
         });
 
@@ -116,8 +113,7 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
                 menu.close(true);
 
                 listEvents.clear();
-                initGrid();
-                updateTextViews();
+                initialize(false);
             }
         });
 
@@ -130,19 +126,18 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
         minScoreTextView = (TextView) findViewById(R.id.min_score_text);
         turnsTextView = (TextView) findViewById(R.id.turns_left_text);
         comboTextView = (TextView) findViewById(R.id.combo_text);
-        ((TextView) findViewById(R.id.level_text)).setText(getIntent().getStringExtra(GameMenuFragment.LEVEL_STRING));
 
-        score = 0;
 
-        initGame();
-        initGrid();
-
-        minScoreTextView.setText(MINSCORE + " " + minScore);
-        updateTextViews();
+        initialize(true);
     }
 
     @Override
     public void onBackPressed() {
+        if(turnsLeft==0) {
+            super.onBackPressed();
+            return;
+        }
+
         new AlertDialog.Builder(this)
                 .setIcon(R.drawable.ic_warning_black_24dp)
                 .setTitle(getString(R.string.quit_alert_title))
@@ -205,13 +200,13 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
         try {
             grid = new Grid(new BufferedReader(new InputStreamReader(getAssets().open("level" + level + ".data"))));
             grid.addObserver(this);
-            if (gridLayout == null) {
+            if (gridLayout == null)
                 gridLayout = (GridLayout) findViewById(R.id.grid);
-                gridLayout.setRowCount(grid.getRowCount());
-                gridLayout.setColumnCount(grid.getColumnCount());
-            } else {
+             else
                 gridLayout.removeAllViews();
-            }
+
+            gridLayout.setRowCount(grid.getRowCount());
+            gridLayout.setColumnCount(grid.getColumnCount());
             for (int x = 0; x < grid.getRowCount(); x++) {
                 for (int y = 0; y < grid.getColumnCount(); y++) {
 
@@ -282,6 +277,39 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
             setGreenText(comboTextView, COMBO + " ", "x" + combo);
         else
             comboTextView.setText(COMBO + " x" + combo);
+    }
+
+
+    private void initialize(int level,boolean resetScore){
+        this.level = level;
+        initialize(resetScore);
+    }
+
+    private void initialize(boolean resetScore){
+        if(resetScore)
+            score =0;
+
+        initGame();
+        initGrid();
+
+        minScoreTextView.setText(MINSCORE + " " + minScore);
+        ((TextView) findViewById(R.id.level_text)).setText(getLevelString());
+        updateTextViews();
+    }
+
+    private String getLevelString(){
+        switch (level){
+            case 1:
+                return getString(R.string.level1);
+            case 2:
+                return getString(R.string.level2);
+            case 3:
+                return getString(R.string.level3);
+            case 4:
+                return getString(R.string.level4);
+            default:
+                return "";
+        }
     }
 
 
@@ -372,10 +400,22 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
                 if(best<0)
                     Log.e(TAG,"Unexpected best level");
                 if (best==level){
-                    Toast.makeText(this,getString(R.string.unlock),Toast.LENGTH_SHORT).show();
                     SharedPreferences.Editor editor = sharedPref.edit();
                     editor.putInt(getString(R.string.best_level), level+1);
                     editor.apply();
+                    new AlertDialog.Builder(this)
+                            .setTitle(getString(R.string.unlock_alert_title))
+                            .setMessage(getString(R.string.unlock_alert_body))
+                            .setPositiveButton(getString(R.string.next_level), new DialogInterface.OnClickListener()
+                            {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    initialize(level+1,true);
+                                }
+
+                            })
+                            .setNegativeButton(getString(R.string.continue_button), null)
+                            .show();
                 }
             }
         }

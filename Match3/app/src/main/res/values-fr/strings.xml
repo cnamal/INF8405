@@ -16,5 +16,15 @@
     <string name="turns_left">Tours restants :</string>
     <string name="joker">Joker</string>
     <string name="restart">Recommencer</string>
-    <string name="unlock">Niveau suivant débloqué</string>
+    <string name="unlock_alert_title">Niveau suivant débloqué</string>
+    <string name="cancel">Annuler</string>
+    <string name="continue_button">Continuer</string>
+    <string name="next_level">Niveau suivant</string>
+    <string name="quit">Quitter</string>
+    <string name="quit_alert_body">Votre progression sera perdue. Souhaitez-vous continuer ?</string>
+    <string name="quit_alert_title">Quitter le jeu ?</string>
+    <string name="reset">Réinitialiser</string>
+    <string name="reset_alert_body">Toute votre progression sera perdue. Souhaitez-vous continuer ?</string>
+    <string name="reset_alert_title">Réinitialiser le jeu ?</string>
+    <string name="unlock_alert_body">Souhaitez-vous arrêter cette partie et aller au niveau suivant ?</string>
 </resources>

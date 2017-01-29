@@ -27,7 +27,6 @@ public class GameMenuFragment extends Fragment implements View.OnClickListener{
 
     private static final String TAG = "GameMenuFragment";
     public static final String LEVEL = "com.ensipoly.match3.LEVEL";
-    public static final String LEVEL_STRING = "com.ensipoly.match3.LEVEL_STRING";
 
     private List<Button> list;
 
@@ -58,28 +57,23 @@ public class GameMenuFragment extends Fragment implements View.OnClickListener{
     @Override
     public void onClick(View view) {
         int level = -1;
-        String string=null;
         switch (view.getId()){
             case R.id.level1_button:
                 level = 1;
-                string=getString(R.string.level1);
                 break;
             case R.id.level2_button:
                 level = 2;
-                string=getString(R.string.level2);
                 break;
             case R.id.level3_button:
                 level = 3;
-                string=getString(R.string.level3);
                 break;
             case R.id.level4_button:
                 level = 4;
-                string=getString(R.string.level4);
                 break;
         }
+
         Intent intent = new Intent(getActivity(),GameActivity.class);
         intent.putExtra(LEVEL,level);
-        intent.putExtra(LEVEL_STRING,string);
         startActivity(intent);
     }
 
