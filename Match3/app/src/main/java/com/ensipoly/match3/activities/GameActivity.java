@@ -1,11 +1,13 @@
 package com.ensipoly.match3.activities;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayout;
 import android.text.Spannable;
@@ -137,6 +139,24 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
 
         minScoreTextView.setText(MINSCORE + " " + minScore);
         updateTextViews();
+    }
+
+    @Override
+    public void onBackPressed() {
+        new AlertDialog.Builder(this)
+                .setIcon(R.drawable.ic_warning_black_24dp)
+                .setTitle(getString(R.string.quit_alert_title))
+                .setMessage(getString(R.string.quit_alert_body))
+                .setPositiveButton(getString(R.string.quit), new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        GameActivity.super.onBackPressed();
+                    }
+
+                })
+                .setNegativeButton(getString(R.string.cancel), null)
+                .show();
     }
 
     /**

@@ -1,9 +1,13 @@
 package com.ensipoly.match3.fragments;
 
 
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,6 +22,7 @@ import com.ensipoly.match3.R;
 public class MenuFragment extends Fragment implements View.OnClickListener{
 
     private static final String TAG = "MenuFragment";
+    private SharedPreferences sharedPref;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -27,8 +32,12 @@ public class MenuFragment extends Fragment implements View.OnClickListener{
         play.setOnClickListener(this);
         Button rules = (Button) v.findViewById(R.id.rules_button);
         rules.setOnClickListener(this);
+        Button reset = (Button) v.findViewById(R.id.reset_button);
+        reset.setOnClickListener(this);
         Button exit = (Button) v.findViewById(R.id.exit_button);
         exit.setOnClickListener(this);
+        sharedPref = getActivity().getSharedPreferences(
+                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
         return v;
     }
 
@@ -41,8 +50,10 @@ public class MenuFragment extends Fragment implements View.OnClickListener{
                 break;
             case R.id.rules_button:
                 newFragment = new RulesFragment();
-
                 break;
+            case R.id.reset_button:
+                reset();
+                return;
             case R.id.exit_button:
                 getActivity().finish();
                 return;
@@ -56,5 +67,34 @@ public class MenuFragment extends Fragment implements View.OnClickListener{
 
         // Commit the transaction
         transaction.commit();
+    }
+
+    private void reset(){
+        new AlertDialog.Builder(getActivity())
+                .setIcon(R.drawable.ic_warning_black_24dp)
+                .setTitle(getString(R.string.reset_alert_title))
+                .setMessage(getString(R.string.reset_alert_body))
+                .setPositiveButton(getString(R.string.reset), new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+
+                        SharedPreferences.Editor editor = sharedPref.edit();
+                        editor.putInt(getString(R.string.best_level), 1);
+                        editor.apply();
+                        getActivity().findViewById(R.id.reset_button).setVisibility(View.GONE);
+                    }
+
+                })
+                .setNegativeButton(getString(R.string.cancel), null)
+                .show();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if(sharedPref.getInt(getString(R.string.best_level),-1)>1)
+            getActivity().findViewById(R.id.reset_button).setVisibility(View.VISIBLE);
+
     }
 }
