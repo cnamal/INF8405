@@ -14,4 +14,6 @@
     <string name="min_score">Objectif de score pour passer au niveau suivant</string>
     <string name="score">Score :</string>
     <string name="turns_left">Tours restants :</string>
+    <string name="joker">Joker</string>
+    <string name="restart">Recommencer</string>
 </resources>

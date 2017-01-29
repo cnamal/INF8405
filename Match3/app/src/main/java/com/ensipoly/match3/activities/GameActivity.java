@@ -1,5 +1,7 @@
 package com.ensipoly.match3.activities;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
@@ -64,22 +66,23 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
     private int combo;
     private int level;
     FloatingActionMenu menu;
+    private SharedPreferences sharedPref;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
-
         level = getIntent().getIntExtra(GameMenuFragment.LEVEL, 1);
-
-        menu =(FloatingActionMenu) findViewById(R.id.fab_menu);
-        menu.setOnMenuToggleListener(new FloatingActionMenu.OnMenuToggleListener(){
+        sharedPref = getSharedPreferences(
+                getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        menu = (FloatingActionMenu) findViewById(R.id.fab_menu);
+        menu.setOnMenuToggleListener(new FloatingActionMenu.OnMenuToggleListener() {
 
             @Override
             public void onMenuToggle(boolean opened) {
                 setClickable(!opened);
-                if(opened)
+                if (opened)
                     findViewById(R.id.overlay).setVisibility(View.VISIBLE);
                 else
                     findViewById(R.id.overlay).setVisibility(View.GONE);
@@ -110,10 +113,10 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
             }
         });
 
-        SCORE=getResources().getString(R.string.score);
-        TURNS=getResources().getString(R.string.turns_left);
-        MINSCORE = getResources().getString(R.string.min_score);
-        COMBO = getResources().getString(R.string.combo);
+        SCORE = getString(R.string.score);
+        TURNS = getString(R.string.turns_left);
+        MINSCORE = getString(R.string.min_score);
+        COMBO = getString(R.string.combo);
 
         scoreTextView = (TextView) findViewById(R.id.score_text);
         minScoreTextView = (TextView) findViewById(R.id.min_score_text);
@@ -223,34 +226,34 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
         }
     }
 
-    private void setGreenText(TextView view,String beginning, String inGreen){
-        String fullText = beginning + inGreen ;
+    private void setGreenText(TextView view, String beginning, String inGreen) {
+        String fullText = beginning + inGreen;
 
         Spannable spannable = new SpannableString(fullText);
 
         spannable.setSpan(new ForegroundColorSpan(Color.GREEN), beginning.length(), fullText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-        view.setText(spannable,TextView.BufferType.SPANNABLE);
+        view.setText(spannable, TextView.BufferType.SPANNABLE);
     }
 
-    private void updateTextViews(){
-        minScoreTextView.setText(MINSCORE+ " " + minScore);
+    private void updateTextViews() {
+        minScoreTextView.setText(MINSCORE + " " + minScore);
         updateTurnsView();
         updateScoreAndComboViews();
     }
 
-    private void updateTurnsView(){
-        turnsTextView.setText(TURNS+" "+turnsLeft);
+    private void updateTurnsView() {
+        turnsTextView.setText(TURNS + " " + turnsLeft);
     }
 
-    private void updateScoreAndComboViews(){
-        if(score>=minScore)
-            setGreenText(scoreTextView,SCORE+" ",score+"");
+    private void updateScoreAndComboViews() {
+        if (score >= minScore)
+            setGreenText(scoreTextView, SCORE + " ", score + "");
         else
-            scoreTextView.setText(SCORE+ " "+score);
-        if(combo>1)
-            setGreenText(comboTextView,COMBO+" ",combo+"");
+            scoreTextView.setText(SCORE + " " + score);
+        if (combo > 1)
+            setGreenText(comboTextView, COMBO + " ", "x" + combo);
         else
-            comboTextView.setText(COMBO+ " "+combo);
+            comboTextView.setText(COMBO + " x" + combo);
     }
 
 
@@ -328,11 +331,20 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
             updateTurnsView();
             combo = 1;
             updateScoreAndComboViews();
-            if (end.isEndGame()) {
-                //TODO
-            } else
+            if (end.isEndGame() || turnsLeft == 0)
+                menu.open(true);
+            else
                 setClickable(true);
-
+            if(score>=minScore){
+                int best= sharedPref.getInt(getString(R.string.best_level),-1);
+                if(best<0)
+                    Log.e(TAG,"Unexpected best level");
+                if (best==level){
+                    SharedPreferences.Editor editor = sharedPref.edit();
+                    editor.putInt(getString(R.string.best_level), level+1);
+                    editor.apply();
+                }
+            }
         }
     }
 
@@ -340,7 +352,7 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
     public void visit(ScoreEvent scoreEvent) {
         if (addList) {
             listEvents.add(scoreEvent);
-        }else {
+        } else {
             score += scoreEvent.getScore();
             combo = scoreEvent.getCombo();
             updateScoreAndComboViews();
