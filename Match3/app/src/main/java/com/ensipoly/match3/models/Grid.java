@@ -6,6 +6,7 @@ import com.ensipoly.match3.models.events.AddEvent;
 import com.ensipoly.match3.models.events.EndEvent;
 import com.ensipoly.match3.models.events.MoveEvent;
 import com.ensipoly.match3.models.events.RemoveEvent;
+import com.ensipoly.match3.models.events.ScoreEvent;
 import com.ensipoly.match3.models.events.SwapEvent;
 import com.ensipoly.match3.models.helpers.Pair;
 
@@ -90,9 +91,8 @@ public class Grid extends Observable{
         @param y1 Y coordinate of the first token
         @param x2 X coordinate of the second token
         @param y2 Y coordinate of the second token
-        @return the score of the whole move.
      */
-    private int swapElements(int x1, int y1, int x2, int y2){
+    private void swapElements(int x1, int y1, int x2, int y2){
         // Notify UI to swap elements on the screen
         setChanged();
         notifyObservers(new SwapEvent(x1, y1, items[x1][y1],x2, y2,items[x2][y2]));
@@ -108,9 +108,6 @@ public class Grid extends Observable{
         tokensToAnalyze.add(new Pair<>(x1, y1));
         tokensToAnalyze.add(new Pair<>(x2, y2));
 
-        // The final score
-        int res = 0;
-
         // The combo multiplier
         int combo = 1;
 
@@ -120,6 +117,8 @@ public class Grid extends Observable{
         while(!end) {
             // We need to be sure this list is empty
             tokensToRemove.clear();
+
+            int score = 0;
 
             // For all token to analyze
             for (Pair<Integer, Integer> p :
@@ -136,7 +135,7 @@ public class Grid extends Observable{
                         tokensToRemove.add(new Pair<>(p.x, y));
                     }
 
-                    res += score(numberLeft + numberRight + 1) * combo;
+                    score += score(numberLeft + numberRight + 1) * combo;
                 }
 
                 if (numberOfTokensVertically(p.x, p.y) >= MIN_TOKENS_ALIGNED) {
@@ -145,7 +144,7 @@ public class Grid extends Observable{
                     for (int x = p.x - numberUp; x <= p.x + numberDown; x++) {
                         tokensToRemove.add(new Pair<>(x, p.y));
                     }
-                    res += score(numberUp + numberDown + 1) * combo;
+                    score += score(numberUp + numberDown + 1) * combo;
                 }
             }
 
@@ -177,16 +176,16 @@ public class Grid extends Observable{
 
             // If we have found no new token to analyze, end.
             end = tokensToAnalyze.isEmpty();
-
-            // If we go for another loop, increase the combo multiplier
-            combo++;
+            if(!end)
+                combo++; // If we go for another loop, increase the combo multiplier
+            setChanged();
+            notifyObservers(new ScoreEvent(score,combo));
         }
 
         boolean endGame = !isThereAnyCombinationRemaining();
         // End of the event
         setChanged();
         notifyObservers(new EndEvent(endGame));
-        return res;
     }
 
     /**
@@ -198,7 +197,7 @@ public class Grid extends Observable{
      * @param direction Where to look at to swap
      * @return The whole score
      */
-    public int swapElements(int x1, int y1, Direction direction){
+    public void swapElements(int x1, int y1, Direction direction){
         int x2 = x1;
         int y2 = y1;
         if(direction == Direction.DOWN && x2 < sizeX - 1){
@@ -210,7 +209,7 @@ public class Grid extends Observable{
         } else if(direction == Direction.RIGHT && y2 < sizeY - 1){
             y2++;
         }
-        return swapElements(x1,y1,x2,y2);
+        swapElements(x1,y1,x2,y2);
     }
 
     /**

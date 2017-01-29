@@ -92,6 +92,7 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
                 menu.close(true);
                 score = 0;
 
+                listEvents.clear();
                 initGame();
                 initGrid();
                 updateTextViews();
@@ -103,6 +104,7 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
             public void onClick(View view) {
                 menu.close(true);
 
+                listEvents.clear();
                 initGrid();
                 updateTextViews();
             }
@@ -336,9 +338,13 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
 
     @Override
     public void visit(ScoreEvent scoreEvent) {
-        score += scoreEvent.getScore();
-        combo = scoreEvent.getCombo();
-        updateTextViews();
+        if (addList) {
+            listEvents.add(scoreEvent);
+        }else {
+            score += scoreEvent.getScore();
+            combo = scoreEvent.getCombo();
+            updateScoreAndComboViews();
+        }
     }
 
     private void doEvents() {
@@ -403,7 +409,7 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
             if (grid.isSwapPossible(x, y, dir)) {
                 setClickable(false);
                 addList = true;
-                score += grid.swapElements(x, y, dir);
+                grid.swapElements(x, y, dir);
             } else {
                 Toast.makeText(GameActivity.this, "Swap Impossible", Toast.LENGTH_SHORT).show();
             }
