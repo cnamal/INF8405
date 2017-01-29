@@ -32,6 +32,7 @@ import com.ensipoly.match3.models.events.MoveEvent;
 import com.ensipoly.match3.models.events.RemoveEvent;
 import com.ensipoly.match3.models.events.ScoreEvent;
 import com.ensipoly.match3.models.events.SwapEvent;
+import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 
 import java.io.BufferedReader;
@@ -67,6 +68,7 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
     private int level;
     FloatingActionMenu menu;
     private SharedPreferences sharedPref;
+    private FloatingActionButton joker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,6 +97,8 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
                 menu.close(true);
                 score = 0;
 
+                joker.setVisibility(View.VISIBLE);
+                joker.setLabelVisibility(View.VISIBLE);
                 listEvents.clear();
                 initGame();
                 initGrid();
@@ -102,7 +106,8 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
             }
         });
 
-        findViewById(R.id.joker).setOnClickListener(new View.OnClickListener() {
+        joker = (FloatingActionButton) findViewById(R.id.joker);
+        joker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 menu.close(true);
@@ -122,11 +127,14 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
         minScoreTextView = (TextView) findViewById(R.id.min_score_text);
         turnsTextView = (TextView) findViewById(R.id.turns_left_text);
         comboTextView = (TextView) findViewById(R.id.combo_text);
+        ((TextView) findViewById(R.id.level_text)).setText(getIntent().getStringExtra(GameMenuFragment.LEVEL_STRING));
 
         score = 0;
 
         initGame();
         initGrid();
+
+        minScoreTextView.setText(MINSCORE + " " + minScore);
         updateTextViews();
     }
 
@@ -231,12 +239,11 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
 
         Spannable spannable = new SpannableString(fullText);
 
-        spannable.setSpan(new ForegroundColorSpan(Color.GREEN), beginning.length(), fullText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        spannable.setSpan(new ForegroundColorSpan(Color.parseColor("#76FF03")), beginning.length(), fullText.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
         view.setText(spannable, TextView.BufferType.SPANNABLE);
     }
 
     private void updateTextViews() {
-        minScoreTextView.setText(MINSCORE + " " + minScore);
         updateTurnsView();
         updateScoreAndComboViews();
     }
@@ -331,9 +338,13 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
             updateTurnsView();
             combo = 1;
             updateScoreAndComboViews();
-            if (end.isEndGame() || turnsLeft == 0)
+            if (end.isEndGame() || turnsLeft == 0) {
                 menu.open(true);
-            else
+                if(turnsLeft==0) {
+                    joker.setLabelVisibility(View.GONE);
+                    joker.setVisibility(View.GONE);
+                }
+            }else
                 setClickable(true);
             if(score>=minScore){
                 int best= sharedPref.getInt(getString(R.string.best_level),-1);
