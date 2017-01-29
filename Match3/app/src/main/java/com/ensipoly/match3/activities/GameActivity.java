@@ -69,6 +69,7 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
     FloatingActionMenu menu;
     private SharedPreferences sharedPref;
     private FloatingActionButton joker;
+    private static final int MAX_LEVELS=4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -346,11 +347,12 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
                 }
             }else
                 setClickable(true);
-            if(score>=minScore){
+            if(score>=minScore && level<MAX_LEVELS){
                 int best= sharedPref.getInt(getString(R.string.best_level),-1);
                 if(best<0)
                     Log.e(TAG,"Unexpected best level");
                 if (best==level){
+                    Toast.makeText(this,getString(R.string.unlock),Toast.LENGTH_SHORT).show();
                     SharedPreferences.Editor editor = sharedPref.edit();
                     editor.putInt(getString(R.string.best_level), level+1);
                     editor.apply();

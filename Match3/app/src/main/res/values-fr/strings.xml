@@ -16,4 +16,5 @@
     <string name="turns_left">Tours restants :</string>
     <string name="joker">Joker</string>
     <string name="restart">Recommencer</string>
+    <string name="unlock">Niveau suivant débloqué</string>
 </resources>
