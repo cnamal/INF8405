@@ -4,14 +4,19 @@
     <string name="exit">Quitter</string>
     <string name="play">Jouer</string>
     <string name="rules">Règles du jeu</string>
-    <!--TODO : write rules-->
-    <string name="rules_explained">Les règles du jeux arrivent...</string>
+    <string name="rules_explained">
+        - L\'objectif du jeu est d\'aligner 3 ou plus jetons de la même couleur pour les faire disparaître.\n\n
+        - Utilisez votre doigt pour échanger 2 jetons. Vous ne pouvez les échanger qu\'horizontalement et verticallement et seulement une case à la fois.\n\n
+        - 3 jetons valent 100 points, 4 jetons valent 200 points et 5 jetons valent 300 points.\n\n
+        - De plus si en faisant disparaître des jetons, une nouvelle combinaison se forme, un combo est déclanché, multipliant le score de chaque combinaison pendant la durée du combo.\n\n
+        - Vous devez atteindre l\'objectif de score avec le nombre de coups imparti pour accéder au niveau suivant.
+    </string>
     <string name="level1">Niveau 1</string>
     <string name="level2">Niveau 2</string>
     <string name="level3">Niveau 3</string>
     <string name="level4">Niveau 4</string>
     <string name="combo">Combo :</string>
-    <string name="min_score">Objectif de score pour passer au niveau suivant</string>
+    <string name="min_score">Objectif pour passer au niveau suivant: </string>
     <string name="score">Score :</string>
     <string name="turns_left">Tours restants :</string>
     <string name="joker">Joker</string>
@@ -27,4 +32,6 @@
     <string name="reset_alert_body">Toute votre progression sera perdue. Souhaitez-vous continuer ?</string>
     <string name="reset_alert_title">Réinitialiser le jeu ?</string>
     <string name="unlock_alert_body">Souhaitez-vous arrêter cette partie et aller au niveau suivant ?</string>
+    <string name="close_menu">Fermer</string>
+    <string name="return_menu">Retour</string>
 </resources>

@@ -3,15 +3,20 @@
     <string name="exit">Exit</string>
     <string name="play">Play</string>
     <string name="rules">Rules</string>
-    <!--TODO : write rules-->
-    <string name="rules_explained">Rules are coming...</string>
+    <string name="rules_explained">
+        - The objective of the game is to match 3 or more tokens of the same color to make them disappear.\n\n
+        - Use your finger to swap 2 tokens. You can only swap horizontally and vertically and only 1 cell at a time.\n\n
+        - 3 tokens are worth 100 points, 4 tokens are worth 200 points and 5 tokens are worth 300 points.\n\n
+        - Moreover if after a successful combination, another one is made, it is a combo and the score is multiplied by the combo value for each new combination made during the combo.\n\n
+        - You need to reach the objective score within the number of moves allowed to access to the next level.
+    </string>
     <string name="level1">Level 1</string>
     <string name="level2">Level 2</string>
     <string name="level3">Level 3</string>
     <string name="level4">Level 4</string>
     <string name="score">Score:</string>
     <string name="combo">Combo:</string>
-    <string name="min_score">Score to unlock next level:</string>
+    <string name="min_score">Score to unlock next level: </string>
     <string name="turns_left">Turns left:</string>
     <string name="restart">Restart</string>
     <string name="joker">Joker</string>
@@ -28,4 +33,6 @@
     <string name="unlock_alert_body">Do you wish to stop this game and go to the next level?</string>
     <string name="next_level">Next level</string>
     <string name="continue_button">Continue</string>
+    <string name="close_menu">Close Menu</string>
+    <string name="return_menu">Return</string>
 </resources>

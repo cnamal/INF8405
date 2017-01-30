@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.ensipoly.match3.R;
+import com.ensipoly.match3.activities.MainActivity;
 
 
 /**
@@ -20,6 +21,8 @@ public class RulesFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // Get the return menu
+        ((MainActivity)getActivity()).setMenuVisible(true);
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_rules, container, false);
     }

@@ -14,6 +14,7 @@ import android.widget.Button;
 
 import com.ensipoly.match3.R;
 import com.ensipoly.match3.activities.GameActivity;
+import com.ensipoly.match3.activities.MainActivity;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -33,6 +34,10 @@ public class GameMenuFragment extends Fragment implements View.OnClickListener{
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        // Get the return menu
+        ((MainActivity)getActivity()).setMenuVisible(true);
+
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_game_menu, container, false);
         Button l1 = (Button) view.findViewById(R.id.level1_button);

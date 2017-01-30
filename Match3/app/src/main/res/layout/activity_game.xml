@@ -87,13 +87,12 @@
     <com.github.clans.fab.FloatingActionMenu
         android:id="@+id/fab_menu"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_anchorGravity="bottom|right|end"
+        android:layout_height="307dp"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
         app:menu_animationDelayPerItem="55"
         app:menu_colorRipple="#99d4d4d4"
-        app:menu_fab_label="Close Menu"
+        app:menu_fab_label="@string/close_menu"
         app:menu_fab_size="normal"
         app:menu_icon="@drawable/fab_add"
         android:paddingBottom="@dimen/activity_vertical_margin"
@@ -107,6 +106,17 @@
             android:src="@drawable/ic_restart_white_24dp"
             app:fabSize="auto"
             app:fab_label="@string/restart"
+            app:layout_anchorGravity="bottom|right|end"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="@dimen/fab_margin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/quit"
+            android:src="@drawable/ic_cancel_white_24dp"
+            app:fabSize="auto"
+            app:fab_label="@string/quit"
             app:layout_anchorGravity="bottom|right|end"
             android:layout_gravity="bottom|end"
             android:layout_margin="@dimen/fab_margin"

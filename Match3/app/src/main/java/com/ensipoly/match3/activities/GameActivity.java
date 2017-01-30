@@ -106,6 +106,18 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
             }
         });
 
+        findViewById(R.id.quit).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                menu.close(true);
+
+                joker.setVisibility(View.VISIBLE);
+                joker.setLabelVisibility(View.VISIBLE);
+                listEvents.clear();
+                onBackPressed();
+            }
+        });
+
         joker = (FloatingActionButton) findViewById(R.id.joker);
         joker.setOnClickListener(new View.OnClickListener() {
             @Override
