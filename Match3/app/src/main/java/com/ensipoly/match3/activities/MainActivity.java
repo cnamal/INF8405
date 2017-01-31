@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        menu.close(true);
+        menu.close(false);
         setMenuVisible(false);
         super.onBackPressed();
     }
