@@ -8,11 +8,11 @@ import android.view.View;
 
 import com.ensipoly.match3.R;
 import com.ensipoly.match3.fragments.MenuFragment;
-import com.github.clans.fab.FloatingActionMenu;
+import com.github.clans.fab.FloatingActionButton;
 
 public class MainActivity extends AppCompatActivity {
 
-    private FloatingActionMenu menu;
+    private FloatingActionButton returnButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,11 +31,11 @@ public class MainActivity extends AppCompatActivity {
         MenuFragment fragment = new MenuFragment();
         getSupportFragmentManager().beginTransaction().add(R.id.fragment_container,fragment).commit();
 
-        menu = (FloatingActionMenu) findViewById(R.id.fab_menu);
+        returnButton = (FloatingActionButton) findViewById(R.id.return_button);
         // Only visible in specific fragments
         setMenuVisible(false);
 
-        findViewById(R.id.return_menu).setOnClickListener(new View.OnClickListener() {
+        returnButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 onBackPressed();
@@ -45,16 +45,16 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        menu.close(false);
+        returnButton.hide(false);
         setMenuVisible(false);
         super.onBackPressed();
     }
 
     public void setMenuVisible(boolean visible){
         if(visible)
-            menu.setVisibility(View.VISIBLE);
+            returnButton.setVisibility(View.VISIBLE);
         else
-            menu.setVisibility(View.INVISIBLE);
+            returnButton.setVisibility(View.INVISIBLE);
     }
 
 }
