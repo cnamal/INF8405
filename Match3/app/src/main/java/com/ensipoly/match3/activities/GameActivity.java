@@ -150,6 +150,11 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
             return;
         }
 
+        if(menu.isOpened()){
+            menu.close(true);
+            return;
+        }
+
         new AlertDialog.Builder(this)
                 .setIcon(R.drawable.ic_warning_black_24dp)
                 .setTitle(getString(R.string.quit_alert_title))
