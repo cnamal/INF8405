@@ -1,5 +1,6 @@
 package com.ensipoly.match3.activities;
 
+import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
@@ -17,10 +18,13 @@ import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.ensipoly.match3.GIFView;
 import com.ensipoly.match3.R;
 import com.ensipoly.match3.fragments.GameMenuFragment;
 import com.ensipoly.match3.models.Direction;
@@ -420,6 +424,14 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
                 if(turnsLeft==0) {
                     joker.setLabelVisibility(View.GONE);
                     joker.setVisibility(View.GONE);
+                }
+                if(score>=minScore && level==MAX_LEVELS){
+                    Dialog builder = new Dialog(this);
+                    builder.setTitle(getString(R.string.congratulations));
+                    builder.addContentView(new GIFView(this), new RelativeLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT));
+                    builder.show();
                 }
             }else
                 setClickable(true);

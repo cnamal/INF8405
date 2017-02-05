@@ -35,4 +35,5 @@
     <string name="continue_button">Continue</string>
     <string name="close_menu">Close Menu</string>
     <string name="return_menu">Return</string>
+    <string name="congratulations">Congratulations!</string>
 </resources>

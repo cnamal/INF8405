@@ -34,4 +34,5 @@
     <string name="unlock_alert_body">Souhaitez-vous arrêter cette partie et aller au niveau suivant ?</string>
     <string name="close_menu">Fermer</string>
     <string name="return_menu">Retour</string>
+    <string name="congratulations">Félicitations !</string>
 </resources>
