@@ -114,7 +114,7 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
                 joker.setVisibility(View.VISIBLE);
                 joker.setLabelVisibility(View.VISIBLE);
                 listEvents.clear();
-                onBackPressed();
+                quitDialog();
             }
         });
 
@@ -145,6 +145,7 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
 
     @Override
     public void onBackPressed() {
+
         if(turnsLeft==0) {
             super.onBackPressed();
             return;
@@ -155,20 +156,7 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
             return;
         }
 
-        new AlertDialog.Builder(this)
-                .setIcon(R.drawable.ic_warning_black_24dp)
-                .setTitle(getString(R.string.quit_alert_title))
-                .setMessage(getString(R.string.quit_alert_body))
-                .setPositiveButton(getString(R.string.quit), new DialogInterface.OnClickListener()
-                {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        GameActivity.super.onBackPressed();
-                    }
-
-                })
-                .setNegativeButton(getString(R.string.cancel), null)
-                .show();
+        quitDialog();
     }
 
     /**
@@ -327,6 +315,29 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
             default:
                 return "";
         }
+    }
+
+    private void quitDialog(){
+
+        if(turnsLeft==0) {
+            super.onBackPressed();
+            return;
+        }
+
+        new AlertDialog.Builder(this)
+                .setIcon(R.drawable.ic_warning_black_24dp)
+                .setTitle(getString(R.string.quit_alert_title))
+                .setMessage(getString(R.string.quit_alert_body))
+                .setPositiveButton(getString(R.string.quit), new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        GameActivity.super.onBackPressed();
+                    }
+
+                })
+                .setNegativeButton(getString(R.string.cancel), null)
+                .show();
     }
 
 
