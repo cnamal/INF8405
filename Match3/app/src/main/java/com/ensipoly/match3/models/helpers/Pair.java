@@ -1,9 +1,12 @@
 package com.ensipoly.match3.models.helpers;
 
-/**
- * Created by Adrien on 25/01/2017.
- */
 
+/**
+ * Generic class of pairs
+ *
+ * @param <X> first type
+ * @param <Y> second type
+ */
 public class Pair<X, Y> {
 
     public final X x;
@@ -14,7 +17,4 @@ public class Pair<X, Y> {
         this.y = y;
     }
 
-    public boolean equals(Pair<X,Y> other){
-        return other.x == this.x && other.y == this.y;
-    }
 }

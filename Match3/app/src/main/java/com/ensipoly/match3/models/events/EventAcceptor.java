@@ -1,9 +1,9 @@
 package com.ensipoly.match3.models.events;
 
-/**
- * Created by namalgac on 1/24/17.
- */
 
+/**
+ * Acceptor in visitor pattern
+ */
 public interface EventAcceptor {
     void accept(EventVisitor ev);
 }

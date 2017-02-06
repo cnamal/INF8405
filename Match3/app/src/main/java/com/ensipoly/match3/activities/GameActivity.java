@@ -24,7 +24,6 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.ensipoly.match3.GIFView;
 import com.ensipoly.match3.R;
 import com.ensipoly.match3.fragments.GameMenuFragment;
 import com.ensipoly.match3.models.Direction;
@@ -38,6 +37,7 @@ import com.ensipoly.match3.models.events.MoveEvent;
 import com.ensipoly.match3.models.events.RemoveEvent;
 import com.ensipoly.match3.models.events.ScoreEvent;
 import com.ensipoly.match3.models.events.SwapEvent;
+import com.ensipoly.match3.views.GIFView;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 
@@ -49,7 +49,9 @@ import java.util.Observer;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-
+/**
+ * Activity corresponding to the game
+ */
 public class GameActivity extends AppCompatActivity implements Observer, EventVisitor {
 
     private static final String TAG = "GameActivity";
@@ -75,17 +77,22 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
     FloatingActionMenu menu;
     private SharedPreferences sharedPref;
     private FloatingActionButton joker;
-    private static final int MAX_LEVELS=4;
+    private static final int MAX_LEVELS = 4;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
+        // level to display
         level = getIntent().getIntExtra(GameMenuFragment.LEVEL, 1);
+
         sharedPref = getSharedPreferences(
                 getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+
         menu = (FloatingActionMenu) findViewById(R.id.fab_menu);
+
+        // if the menu is opened, show grey overlay and pause game (unclickable)
         menu.setOnMenuToggleListener(new FloatingActionMenu.OnMenuToggleListener() {
 
             @Override
@@ -149,17 +156,19 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
 
     @Override
     public void onBackPressed() {
-
-        if(turnsLeft==0) {
+        // if no more turns, quit without asking
+        if (turnsLeft == 0) {
             super.onBackPressed();
             return;
         }
 
-        if(menu.isOpened()){
+        // if menu opened, just close it
+        if (menu.isOpened()) {
             menu.close(true);
             return;
         }
 
+        // otherwise show quit dialog
         quitDialog();
     }
 
@@ -167,6 +176,12 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
      * Helper functions
      **/
 
+    /**
+     * Get GradientDrawable that corresponds to the color of a token
+     *
+     * @param token token that needs to be drawn
+     * @return corresponding GradientDrawable
+     */
     private GradientDrawable getDrawable(Token token) {
         GradientDrawable shape = new GradientDrawable();
         shape.setShape(GradientDrawable.OVAL);
@@ -174,53 +189,51 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
         return shape;
     }
 
+    /**
+     * @param clickable if set to false, the grid is unclickable
+     */
     private void setClickable(boolean clickable) {
         for (int i = 0; i < gridLayout.getChildCount(); i++)
             gridLayout.getChildAt(i).setLongClickable(clickable);
     }
 
+    /**
+     * 2D to 1D index
+     *
+     * @param x x coordinate
+     * @param y y coordinate
+     * @return 1D coordinate
+     */
     private int convert(int x, int y) {
         return x * grid.getColumnCount() + y;
     }
 
-    private void initGame() {
-        combo = 1;
-        switch (level) {
-            case 1:
-                turnsLeft = 6;
-                minScore = 800;
-                break;
-            case 2:
-                turnsLeft = 10;
-                minScore = 1200;
-                break;
-            case 3:
-                turnsLeft = 10;
-                minScore = 1400;
-                break;
-            case 4:
-                turnsLeft = 10;
-                minScore = 1800;
-                break;
-        }
-    }
 
-    private void initGrid() {
+    /**
+     * Initialises the grid
+     */
+    private void initGrid(boolean reset) {
         try {
             grid = new Grid(new BufferedReader(new InputStreamReader(getAssets().open("level" + level + ".data"))));
-            grid.addObserver(this);
+            if (reset)
+                turnsLeft = grid.getMaxMoves();
+            minScore = grid.getScoreGoal();
+            grid.addObserver(this); // Observer pattern
             if (gridLayout == null)
                 gridLayout = (GridLayout) findViewById(R.id.grid);
-             else
-                gridLayout.removeAllViews();
+            else
+                gridLayout.removeAllViews(); // if the grid was previously set, we delete everything
 
             gridLayout.setRowCount(grid.getRowCount());
             gridLayout.setColumnCount(grid.getColumnCount());
+
+            /**
+             * for every cell in the GridLayout, we add the tokens from the Grid
+             */
             for (int x = 0; x < grid.getRowCount(); x++) {
                 for (int y = 0; y < grid.getColumnCount(); y++) {
 
                     ImageView imageView;
-                    // if it's not recycled, initialize some attributes
                     imageView = new ImageView(this);
                     GridLayout.LayoutParams params = new GridLayout.LayoutParams();
                     params.rowSpec = GridLayout.spec(x, 1.0f);
@@ -231,10 +244,12 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
                     imageView.setAdjustViewBounds(true);
                     imageView.setPadding(8, 8, 8, 8);
                     imageView.setImageDrawable(getDrawable(grid.getToken(x, y)));
+                    // reset positions as final to be used in handler
                     final int xpos = x;
                     final int ypos = y;
                     imageView.setLongClickable(true);
 
+                    // set handler (swipe action)
                     imageView.setOnTouchListener(new View.OnTouchListener() {
                         private MyGestureDetector mgd = new MyGestureDetector(xpos, ypos);
                         private GestureDetector gestureDetector = null;
@@ -246,6 +261,7 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
                             return gestureDetector.onTouchEvent(motionEvent);
                         }
                     });
+
                     gridLayout.addView(imageView);
                 }
             }
@@ -259,6 +275,13 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
         }
     }
 
+    /**
+     * Set a part of the text in green in a TextView
+     *
+     * @param view      view that is modified
+     * @param beginning beginning of the text (remains the default color)
+     * @param inGreen   text that will be in green (after beginning)
+     */
     private void setGreenText(TextView view, String beginning, String inGreen) {
         String fullText = beginning + inGreen;
 
@@ -289,25 +312,25 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
     }
 
 
-    private void initialize(int level,boolean resetScore){
+    private void initialize(int level, boolean resetScore) {
         this.level = level;
         initialize(resetScore);
     }
 
-    private void initialize(boolean resetScore){
-        if(resetScore)
-            score =0;
+    private void initialize(boolean resetScore) {
+        if (resetScore)
+            score = 0;
 
-        initGame();
-        initGrid();
+        combo = 1;
+        initGrid(resetScore);
 
         minScoreTextView.setText(MINSCORE + " " + minScore);
         ((TextView) findViewById(R.id.level_text)).setText(getLevelString());
         updateTextViews();
     }
 
-    private String getLevelString(){
-        switch (level){
+    private String getLevelString() {
+        switch (level) {
             case 1:
                 return getString(R.string.level1);
             case 2:
@@ -321,9 +344,9 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
         }
     }
 
-    private void quitDialog(){
+    private void quitDialog() {
 
-        if(turnsLeft==0) {
+        if (turnsLeft == 0) {
             super.onBackPressed();
             return;
         }
@@ -332,8 +355,7 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
                 .setIcon(R.drawable.ic_warning_black_24dp)
                 .setTitle(getString(R.string.quit_alert_title))
                 .setMessage(getString(R.string.quit_alert_body))
-                .setPositiveButton(getString(R.string.quit), new DialogInterface.OnClickListener()
-                {
+                .setPositiveButton(getString(R.string.quit), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         GameActivity.super.onBackPressed();
@@ -347,6 +369,8 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
 
     /**
      * Visitor functions
+     * Until we get the EndEvent event, we add all events to a list
+     * It allows us to create a loop of events (cf doEvents)
      **/
 
     @Override
@@ -411,21 +435,22 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
     @Override
     public void visit(EndEvent end) {
         if (addList) {
-            addList = false;
+            addList = false; // don't add to list anymore
             listEvents.add(end);
-            doEvents();
+            doEvents(); // main loop
         } else {
             turnsLeft--;
             updateTurnsView();
             combo = 1;
             updateScoreAndComboViews();
-            if (end.isEndGame() || turnsLeft == 0) {
+            if (end.isEndGame() || turnsLeft == 0) { // no more combinations or turns left
                 menu.open(true);
-                if(turnsLeft==0) {
+                if (turnsLeft == 0) { //disable joker if no more turns left
                     joker.setLabelVisibility(View.GONE);
                     joker.setVisibility(View.GONE);
                 }
-                if(score>=minScore && level==MAX_LEVELS){
+                // little surprise if we win the last level ;)
+                if (score >= minScore && level == MAX_LEVELS) {
                     Dialog builder = new Dialog(this);
                     builder.setTitle(getString(R.string.congratulations));
                     builder.addContentView(new GIFView(this), new RelativeLayout.LayoutParams(
@@ -433,24 +458,25 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
                             ViewGroup.LayoutParams.MATCH_PARENT));
                     builder.show();
                 }
-            }else
-                setClickable(true);
-            if(score>=minScore && level<MAX_LEVELS){
-                int best= sharedPref.getInt(getString(R.string.best_level),-1);
-                if(best<0)
-                    Log.e(TAG,"Unexpected best level");
-                if (best==level){
+            } else
+                setClickable(true); // if we can continue to play, allow user input
+
+            // new level unlocked
+            if (score >= minScore && level < MAX_LEVELS) {
+                int best = sharedPref.getInt(getString(R.string.best_level), -1);
+                if (best < 0)
+                    Log.e(TAG, "Unexpected best level");
+                if (best == level) {
                     SharedPreferences.Editor editor = sharedPref.edit();
-                    editor.putInt(getString(R.string.best_level), level+1);
+                    editor.putInt(getString(R.string.best_level), level + 1);
                     editor.apply();
                     new AlertDialog.Builder(this)
                             .setTitle(getString(R.string.unlock_alert_title))
                             .setMessage(getString(R.string.unlock_alert_body))
-                            .setPositiveButton(getString(R.string.next_level), new DialogInterface.OnClickListener()
-                            {
+                            .setPositiveButton(getString(R.string.next_level), new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {
-                                    initialize(level+1,true);
+                                    initialize(level + 1, true);
                                 }
 
                             })
@@ -472,6 +498,9 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
         }
     }
 
+    /**
+     * Main event loop
+     */
     private void doEvents() {
         if (listEvents.size() == 0)
             return;
@@ -507,37 +536,42 @@ public class GameActivity extends AppCompatActivity implements Observer, EventVi
         private int x;
         private int y;
 
+        /**
+         * Coordinates in grid of the view
+         *
+         * @param x x coordinate
+         * @param y y coordinate
+         */
         MyGestureDetector(int x, int y) {
             this.x = x;
             this.y = y;
         }
 
+        /**
+         * Swap detection
+         */
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
             Direction dir = null;
-            // right to left swipe
-            if (e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-                Toast.makeText(GameActivity.this, "Left Swipe", Toast.LENGTH_SHORT).show();
+
+            if (e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY)
                 dir = Direction.LEFT;
-            } else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-                Toast.makeText(GameActivity.this, "Right Swipe", Toast.LENGTH_SHORT).show();
+            else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY)
                 dir = Direction.RIGHT;
-            } else if (e1.getY() - e2.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
-                Toast.makeText(GameActivity.this, "Up Swipe", Toast.LENGTH_SHORT).show();
+            else if (e1.getY() - e2.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY)
                 dir = Direction.UP;
-            } else if (e2.getY() - e1.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
-                Toast.makeText(GameActivity.this, "Down Swipe", Toast.LENGTH_SHORT).show();
+            else if (e2.getY() - e1.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY)
                 dir = Direction.DOWN;
-            }
+
             if (dir == null)
                 return false;
             if (grid.isSwapPossible(x, y, dir)) {
                 setClickable(false);
                 addList = true;
                 grid.swapElements(x, y, dir);
-            } else {
-                Toast.makeText(GameActivity.this, "Swap Impossible", Toast.LENGTH_SHORT).show();
-            }
+            } else
+                Toast.makeText(GameActivity.this, getString(R.string.swap_impossible), Toast.LENGTH_SHORT).show();
+
             return true;
         }
 

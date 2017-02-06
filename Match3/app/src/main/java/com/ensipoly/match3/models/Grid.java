@@ -16,18 +16,14 @@ import java.util.ArrayList;
 import java.util.Observable;
 
 /**
- * Created by Adrien on 20/01/2017.
+ * Grid class
+ * The grid class contains all the information concerning a grid.
+ * It need to be initialized with a filename, corresponding to a formatted text file.
+ * The format needs to respect this :
+ * First line          : sizeX sizeY maxMoves scoreGoal
+ * sizeX next lines    : "sizeY int corresponding to the color"
  */
-
-/**
-    Grid class
-    The grid class contains all the information concerning a grid.
-    It need to be initialized with a filename, corresponding to a formatted textfile.
-    The format needs to respect this :
-    First line          : sizeX sizeY maxMoves scoreGoal
-    sizeX next lines    : "sizeY int correponding to the color"
- */
-public class Grid extends Observable{
+public class Grid extends Observable {
 
     private static final String TAG = "Grid";
 
@@ -42,67 +38,70 @@ public class Grid extends Observable{
     private int maxMoves;
     private int scoreGoal;
 
-    public Grid(BufferedReader filename){
+    public Grid(BufferedReader filename) {
         parseGrid(filename);
     }
 
 
-    private void parseGrid(BufferedReader bufRead){
+    private void parseGrid(BufferedReader bufRead) {
         try {
             // Read the first line, containing sizeX, sizeY, maxMoves and scoreGoal
             String myLine = bufRead.readLine();
             String[] array = myLine.split(" ");
 
-            this.sizeX = Integer.parseInt(array[0]);
-            this.sizeY = Integer.parseInt(array[1]);
-            this.maxMoves = Integer.parseInt(array[2]);
-            this.scoreGoal = Integer.parseInt(array[3]);
+            sizeX = Integer.parseInt(array[0]);
+            sizeY = Integer.parseInt(array[1]);
+            maxMoves = Integer.parseInt(array[2]);
+            scoreGoal = Integer.parseInt(array[3]);
 
             items = new Token[sizeX][sizeY];
 
-            // Read all the other lines, containing the level data
-            // The file SHOULD be normally formatted
-            for(int x = 0; x < this.sizeX; ++x){
+
+            /**
+             * Read all the other lines, containing the level data
+             * The file SHOULD be normally formatted
+             */
+            for (int x = 0; x < sizeX; ++x) {
                 array = bufRead.readLine().split(" ");
-                for(int y = 0; y < this.sizeY; ++y){
-                    this.items[x][y] = Token.convertToToken(Integer.parseInt(array[y]));
+                for (int y = 0; y < sizeY; ++y) {
+                    items[x][y] = Token.convertToToken(Integer.parseInt(array[y]));
                 }
             }
-        } catch(IOException e){
+        } catch (IOException e) {
             System.out.print("Not correctly formatted");
             System.out.print(e.getMessage());
         }
     }
 
-    public int getMaxMoves(){
-        return this.maxMoves;
+    public int getMaxMoves() {
+        return maxMoves;
     }
 
-    public int getScoreGoal(){
-        return this.scoreGoal;
+    public int getScoreGoal() {
+        return scoreGoal;
     }
 
     /**
-        Swap places between [x1, y1] and [x2, y2]
-        If a combination is detected, start a combo and loop until there is
-        no combination left.
-
-        @param x1 X coordinate of the first token
-        @param y1 Y coordinate of the first token
-        @param x2 X coordinate of the second token
-        @param y2 Y coordinate of the second token
+     * Swap places between [x1, y1] and [x2, y2]
+     * If a combination is detected, start a combo and loop until there is
+     * no combination left.
+     *
+     * @param x1 X coordinate of the first token
+     * @param y1 Y coordinate of the first token
+     * @param x2 X coordinate of the second token
+     * @param y2 Y coordinate of the second token
      */
-    private void swapElements(int x1, int y1, int x2, int y2){
+    private void swapElements(int x1, int y1, int x2, int y2) {
         // Notify UI to swap elements on the screen
         setChanged();
-        notifyObservers(new SwapEvent(x1, y1, items[x1][y1],x2, y2,items[x2][y2]));
+        notifyObservers(new SwapEvent(x1, y1, items[x1][y1], x2, y2, items[x2][y2]));
 
         // Actually swap elements
         swapItems(x1, y1, x2, y2);
 
         // Set the tokens to remove and to analyze
-        ArrayList<Pair<Integer,Integer>> tokensToRemove = new ArrayList<>();
-        ArrayList<Pair<Integer,Integer>> tokensToAnalyze = new ArrayList<>();
+        ArrayList<Pair<Integer, Integer>> tokensToRemove = new ArrayList<>();
+        ArrayList<Pair<Integer, Integer>> tokensToAnalyze = new ArrayList<>();
 
         // For the first pass (swapping), we analyze both of the swapped tokens
         tokensToAnalyze.add(new Pair<>(x1, y1));
@@ -114,7 +113,7 @@ public class Grid extends Observable{
         // Used to stop combos
         boolean end = false;
 
-        while(!end) {
+        while (!end) {
             // We need to be sure this list is empty
             tokensToRemove.clear();
 
@@ -125,7 +124,7 @@ public class Grid extends Observable{
                     tokensToAnalyze) {
 
                 // If the token to analyze was already found to remove, continue
-                if(tokensToRemove.contains(p))
+                if (tokensToRemove.contains(p))
                     continue;
 
                 if (numberOfTokensHorizontally(p.x, p.y) >= MIN_TOKENS_ALIGNED) {
@@ -165,10 +164,10 @@ public class Grid extends Observable{
 
             // We need to analyze tokens that has been changed
             tokensToAnalyze.clear();
-            for(int i = 0; i < sizeY; ++i){
-                if(bottomLines[i] != -1){
-                    for(int j = bottomLines[i]; j >= 0; --j){
-                        if(isCombinationPossible(j,i))
+            for (int i = 0; i < sizeY; ++i) {
+                if (bottomLines[i] != -1) {
+                    for (int j = bottomLines[i]; j >= 0; --j) {
+                        if (isCombinationPossible(j, i))
                             tokensToAnalyze.add(new Pair<>(j, i));
                     }
                 }
@@ -176,10 +175,10 @@ public class Grid extends Observable{
 
             // If we have found no new token to analyze, end.
             end = tokensToAnalyze.isEmpty();
-            if(!end)
+            if (!end)
                 combo++; // If we go for another loop, increase the combo multiplier
             setChanged();
-            notifyObservers(new ScoreEvent(score,combo));
+            notifyObservers(new ScoreEvent(score, combo));
         }
 
         boolean endGame = !isThereAnyCombinationRemaining();
@@ -192,57 +191,59 @@ public class Grid extends Observable{
      * Swap places between [x1, y1] and the direction
      * If a combination is detected, start a combo and loop until there is
      * no combination left.
-     * @param x1 X coordinate of the first token
-     * @param y1 Y coordinate of the first token
+     *
+     * @param x1        X coordinate of the first token
+     * @param y1        Y coordinate of the first token
      * @param direction Where to look at to swap
-     * @return The whole score
      */
-    public void swapElements(int x1, int y1, Direction direction){
+    public void swapElements(int x1, int y1, Direction direction) {
         int x2 = x1;
         int y2 = y1;
-        if(direction == Direction.DOWN && x2 < sizeX - 1){
+        if (direction == Direction.DOWN && x2 < sizeX - 1) {
             x2++;
-        } else if(direction == Direction.UP && x2 > 0){
+        } else if (direction == Direction.UP && x2 > 0) {
             x2--;
-        } else if(direction == Direction.LEFT && y2 > 0){
+        } else if (direction == Direction.LEFT && y2 > 0) {
             y2--;
-        } else if(direction == Direction.RIGHT && y2 < sizeY - 1){
+        } else if (direction == Direction.RIGHT && y2 < sizeY - 1) {
             y2++;
         }
-        swapElements(x1,y1,x2,y2);
+        swapElements(x1, y1, x2, y2);
     }
 
     /**
      * Swap items in the grid.
      * It must been between grid boundaries
+     *
      * @param x1 X coordinate of the first token
      * @param y1 Y coordinate of the first token
      * @param x2 X coordinate of the second token
      * @param y2 Y coordinate of the second token
      */
-    private void swapItems(int x1, int y1, int x2, int y2){
-        Token saveToken = getToken(x1,y1);
-        items[x1][y1] = getToken(x2,y2);
+    private void swapItems(int x1, int y1, int x2, int y2) {
+        Token saveToken = getToken(x1, y1);
+        items[x1][y1] = getToken(x2, y2);
         items[x2][y2] = saveToken;
     }
 
     /**
      * Remove all the tokens into tokenToRemove and return an array which size is sizeY
      * and its elements are which line to start to move down. It's the lowest token to shift for each column
-     * @param tokensToRemove
-     * @return
+     *
+     * @param tokensToRemove list of tokens
+     * @return list of lowest token to shift
      */
-    private int[] removeTokens(ArrayList<Pair<Integer, Integer>> tokensToRemove){
-       int[] res = new int[sizeY];
-        for (int i=0; i < sizeY; ++i){
+    private int[] removeTokens(ArrayList<Pair<Integer, Integer>> tokensToRemove) {
+        int[] res = new int[sizeY];
+        for (int i = 0; i < sizeY; ++i) {
             res[i] = -1;
         }
-        for (Pair<Integer, Integer> p:
+        for (Pair<Integer, Integer> p :
                 tokensToRemove) {
             items[p.x][p.y] = null;
             setChanged();
-            notifyObservers(new RemoveEvent(p.x,p.y));
-            if (res[p.y] <= p.x){
+            notifyObservers(new RemoveEvent(p.x, p.y));
+            if (res[p.y] <= p.x) {
                 res[p.y] = p.x;
             }
         }
@@ -250,59 +251,63 @@ public class Grid extends Observable{
     }
 
     /**
-        Return true if a combination is possible for the token at [x,y], false otherwise
-        @param x X coordinate of the token
-        @param y Y coordinate of the token
+     * Return true if a combination is possible for the token at [x,y], false otherwise
+     *
+     * @param x X coordinate of the token
+     * @param y Y coordinate of the token
      */
-    private boolean isCombinationPossible(int x, int y){
-        return( numberOfTokensHorizontally(x, y) >= MIN_TOKENS_ALIGNED ||
+    private boolean isCombinationPossible(int x, int y) {
+        return (numberOfTokensHorizontally(x, y) >= MIN_TOKENS_ALIGNED ||
                 numberOfTokensVertically(x, y) >= MIN_TOKENS_ALIGNED);
     }
 
     /**
      * Return true if you can switch the token at [x,y] with the one adjacent to it
      * following the direction @dir.
-     * @param x1
-     * @param y1
-     * @param dir
-     * @return
+     *
+     * @param x1  x coordinate
+     * @param y1  y coordinate
+     * @param dir direction
+     * @return true if swap is possible
      */
-    public boolean isSwapPossible(int x1, int y1, Direction dir){
+    public boolean isSwapPossible(int x1, int y1, Direction dir) {
         int x2 = x1;
         int y2 = y1;
-        if(dir == Direction.DOWN && x2 < sizeX - 1){
+        if (dir == Direction.DOWN && x2 < sizeX - 1) {
             x2++;
-        } else if(dir == Direction.UP && x2 > 0){
+        } else if (dir == Direction.UP && x2 > 0) {
             x2--;
-        } else if(dir == Direction.LEFT && y2 > 0){
+        } else if (dir == Direction.LEFT && y2 > 0) {
             y2--;
-        } else if(dir == Direction.RIGHT && y2 < sizeY - 1){
+        } else if (dir == Direction.RIGHT && y2 < sizeY - 1) {
             y2++;
         } else {
             return false;
         }
 
         this.swapItems(x1, y1, x2, y2);
-        boolean res =  (isCombinationPossible(x1,y1) || isCombinationPossible(x2,y2));
+        boolean res = (isCombinationPossible(x1, y1) || isCombinationPossible(x2, y2));
         this.swapItems(x1, y1, x2, y2);
         return res;
     }
 
     /**
-        Return the number of identical tokens at [x,y] horizontally
-        @param x X coordinate of the token
-        @param y Y coordinate of the token
+     * Return the number of identical tokens at [x,y] horizontally
+     *
+     * @param x X coordinate of the token
+     * @param y Y coordinate of the token
      */
-    private int numberOfTokensHorizontally(int x, int y){
-        return numberOfTokensLeft(x,y) + numberOfTokensRight(x,y) + 1;
+    private int numberOfTokensHorizontally(int x, int y) {
+        return numberOfTokensLeft(x, y) + numberOfTokensRight(x, y) + 1;
     }
 
     /**
-     Return the number of identical tokens at [x,y] vertically
-     @param x X coordinate of the token
-     @param y Y coordinate of the token
+     * Return the number of identical tokens at [x,y] vertically
+     *
+     * @param x X coordinate of the token
+     * @param y Y coordinate of the token
      */
-    private int numberOfTokensVertically(int x, int y){
+    private int numberOfTokensVertically(int x, int y) {
         return numberOfTokensUp(x, y) + numberOfTokensDown(x, y) + 1;
     }
 
@@ -319,9 +324,9 @@ public class Grid extends Observable{
 
     private int numberOfTokensRight(int x, int y) {
         int res = 0;
-        int yCurr = y+1;
+        int yCurr = y + 1;
         Token token = getToken(x, y);
-        while(yCurr < sizeY && getToken(x, yCurr).equals(token)){
+        while (yCurr < sizeY && getToken(x, yCurr).equals(token)) {
             yCurr++;
             res++;
         }
@@ -342,8 +347,8 @@ public class Grid extends Observable{
     private int numberOfTokensDown(int x, int y) {
         int res = 0;
         Token token = getToken(x, y);
-        int xCurr = x+1;
-        while(xCurr < sizeX && getToken(xCurr, y).equals(token)){
+        int xCurr = x + 1;
+        while (xCurr < sizeX && getToken(xCurr, y).equals(token)) {
             xCurr++;
             res++;
         }
@@ -351,20 +356,21 @@ public class Grid extends Observable{
     }
 
     /**
-        Moves down to gap lines, tokens in the column c, starting from line x
-        Generate random tokens at the top
-        @param c The column to consider
-        @param x The first line to consider
+     * Moves down to gap lines, tokens in the column c, starting from line x
+     * Generate random tokens at the top
+     *
+     * @param c The column to consider
+     * @param x The first line to consider
      */
-    private void moveTokens(int c, int x){
-        for(int currX = x; currX >= 0; --currX){
+    private void moveTokens(int c, int x) {
+        for (int currX = x; currX >= 0; --currX) {
             int lookUp = 1;
             items[currX][c] = null;
             // We're looking up until we reach a not null token
-            while(currX - lookUp >= 0){
-                if(items[currX - lookUp][c] != null) {
+            while (currX - lookUp >= 0) {
+                if (items[currX - lookUp][c] != null) {
                     setChanged();
-                    notifyObservers(new MoveEvent(currX - lookUp,currX,c,items[currX - lookUp][c]));
+                    notifyObservers(new MoveEvent(currX - lookUp, currX, c, items[currX - lookUp][c]));
                     items[currX][c] = items[currX - lookUp][c];
                     items[currX - lookUp][c] = null;
                     break;
@@ -372,35 +378,35 @@ public class Grid extends Observable{
                 lookUp++;
             }
             // If we reached the top without success, generate random
-            if(items[currX][c] == null) {
+            if (items[currX][c] == null) {
                 items[currX][c] = Token.generateRandomToken();
                 setChanged();
-                notifyObservers(new AddEvent(currX,c,items[currX][c]));
+                notifyObservers(new AddEvent(currX, c, items[currX][c]));
             }
         }
     }
 
-    public int getColumnCount(){
+    public int getColumnCount() {
         return sizeY;
     }
 
-    public int getRowCount(){
+    public int getRowCount() {
         return sizeX;
     }
 
-    public Token getToken(int x,int y){
+    public Token getToken(int x, int y) {
         return items[x][y];
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         String res = "";
-        for(int i = 0; i < sizeX; i++){
-            for(int j = 0; j < sizeY; j++){
-                if(getToken(i,j) == null){
+        for (int i = 0; i < sizeX; i++) {
+            for (int j = 0; j < sizeY; j++) {
+                if (getToken(i, j) == null) {
                     res += "X";
                 } else {
-                    switch(getToken(i,j)){
+                    switch (getToken(i, j)) {
                         case BLUE:
                             res += "B";
                             break;
@@ -428,8 +434,8 @@ public class Grid extends Observable{
         return res;
     }
 
-    private int score(int aligned){
-        switch(aligned){
+    private int score(int aligned) {
+        switch (aligned) {
             case 3:
                 return THREE_ALIGNED_VALUE;
             case 4:
@@ -440,9 +446,9 @@ public class Grid extends Observable{
         return 0;
     }
 
-    public boolean isThereAnyCombinationRemaining(){
+    public boolean isThereAnyCombinationRemaining() {
         boolean res = false;
-        for(int i = 0; i < sizeX; ++i) {
+        for (int i = 0; i < sizeX; ++i) {
             for (int j = 0; j < sizeY; ++j) {
                 // Check down
                 if (i < sizeX - 1) {
@@ -453,7 +459,7 @@ public class Grid extends Observable{
                     swapItems(i, j, i + 1, j);
                 }
                 if (res)
-                    return res;
+                    return true;
 
                 // Check right
                 if (j < sizeY - 1) {
@@ -464,16 +470,6 @@ public class Grid extends Observable{
                     swapItems(i, j, i, j + 1);
                 }
                 if (res)
-                    return res;
-            }
-        }
-        return res;
-    }
-
-    public boolean isThereAlreadyCombinations(){
-        for(int i = 0; i < sizeX; ++i) {
-            for (int j = 0; j < sizeY; ++j) {
-                if(isCombinationPossible(i,j))
                     return true;
             }
         }

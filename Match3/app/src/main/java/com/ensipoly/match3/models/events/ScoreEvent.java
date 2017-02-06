@@ -1,15 +1,15 @@
 package com.ensipoly.match3.models.events;
 
-/**
- * Created by namalgac on 1/24/17.
- */
 
+/**
+ * Event with score and combo of the "round"
+ */
 public class ScoreEvent implements EventAcceptor {
 
     private int combo;
     private int score;
 
-    public ScoreEvent(int score,int combo){
+    public ScoreEvent(int score, int combo) {
         this.combo = combo;
         this.score = score;
     }
@@ -28,7 +28,7 @@ public class ScoreEvent implements EventAcceptor {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "ScoreEvent : " + score + " x" + combo;
     }
 }

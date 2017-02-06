@@ -2,10 +2,10 @@ package com.ensipoly.match3.models.events;
 
 import com.ensipoly.match3.models.Token;
 
-/**
- * Created by namalgac on 1/24/17.
- */
 
+/**
+ * Move a token (downwards)
+ */
 public class MoveEvent implements EventAcceptor {
 
 
@@ -14,7 +14,13 @@ public class MoveEvent implements EventAcceptor {
     private int y;
     private Token t;
 
-    public MoveEvent(int prevX, int newX, int y, Token t){
+    /**
+     * @param prevX previous x coordinate
+     * @param newX  new x coordinate
+     * @param y     y coordinate. Is the same since the motions is downwards
+     * @param t     token that is moved
+     */
+    public MoveEvent(int prevX, int newX, int y, Token t) {
         this.prevX = prevX;
         this.newX = newX;
         this.y = y;
@@ -44,7 +50,7 @@ public class MoveEvent implements EventAcceptor {
     }
 
     @Override
-    public String toString(){
-        return "MoveEvent ("+ prevX + "," + y+") -> (" + newX+","+y+")";
+    public String toString() {
+        return "MoveEvent (" + prevX + "," + y + ") -> (" + newX + "," + y + ")";
     }
 }

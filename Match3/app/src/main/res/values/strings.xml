@@ -36,4 +36,5 @@
     <string name="close_menu">Close Menu</string>
     <string name="return_menu">Return</string>
     <string name="congratulations">Congratulations!</string>
+    <string name="swap_impossible">Swap Impossible</string>
 </resources>

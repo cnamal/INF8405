@@ -2,23 +2,28 @@ package com.ensipoly.match3.models.events;
 
 import com.ensipoly.match3.models.Token;
 
-/**
- * Created by namalgac on 1/24/17.
- */
 
+/**
+ * Event to add a token
+ */
 public class AddEvent implements EventAcceptor {
 
     private int x;
     private int y;
     private Token token;
 
-    public AddEvent(int x, int y, Token token){
-        this.x= x;
-        this.y=y;
+    /**
+     * @param x     x coordinate
+     * @param y     y coordinate
+     * @param token token to add
+     */
+    public AddEvent(int x, int y, Token token) {
+        this.x = x;
+        this.y = y;
         this.token = token;
     }
 
-    public int getX(){
+    public int getX() {
         return x;
     }
 
@@ -36,7 +41,7 @@ public class AddEvent implements EventAcceptor {
     }
 
     @Override
-    public String toString(){
-        return "AddEvent "+x+ " " + y + " " + token;
+    public String toString() {
+        return "AddEvent " + x + " " + y + " " + token;
     }
 }

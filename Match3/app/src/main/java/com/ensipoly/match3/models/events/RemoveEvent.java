@@ -1,15 +1,15 @@
 package com.ensipoly.match3.models.events;
 
-/**
- * Created by namalgac on 1/24/17.
- */
 
+/**
+ * Remove a token
+ */
 public class RemoveEvent implements EventAcceptor {
 
     private int x;
     private int y;
 
-    public RemoveEvent(int x,int y){
+    public RemoveEvent(int x, int y) {
         this.x = x;
         this.y = y;
     }
@@ -28,8 +28,8 @@ public class RemoveEvent implements EventAcceptor {
     }
 
     @Override
-    public String toString(){
-        return "RemoveEvent " + x + " "+ y;
+    public String toString() {
+        return "RemoveEvent " + x + " " + y;
     }
 
 }

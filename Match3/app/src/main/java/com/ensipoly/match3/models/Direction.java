@@ -1,9 +1,9 @@
 package com.ensipoly.match3.models;
 
-/**
- * Created by namalgac on 1/24/17.
- */
 
+/**
+ * Represents the directions of swipes
+ */
 public enum Direction {
     UP,
     DOWN,

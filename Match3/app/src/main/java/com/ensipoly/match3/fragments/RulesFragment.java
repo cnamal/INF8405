@@ -12,17 +12,16 @@ import com.ensipoly.match3.activities.MainActivity;
 
 
 /**
- * A simple {@link Fragment} subclass.
+ * Rules fragment
  */
 public class RulesFragment extends Fragment {
-
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Get the return menu
-        ((MainActivity)getActivity()).setMenuVisible(true);
+        ((MainActivity) getActivity()).setReturnButtonVisibility(true);
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_rules, container, false);
     }

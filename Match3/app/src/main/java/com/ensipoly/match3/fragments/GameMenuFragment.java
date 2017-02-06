@@ -21,12 +21,14 @@ import java.util.List;
 
 
 /**
- * A simple {@link Fragment} subclass.
+ * Fragment for level selection.
  */
-public class GameMenuFragment extends Fragment implements View.OnClickListener{
+public class GameMenuFragment extends Fragment implements View.OnClickListener {
 
 
     private static final String TAG = "GameMenuFragment";
+
+    // Key used to get level from GameActivity
     public static final String LEVEL = "com.ensipoly.match3.LEVEL";
 
     private List<Button> list;
@@ -36,7 +38,7 @@ public class GameMenuFragment extends Fragment implements View.OnClickListener{
                              Bundle savedInstanceState) {
 
         // Get the return menu
-        ((MainActivity)getActivity()).setMenuVisible(true);
+        ((MainActivity) getActivity()).setReturnButtonVisibility(true);
 
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_game_menu, container, false);
@@ -58,11 +60,15 @@ public class GameMenuFragment extends Fragment implements View.OnClickListener{
         return view;
     }
 
-
+    /**
+     * When we click on a button, we start the corresponding level
+     *
+     * @param view clicked view
+     */
     @Override
     public void onClick(View view) {
         int level = -1;
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.level1_button:
                 level = 1;
                 break;
@@ -77,22 +83,27 @@ public class GameMenuFragment extends Fragment implements View.OnClickListener{
                 break;
         }
 
-        Intent intent = new Intent(getActivity(),GameActivity.class);
-        intent.putExtra(LEVEL,level);
+        Intent intent = new Intent(getActivity(), GameActivity.class);
+        intent.putExtra(LEVEL, level); // give level to GameActivity
         startActivity(intent);
     }
 
     @Override
     public void onResume() {
         super.onResume();
+
+        /**
+         * Disable buttons of locked levels
+         */
+
         SharedPreferences sharedPref = getActivity().getSharedPreferences(
                 getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        int best = sharedPref.getInt(getString(R.string.best_level),-1);
-        if(best<0)
-            Log.e(TAG,"Unexpected best level");
+        int best = sharedPref.getInt(getString(R.string.best_level), -1);
+        if (best < 0)
+            Log.e(TAG, "Unexpected best level");
 
-        for(int i=0;i<list.size();i++){
-            boolean enabled = i<best;
+        for (int i = 0; i < list.size(); i++) {
+            boolean enabled = i < best;
             list.get(i).setEnabled(enabled);
         }
 

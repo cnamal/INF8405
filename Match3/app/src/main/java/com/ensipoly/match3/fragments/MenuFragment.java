@@ -17,9 +17,9 @@ import com.ensipoly.match3.R;
 
 
 /**
- * A simple {@link Fragment} subclass.
+ * Main menu
  */
-public class MenuFragment extends Fragment implements View.OnClickListener{
+public class MenuFragment extends Fragment implements View.OnClickListener {
 
     private static final String TAG = "MenuFragment";
     private SharedPreferences sharedPref;
@@ -44,7 +44,7 @@ public class MenuFragment extends Fragment implements View.OnClickListener{
     @Override
     public void onClick(View view) {
         Fragment newFragment = null;
-        switch (view.getId()){
+        switch (view.getId()) {
             case R.id.play_button:
                 newFragment = new GameMenuFragment();
                 break;
@@ -69,19 +69,24 @@ public class MenuFragment extends Fragment implements View.OnClickListener{
         transaction.commit();
     }
 
-    private void reset(){
+    /**
+     * Reset Button handler.
+     */
+    private void reset() {
         new AlertDialog.Builder(getActivity())
                 .setIcon(R.drawable.ic_warning_black_24dp)
                 .setTitle(getString(R.string.reset_alert_title))
                 .setMessage(getString(R.string.reset_alert_body))
-                .setPositiveButton(getString(R.string.reset), new DialogInterface.OnClickListener()
-                {
+                .setPositiveButton(getString(R.string.reset), new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
 
+                        // Set only unlocked level to the first
                         SharedPreferences.Editor editor = sharedPref.edit();
                         editor.putInt(getString(R.string.best_level), 1);
                         editor.apply();
+
+                        //hide Reset button
                         getActivity().findViewById(R.id.reset_button).setVisibility(View.GONE);
                     }
 
@@ -93,7 +98,8 @@ public class MenuFragment extends Fragment implements View.OnClickListener{
     @Override
     public void onResume() {
         super.onResume();
-        if(sharedPref.getInt(getString(R.string.best_level),-1)>1)
+        // If at least the second level has been unlocked, show the Reset button
+        if (sharedPref.getInt(getString(R.string.best_level), -1) > 1)
             getActivity().findViewById(R.id.reset_button).setVisibility(View.VISIBLE);
 
     }
