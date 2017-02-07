@@ -41,7 +41,25 @@ This is the report for the first lab in the course INF8405. The objective was to
 
 \subsection{\href{https://www.youtube.com/watch?v=8y6zNR4X8xs&feature=youtu.be&t=4m29s}{Algorithm}}
 
-%TODO
+\subsubsection{Analyze}
+
+The main part of the algorithm is in the method \textit{swapElements} which is in the Grid class. It is called between two tokens that will be swapped. The algorithm is a loop that stop when there is no more combination in the grid. It analyzes some tokens and determine which one it needs to remove.
+
+At the beginning, the only tokens to analyze are the swapped ones. The remove list is empty.
+
+For each element to analyze, it checks if the token is not already removed (therefore it has already been analyzed and detected to be part of a combination), we do not need to analyze it if it's true. Then it checks if there is enough tokens aligned with it horizontally and vertically. If yes, it adds all aligned token in the list to remove. It also updates the score.
+
+Before the end of the loop, we remove and move all the tokens and update the combo multiplier.
+
+Where tokens are removed, there will be another token. Then we need to analyze if more combinations are created and need to be handled. It checks for each removed token if a combination is possible before adding it to the analyze list. If there is no more token to analyze, the algorithm finishes.
+
+\subsubsection{Removal}
+
+The removal is in two parts. First it sets all the tokens that need to be removed at \textit{NULL} in the grid. It's done in \textit{removeTokens}
+
+The second part moves all the tokens to the bottom when it is empty (\textit{NULL}). For each column, it starts at the lowest empty row. For this row, it goes up, finding the next no empty token. When it is found, this token takes the place of the former one and became \textit{NULL} at its original place. If it has not found a token before reaching the highest row, it creates a random token (appears at the top of the grid). And the algorithm continues with the upper row, until it reaches the highest one.
+
+This method is useful and easy to control when we have more than one token to remove in one column, or if there is one token to be removed, the upper one stays and the upper upper one is removed.
 
 \subsection{\href{http://data.whicdn.com/images/28718572/large.gif}{Activities + Fragments}}
 
