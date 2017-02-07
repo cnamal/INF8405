@@ -1,0 +1,114 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[USenglish]{babel}
+\usepackage{gensymb}
+\usepackage{hyperref}
+\usepackage{etoolbox}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{xifthen}
+\usepackage{float}
+\usepackage{ulem}
+\usepackage{multirow}
+\edef\restoreparindent{\parindent=\the\parindent\relax}
+\usepackage[parfill]{parskip}
+\restoreparindent
+\usepackage{indentfirst}
+
+\title{Report: Game app for Android\\ INF8405 \textit{Informatique mobile}\\ Winter 2017 }
+\author{GRAILLE Raphaël  (1815074), LOGUT Adrien (1815142) \\ \& NAMALGAMUWA Chathura (1815118)\\ Ecole Polytechnique de Montréal}
+\date{February 15, 2017}
+
+
+
+\begin{document}
+\maketitle
+
+Submitted to: \textbf{Fabien Berquez}
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Introduction}
+
+This is the report for the first lab in the course INF8405. The objective was to create a simple Android game app of \textit{Match 3}. Popular examples of such games are Candy crush or bejeweled. 
+
+\section{Technical details}
+
+
+\subsection{\href{https://www.youtube.com/watch?v=8y6zNR4X8xs&feature=youtu.be&t=4m29s}{Algorithm}}
+
+%TODO
+
+\subsection{\href{http://data.whicdn.com/images/28718572/large.gif}{Activities + Fragments}}
+
+We decided to use fragments instead of activities for each view because we wanted to reuse some fragments in different fragments. (Note: in the end we didn't reuse any fragment). Here is a summary of activities and fragments :
+
+\begin{tabular}{|c|c|c|}
+\hline
+\textbf{Activities} & MainActivity & GameActivity \\
+\hline
+\multirow{3}{*}{\textbf{Fragments}} & MenuFragment & \multirow{3}{*}{} \\
+&GameMenuFragment&\\
+&RulesFragment&\\
+\hline
+\end{tabular}
+
+\subsection{\href{http://31.media.tumblr.com/45b4d84ab9018d9f65a7a25c60775ec7/tumblr_nc122coAXY1rpco88o1_400.gif}{Game data}}
+
+Every level data were written in a custom file format. The \texttt{Grid} class, which has the main logic of the algorithm, parses the files and can give the adequate information back to the view. \texttt{GameActivity} then creates dynamically the \textit{GridLayout} view. This allows us to have theoretically any size of grid, without having to \href{http://tclhost.com/f7IaLC9.gif}{\textit{hardcode}} the level view in XML.
+
+Additionally, we preserve previously unlocked levels between game launches. This was easily done using the \texttt{SharedPreferences} class. In order to make testing easier, a \textit{Reset} button has been added in the main menu.
+
+\subsection{\href{https://collegecandy.files.wordpress.com/2016/11/48e3110b48be34105f10b2114adaf860bf2a0f18.gif?w=750}{Model-View communication}}
+
+We wanted to create some simple animations in order to make the game a little more realistic. Since the model (\texttt{Grid}) has the main logic, it has to notify the view of any changes (e.g, swap elements or move elements downwards). The logical design pattern to use was the Observer pattern. However, since we want to notify multiple different events, we needed to couple it with a Visitor patter as suggested on a \href{http://stackoverflow.com/a/6608600/5795409}{Stack Overflow thread}.
+
+The events are stocked until the last event is sent. Then all events are treated by the UI. This is due to the fact that the animations are asynchronous. Therefore we need to know which events to handle once one is done, hence the list of events.
+
+\subsection{\href{https://media.giphy.com/media/bGvS8e3N9sh5S/giphy.gif}{Internationalization}}
+
+The basic Android API was used to have an app in both English and French. The default language is English.
+
+\subsection{\href{https://media.tenor.co/images/131a172b8a349afd711cd7de7ab1177a/raw}{Material Design}}
+
+Once the minimal requirements were met, we decide to use \textit{material design}. To get the basic "template" was quite simple. We then also added Floating Action Buttons. The Android API only has simple buttons. However, for the game view, we wanted a menu. Since we didn't want to code it ourselves, we used an open source implementation on \href{https://github.com/Clans/FloatingActionButton}{Github}.
+
+\subsection{\href{https://media.giphy.com/media/RmmUkEitovbyM/giphy.gif}{Surprise}}
+
+\textbf{We advise you to play the game until the end before reading this}. 
+
+\ \\ 
+\ \\
+\ \\
+\ \\
+\ \\
+
+A small gif of fireworks was added at the end. It is mainly a hack, therefore the view isn't the most elegant. 
+
+
+\section{Issues encountered}
+
+\subsection{Grid}
+
+Creating a dynamic grid was way harder that expected. Indeed, initially, the grid wouldn't show the items at the rightmost. After multiple hours of testing and searching through the internet, we managed to use the latest version of GridLayout \textit{(gridlayout-v7)} which supports weights. When we put a weight of 1 on each item, it finally worked. However, the view still bugs when on landscape mode. That is why the game can only be played on portrait mode.
+
+\subsection{\href{https://media.tenor.co/images/bdbe70ee818da02b0b7e7e3fd390a9c0/raw}{Architecture}}
+
+Finding a working architecture for the Model-View communication wasn't the easiest, since we didn't have the usual use case. In the end, creating our own Observer pattern might have been easier.
+
+\section{Additional notes and recommendations}
+
+This first lab was quite a good introduction to Android programming. The requirements were not overwhelming allowing us to explore some additional resources. 
+
+A few recommendations for future labs however:
+
+\begin{itemize}
+\item \href{https://www.quora.com/Why-dont-Android-apps-have-an-exit-button}{Having an exit button is usually a bad practice.}
+\item Match 3 is a game that \textit{needs} the animation. You need to be able to see the grid elements disappear/appear/move. This can be quite complicated, especially for people who have never code in Android.
+\end{itemize}
+
+\end{document}

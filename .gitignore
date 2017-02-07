@@ -38,3 +38,10 @@ captures/
 
 # Keystore files
 *.jks
+
+#Latex
+*.aux
+*.out
+*.pdf
+*.synctex.gz
+*.toc
