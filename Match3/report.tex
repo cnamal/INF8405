@@ -114,11 +114,11 @@ A small gif of fireworks was added at the end. It is mainly a hack, therefore th
 
 Creating a dynamic grid was way harder that expected. Indeed, initially, the grid wouldn't show the items at the rightmost. After multiple hours of testing and searching through the internet, we managed to use the latest version of GridLayout \textit{(gridlayout-v7)} which supports weights. When we put a weight of 1 on each item, it finally worked. However, the view still bugs when on landscape mode. That is why the game can only be played on portrait mode.
 
+The app wasn't tested on tablets. We suspect there might be some issues with the Game view on them, especially on level 4. However, the game should still be perfectly playable.
+
 \subsection{\href{https://media.tenor.co/images/bdbe70ee818da02b0b7e7e3fd390a9c0/raw}{Architecture}}
 
 Finding a working architecture for the Model-View communication wasn't the easiest, since we didn't have the usual use case. In the end, creating our own Observer pattern might have been easier.
-
-The app wasn't tested on tablets. We suspect there might be some issues with the Game view on them, especially on level 4. However, the game should still be perfectly playable.
 
 \section{Additional notes and recommendations}
 
