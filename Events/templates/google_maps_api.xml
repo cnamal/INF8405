@@ -1,0 +1,6 @@
+<resources>
+    <!-- Add your api key and move this file to app/src/main/res/values/ -->
+    <string name="google_maps_key" translatable="false" templateMergeStrategy="preserve">
+        YOUR_KEY_HERE
+    </string>
+</resources>
