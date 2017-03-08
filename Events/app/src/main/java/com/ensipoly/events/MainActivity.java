@@ -1,38 +1,53 @@
 package com.ensipoly.events;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.ensipoly.events.fragments.MapsFragments;
+import com.squareup.picasso.Picasso;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    private String[] mDrawerItems;
     private DrawerLayout mDrawerLayout;
-    private ListView mDrawerList;
+    private NavigationView mNavigationView;
     private CharSequence mTitle;
     private CharSequence mDrawerTitle;
     private ActionBarDrawerToggle mDrawerToggle;
+    private User currentUser;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if((currentUser=getCurrentUser())==null){
+            Intent intent =  new Intent(this, SignUpActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_main);
+        mNavigationView = (NavigationView) findViewById(R.id.navigation_view);
+        Picasso.with(this).load(currentUser.photoUrl).into((ImageView)mNavigationView.getHeaderView(0).findViewById(R.id.profile_image));
+        ((TextView)mNavigationView.getHeaderView(0).findViewById(R.id.username)).setText(currentUser.username);
 
         mTitle = mDrawerTitle = getTitle();
-        mDrawerItems = getResources().getStringArray(R.array.drawer_items);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+        mNavigationView.setNavigationItemSelectedListener(this);
+
         mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
                 R.string.drawer_open, R.string.drawer_close) {
 
@@ -52,59 +67,53 @@ public class MainActivity extends AppCompatActivity {
         };
 
         // Set the drawer toggle as the DrawerListener
-        mDrawerLayout.setDrawerListener(mDrawerToggle);
-        // Set the adapter for the list view
-        mDrawerList.setAdapter(new ArrayAdapter<String>(this,
-                R.layout.drawer_list_item, mDrawerItems));
-        // Set the list's click listener
-        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+        mDrawerLayout.addDrawerListener(mDrawerToggle);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
-
-    /* Called whenever we call invalidateOptionsMenu() */
-    @Override
-    public boolean onPrepareOptionsMenu(Menu menu) {
-        // If the nav drawer is open, hide action items related to the content view
-        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-        //menu.findItem(R.id.action_websearch).setVisible(!drawerOpen);
-        return super.onPrepareOptionsMenu(menu);
-    }
-
-    private class DrawerItemClickListener implements ListView.OnItemClickListener {
-        @Override
-        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-            selectItem(position);
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Pass the event to ActionBarDrawerToggle
+        // If it returns true, then it has handled
+        // the nav drawer indicator touch event
+        if (mDrawerToggle.onOptionsItemSelected(item)) {
+            return true;
         }
+
+        // Handle your other action bar items...
+
+        return super.onOptionsItemSelected(item);
     }
 
-    /** Swaps fragments in the main content view */
-    private void selectItem(int position) {
-        /*// Create a new fragment and specify the planet to show based on position
-        Fragment fragment = new PlanetFragment();
-        Bundle args = new Bundle();
-        args.putInt(PlanetFragment.ARG_PLANET_NUMBER, position);
-        fragment.setArguments(args);
+    private User getCurrentUser() {
+        SharedPreferences sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        String user_id = sharedPref.getString(User.USER_ID_KEY_PREFERENCE,"");
+        if(user_id.equals(""))
+            return null;
+        return UserDbHelper.getHelper(this).getUser(user_id);
+    }
 
-        // Insert the fragment by replacing any existing fragment
-        FragmentManager fragmentManager = getFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.content_frame, fragment)
-                .commit();
-        */
-        MapsFragments mapsFragments = new MapsFragments();
-        mapsFragments.getMapAsync(mapsFragments);
-        Fragment fragment = mapsFragments;
+    @Override
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+        mNavigationView.setCheckedItem(item.getItemId());
+        switch (item.getItemId()){
+            case R.id.nav_map:
+                MapsFragments mapsFragments = new MapsFragments();
+                mapsFragments.getMapAsync(mapsFragments);
+                Fragment fragment = mapsFragments;
 
-        // Insert the fragment by replacing any existing fragment
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction()
-                .replace(R.id.content_frame, fragment)
-                .commit();
-        // Highlight the selected item, update the title, and close the drawer
-        mDrawerList.setItemChecked(position, true);
-        setTitle(mDrawerItems[position]);
-        mDrawerLayout.closeDrawer(mDrawerList);
+                // Insert the fragment by replacing any existing fragment
+                FragmentManager fragmentManager = getSupportFragmentManager();
+                fragmentManager.beginTransaction()
+                        .replace(R.id.content_frame, fragment)
+                        .commit();
+                break;
+            case R.id.nav_groups:
+                break;
+        }
+
+        mDrawerLayout.closeDrawers();
+
+        return true;
     }
 
     @Override
@@ -119,18 +128,6 @@ public class MainActivity extends AppCompatActivity {
         mDrawerToggle.syncState();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Pass the event to ActionBarDrawerToggle
-        // If it returns true, then it has handled
-        // the nav drawer indicator touch event
-        if (mDrawerToggle.onOptionsItemSelected(item)) {
-            return true;
-        }
 
-        // Handle your other action bar items...
-
-        return super.onOptionsItemSelected(item);
-    }
 
 }

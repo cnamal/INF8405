@@ -2,4 +2,7 @@
     <string name="app_name">Events</string>
     <string name="drawer_open">Open</string>
     <string name="drawer_close">Close</string>
+
+    <string name="title_activity_sign_up">Sign Up</string>
+    <string name="preference_file_key" translatable="false">com.ensipoly.events.PREFERENCE_FILE_KEY</string>
 </resources>

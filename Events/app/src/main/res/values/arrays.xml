@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <string-array name="drawer_items">
-        <item>Map</item>
-        <item>Groups</item>
-    </string-array>
-</resources>
