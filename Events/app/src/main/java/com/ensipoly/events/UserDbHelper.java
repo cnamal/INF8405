@@ -11,16 +11,23 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class UserDbHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "User.db";
-    public static final String TABLE_NAME = "users";
-    public static final String ID = "id";
-    public static final String COLUMN_NAME_USERNAME = "username";
-    public static final String COLUMN_NAME_PHOTOURL = "photoUrl";
+    private static final String TABLE_NAME = "users";
+    private static final String ID = "id";
+    private static final String COLUMN_NAME_USERNAME = "username";
+    private static final String COLUMN_NAME_PHOTOURL = "photoUrl";
+    private static final String COLUMN_NAME_LONGITUTE = "longitude";
+    private static final String COLUMN_NAME_LATITUDE = "latitude";
+    private static final String COLUMN_NAME_LAST = "last";
 
     private static final String SQL_CREATE_ENTRIES =
             "CREATE TABLE " + TABLE_NAME + " (" +
                     ID + " TEXT PRIMARY KEY NOT NULL," +
                     COLUMN_NAME_USERNAME + " TEXT NOT NULL," +
-                    COLUMN_NAME_PHOTOURL + " TEXT NOT NULL)";
+                    COLUMN_NAME_PHOTOURL + " TEXT NOT NULL," +
+                    COLUMN_NAME_LATITUDE + " REAL NOT NULL," +
+                    COLUMN_NAME_LONGITUTE + " REAL NOT NULL," +
+                    COLUMN_NAME_LAST + " TEXT NOT NULL" +
+                    ")";
 
     private static final String SQL_DELETE_ENTRIES =
             "DROP TABLE IF EXISTS " + TABLE_NAME;
@@ -59,6 +66,9 @@ public class UserDbHelper extends SQLiteOpenHelper {
         values.put(UserDbHelper.ID, id);
         values.put(UserDbHelper.COLUMN_NAME_USERNAME, user.username);
         values.put(UserDbHelper.COLUMN_NAME_PHOTOURL, user.photoUrl);
+        values.put(UserDbHelper.COLUMN_NAME_LATITUDE, user.latitude);
+        values.put(UserDbHelper.COLUMN_NAME_LONGITUTE, user.longitude);
+        values.put(UserDbHelper.COLUMN_NAME_LAST, user.lastActive);
         db.insert(TABLE_NAME, null, values);
     }
 
@@ -83,7 +93,13 @@ public class UserDbHelper extends SQLiteOpenHelper {
             cursor.moveToFirst();
         else
             return null;
-        User user = new User(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME_USERNAME)),cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME_PHOTOURL)));
+        User user = new User(
+                cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME_USERNAME)),
+                cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME_PHOTOURL)),
+                cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_NAME_LATITUDE)),
+                cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_NAME_LONGITUTE)),
+                cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME_LAST))
+        );
         cursor.close();
         return user;
     }

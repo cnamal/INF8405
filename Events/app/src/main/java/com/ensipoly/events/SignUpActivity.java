@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.design.widget.TextInputLayout;
@@ -25,6 +26,8 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.text.DateFormat;
+import java.util.Date;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -35,10 +38,10 @@ public class SignUpActivity extends AppCompatActivity {
     static final int REQUEST_IMAGE_CAPTURE = 1;
     private ImageView mImageView;
 
-    FirebaseDatabase mFirebaseDatabase;
-    FirebaseStorage mFirebaseStorage;
-    DatabaseReference mUserDBReference;
-    StorageReference mStorageReference;
+    private FirebaseDatabase mFirebaseDatabase;
+    private FirebaseStorage mFirebaseStorage;
+    private DatabaseReference mUserDBReference;
+    private StorageReference mStorageReference;
     private byte[] mPhotoData;
     private Uri mUri;
 
@@ -73,9 +76,7 @@ public class SignUpActivity extends AppCompatActivity {
                 TextInputLayout wrapper = (TextInputLayout)findViewById(R.id.input_username_wrapper);
                 if(username.equals("")){
                     wrapper.setError("Username field is required"); // TODO R.string
-                }else if(!usernameAvailable(username)){
-                    wrapper.setError("Username not available"); // TODO R.string
-                }else if(mUri == null){
+                }else if(!isEmulator() && mUri == null){
                     Toast.makeText(SignUpActivity.this,"Image required",Toast.LENGTH_SHORT).show(); //TODO R.string
                 } else {
                     createUser(username);
@@ -102,13 +103,13 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void createUser(final String username) {
-        StorageReference photoRef = mStorageReference.child(mUri.getLastPathSegment());
+        StorageReference photoRef = mStorageReference.child(mUri==null ? "emulator" :mUri.getLastPathSegment());
         photoRef.putBytes(mPhotoData).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @SuppressWarnings("VisibleForTests")
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                 Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                final User user = new User(username,downloadUrl.toString());
+                final User user = new User(username,downloadUrl.toString(),0,0, DateFormat.getTimeInstance().format(new Date()));
                 DatabaseReference ref = mUserDBReference.push();
                 Task<Void> task = ref.setValue(user);
                 final String user_id = ref.getKey();
@@ -129,9 +130,6 @@ public class SignUpActivity extends AppCompatActivity {
 
     }
 
-    private boolean usernameAvailable(String username) {
-        return true;
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -144,5 +142,16 @@ public class SignUpActivity extends AppCompatActivity {
             mPhotoData = stream.toByteArray();
             mImageView.setImageBitmap(imageBitmap);
         }
+    }
+
+    private  static boolean isEmulator() {
+        return Build.FINGERPRINT.startsWith("generic")
+                || Build.FINGERPRINT.startsWith("unknown")
+                || Build.MODEL.contains("google_sdk")
+                || Build.MODEL.contains("Emulator")
+                || Build.MODEL.contains("Android SDK built for x86")
+                || Build.MANUFACTURER.contains("Genymotion")
+                || (Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic"))
+                || "google_sdk".equals(Build.PRODUCT);
     }
 }

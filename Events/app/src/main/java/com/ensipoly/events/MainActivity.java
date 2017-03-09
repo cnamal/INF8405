@@ -26,14 +26,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private CharSequence mTitle;
     private CharSequence mDrawerTitle;
     private ActionBarDrawerToggle mDrawerToggle;
-    private User currentUser;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if((currentUser=getCurrentUser())==null){
-            Intent intent =  new Intent(this, SignUpActivity.class);
+        User currentUser;
+        if ((currentUser = getCurrentUser()) == null) {
+            Intent intent = new Intent(this, SignUpActivity.class);
             startActivity(intent);
             finish();
             return;
@@ -41,8 +42,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         setContentView(R.layout.activity_main);
         mNavigationView = (NavigationView) findViewById(R.id.navigation_view);
-        Picasso.with(this).load(currentUser.photoUrl).into((ImageView)mNavigationView.getHeaderView(0).findViewById(R.id.profile_image));
-        ((TextView)mNavigationView.getHeaderView(0).findViewById(R.id.username)).setText(currentUser.username);
+        Picasso.with(this).load(currentUser.photoUrl).into((ImageView) mNavigationView.getHeaderView(0).findViewById(R.id.profile_image));
+        ((TextView) mNavigationView.getHeaderView(0).findViewById(R.id.username)).setText(currentUser.username);
 
         mTitle = mDrawerTitle = getTitle();
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
+    
     public boolean onOptionsItemSelected(MenuItem item) {
         // Pass the event to ActionBarDrawerToggle
         // If it returns true, then it has handled
@@ -86,16 +88,16 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private User getCurrentUser() {
         SharedPreferences sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        String user_id = sharedPref.getString(User.USER_ID_KEY_PREFERENCE,"");
-        if(user_id.equals(""))
+        String userId = sharedPref.getString(User.USER_ID_KEY_PREFERENCE, "");
+        if (userId.equals(""))
             return null;
-        return UserDbHelper.getHelper(this).getUser(user_id);
+        return UserDbHelper.getHelper(this).getUser(userId);
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         mNavigationView.setCheckedItem(item.getItemId());
-        switch (item.getItemId()){
+        switch (item.getItemId()) {
             case R.id.nav_map:
                 MapsFragments mapsFragments = new MapsFragments();
                 mapsFragments.getMapAsync(mapsFragments);
