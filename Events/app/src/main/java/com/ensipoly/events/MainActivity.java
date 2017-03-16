@@ -14,6 +14,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.ensipoly.events.fragments.GroupsFragment;
 import com.ensipoly.events.fragments.MapsFragments;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -103,32 +104,27 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return super.onOptionsItemSelected(item);
     }
 
-    private User getCurrentUser() {
-        SharedPreferences sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        String userId = sharedPref.getString(User.USER_ID_KEY_PREFERENCE, "");
-        if (userId.equals(""))
-            return null;
-        return UserDbHelper.getHelper(this).getUser(userId);
-    }
-
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         mNavigationView.setCheckedItem(item.getItemId());
+        Fragment fragment=null;
         switch (item.getItemId()) {
             case R.id.nav_map:
                 MapsFragments mapsFragments = new MapsFragments();
                 mapsFragments.getMapAsync(mapsFragments);
-                Fragment fragment = mapsFragments;
+                fragment = mapsFragments;
 
-                // Insert the fragment by replacing any existing fragment
-                FragmentManager fragmentManager = getSupportFragmentManager();
-                fragmentManager.beginTransaction()
-                        .replace(R.id.content_frame, fragment)
-                        .commit();
+
                 break;
             case R.id.nav_groups:
+                fragment = new GroupsFragment();
                 break;
         }
+        // Insert the fragment by replacing any existing fragment
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+                .replace(R.id.content_frame, fragment)
+                .commit();
 
         mDrawerLayout.closeDrawers();
 
@@ -146,7 +142,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onPostCreate(savedInstanceState);
         mDrawerToggle.syncState();
     }
-
 
 
 }
