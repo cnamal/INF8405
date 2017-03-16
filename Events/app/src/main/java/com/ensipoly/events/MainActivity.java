@@ -1,8 +1,6 @@
 package com.ensipoly.events;
 
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -17,6 +15,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.ensipoly.events.fragments.MapsFragments;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
 import com.squareup.picasso.Picasso;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -32,8 +34,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        User currentUser;
-        if ((currentUser = getCurrentUser()) == null) {
+
+        String userId = Utils.getUserID(getApplicationContext());
+        if ( userId == null) {
             Intent intent = new Intent(this, SignUpActivity.class);
             startActivity(intent);
             finish();
@@ -42,8 +45,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         setContentView(R.layout.activity_main);
         mNavigationView = (NavigationView) findViewById(R.id.navigation_view);
-        Picasso.with(this).load(currentUser.photoUrl).into((ImageView) mNavigationView.getHeaderView(0).findViewById(R.id.profile_image));
-        ((TextView) mNavigationView.getHeaderView(0).findViewById(R.id.username)).setText(currentUser.username);
 
         mTitle = mDrawerTitle = getTitle();
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -71,6 +72,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         mDrawerLayout.addDrawerListener(mDrawerToggle);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
+        DatabaseReference userDB = FirebaseUtils.getUserDBReference().child(userId);
+        userDB.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                User user = dataSnapshot.getValue(User.class);
+                Picasso.with(MainActivity.this).load(user.photoUrl).into((ImageView) mNavigationView.getHeaderView(0).findViewById(R.id.profile_image));
+                ((TextView) mNavigationView.getHeaderView(0).findViewById(R.id.username)).setText(user.username);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+
     }
     
     public boolean onOptionsItemSelected(MenuItem item) {

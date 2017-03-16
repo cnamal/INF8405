@@ -1,19 +1,16 @@
 package com.ensipoly.events.fragments;
 
 import android.Manifest;
-import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.util.Log;
 
-import com.ensipoly.events.R;
+import com.ensipoly.events.FirebaseUtils;
 import com.ensipoly.events.User;
-import com.ensipoly.events.UserDbHelper;
+import com.ensipoly.events.Utils;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationListener;
@@ -29,11 +26,11 @@ import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMapLongClickListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
@@ -53,10 +50,9 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
     private Location mCurrentLocation;
     protected String mLastUpdateTime;
 
-    private FirebaseDatabase mFirebaseDatabase;
+
     private DatabaseReference mUserDBReference;
     private ChildEventListener mChildEventListener;
-
     private HashMap<String,Marker> map;
 
 
@@ -76,28 +72,34 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
             return;
         }
         mMap.setMyLocationEnabled(true);
+
         mChildEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                if(!dataSnapshot.getKey().equals(mUserId)) {
+                String id = dataSnapshot.getKey();
+                if(!id.equals(mUserId)) {
                     User user = dataSnapshot.getValue(User.class);
                     Marker marker = mMap.addMarker(new MarkerOptions().position(new LatLng(user.latitude, user.longitude)));
-                    map.put(dataSnapshot.getKey(),marker);
+                    map.put(id,marker);
                 }
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                if(!dataSnapshot.getKey().equals(mUserId)) {
+                String id = dataSnapshot.getKey();
+                if(!id.equals(mUserId)) {
                     User user = dataSnapshot.getValue(User.class);
-                    Marker marker = map.get(dataSnapshot.getKey());
+                    Marker marker = map.get(id);
                     marker.setPosition(new LatLng(user.latitude, user.longitude));
                 }
             }
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
-
+                String id = dataSnapshot.getKey();
+                if(!id.equals(mUserId)) {
+                    map.get(id).remove();
+                }
             }
 
             @Override
@@ -111,7 +113,9 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
             }
         };
 
+
         mUserDBReference.addChildEventListener(mChildEventListener);
+
     }
 
     @Override
@@ -130,9 +134,7 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
     }
 
     private void getCurrentUser() {
-        SharedPreferences sharedPref = getActivity().getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        mUserId = sharedPref.getString(User.USER_ID_KEY_PREFERENCE, "");
-        mCurrentUser = UserDbHelper.getHelper(getContext()).getUser(mUserId);
+        mUserId = Utils.getUserID(getContext());
     }
 
 
@@ -187,11 +189,11 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
 
     @Override
     public void onLocationChanged(Location location) {
-        Log.d("HERE",mCurrentUser==null ? "null" : "ok");
-        mCurrentUser.latitude = location.getLatitude();
-        mCurrentUser.longitude = location.getLongitude();
-        mCurrentUser.lastActive = DateFormat.getTimeInstance().format(new Date());
-        mUserDBReference.child(mUserId).setValue(mCurrentUser);
+        Map<String,Object> childUpdates = new HashMap<>();
+        childUpdates.put("/latitude",location.getLatitude());
+        childUpdates.put("/longitude",location.getLongitude());
+        childUpdates.put("/lastActive",DateFormat.getTimeInstance().format(new Date()));
+        mUserDBReference.child(mUserId).updateChildren(childUpdates);
     }
 
     @Override
@@ -202,11 +204,9 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
         buildGoogleApiClient();
         getCurrentUser();
         map = new HashMap<>();
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
-
-        mUserDBReference = mFirebaseDatabase.getReference("users");
 
         setRetainInstance(true);
+        mUserDBReference = FirebaseUtils.getUserDBReference();
     }
 
     @Override
@@ -287,4 +287,5 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
 
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
+
 }

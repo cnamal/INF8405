@@ -20,7 +20,6 @@ import android.widget.Toast;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -38,7 +37,6 @@ public class SignUpActivity extends AppCompatActivity {
     static final int REQUEST_IMAGE_CAPTURE = 1;
     private ImageView mImageView;
 
-    private FirebaseDatabase mFirebaseDatabase;
     private FirebaseStorage mFirebaseStorage;
     private DatabaseReference mUserDBReference;
     private StorageReference mStorageReference;
@@ -95,10 +93,9 @@ public class SignUpActivity extends AppCompatActivity {
             }
         });
 
-        mFirebaseDatabase = FirebaseDatabase.getInstance();
         mFirebaseStorage = FirebaseStorage.getInstance();
 
-        mUserDBReference = mFirebaseDatabase.getReference("users");
+        mUserDBReference = FirebaseUtils.getUserDBReference();
         mStorageReference = mFirebaseStorage.getReference("user_pp_photos");
     }
 
@@ -120,7 +117,6 @@ public class SignUpActivity extends AppCompatActivity {
                         SharedPreferences.Editor editor = sharedPref.edit();
                         editor.putString(User.USER_ID_KEY_PREFERENCE,user_id);
                         editor.commit();
-                        UserDbHelper.getHelper(SignUpActivity.this).addUser(user_id, user);
                         Intent intent = new Intent(SignUpActivity.this,MainActivity.class);
                         startActivity(intent);
                     }
