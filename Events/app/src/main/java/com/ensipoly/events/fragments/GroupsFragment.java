@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.ensipoly.events.FirebaseUtils;
+import com.ensipoly.events.Group;
 import com.ensipoly.events.R;
 import com.ensipoly.events.Utils;
 import com.github.clans.fab.FloatingActionButton;
@@ -60,6 +61,19 @@ public class GroupsFragment extends Fragment {
                         mGroupsDBReference.child(groupInput.getText().toString()).runTransaction(new Transaction.Handler() {
                             @Override
                             public Transaction.Result doTransaction(MutableData mutableData) {
+                                Group group = mutableData.getValue(Group.class);
+                                Map<String,Boolean> map;
+                                String user = Utils.getUserID(getActivity());
+                                if(group==null){
+                                    group = new Group();
+                                    group.setOrganizer(user);
+                                    map = new HashMap<>();
+                                    group.setMembers(map);
+                                }else
+                                    map = group.getMembers();
+
+                                map.put(user,true);
+                                mutableData.setValue(group);
                                 return Transaction.success(mutableData);
                             }
 
@@ -73,11 +87,10 @@ public class GroupsFragment extends Fragment {
                                         Toast.makeText(getContext(),"Group created", Toast.LENGTH_SHORT).show();
                                     else
                                         Toast.makeText(getContext(),"Added to group", Toast.LENGTH_SHORT).show();
-                                    DatabaseReference db = FirebaseUtils.getDatabase().getReference();
+                                    DatabaseReference userDBReference = FirebaseUtils.getUserDBReference();
                                     Map<String, Object> childUpdates = new HashMap<>();
-                                    childUpdates.put("/users/"+ Utils.getUserID(getContext())+"/groups/"+dataSnapshot.getKey(),true);
-                                    childUpdates.put("/groups/"+ dataSnapshot.getKey()+"/members/"+Utils.getUserID(getContext()),true);
-                                    db.updateChildren(childUpdates);
+                                    childUpdates.put("/"+ Utils.getUserID(getContext())+"/groups/"+dataSnapshot.getKey(),true);
+                                    userDBReference.updateChildren(childUpdates);
                                 }
                             }
                         });

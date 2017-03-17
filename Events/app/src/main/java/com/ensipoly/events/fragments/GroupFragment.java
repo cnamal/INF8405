@@ -36,6 +36,11 @@ public class GroupFragment extends Fragment {
             title = (TextView) itemView.findViewById(R.id.groupTitleTextView);
             desc = (TextView) itemView.findViewById(R.id.groupDescTextView);
         }
+
+        public void show(String title,Group group) {
+            this.title.setText(title);
+            desc.setText(group.getNbUsers()+ " members");
+        }
     }
 
     public static final int SIZE=2;
@@ -46,7 +51,6 @@ public class GroupFragment extends Fragment {
     private DatabaseReference mGroupsDBReference;
     private ListAdapter mListAdapter;
     private RecyclerView mRecyclerView;
-    private Group[] mGroups;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -84,8 +88,8 @@ public class GroupFragment extends Fragment {
                         String key = this.getRef(position).getKey();
                         mGroupsDBReference.child(key).addValueEventListener(new ValueEventListener() {
                             public void onDataChange(DataSnapshot dataSnapshot) {
-                                viewHolder.title.setText(dataSnapshot.getKey());
-                                viewHolder.desc.setText(dataSnapshot.child("members").getChildrenCount()+ " members");
+                                Group group = dataSnapshot.getValue(Group.class);
+                                viewHolder.show(dataSnapshot.getKey(),group);
                             }
 
                             @Override
@@ -103,19 +107,9 @@ public class GroupFragment extends Fragment {
         FirebaseRecyclerAdapter<Group, ItemViewHolder> adapter =
                 new FirebaseRecyclerAdapter<Group, ItemViewHolder>(
                         Group.class, R.layout.item_group, ItemViewHolder.class, mGroupsDBReference){
-                    @Override
-                    protected Group parseSnapshot(DataSnapshot snapshot) {
-                        Group group = super.parseSnapshot(snapshot);
-                        if (group != null) {
-                            for(DataSnapshot user : snapshot.child("members").getChildren())
-                                group.addUser(user.getKey());
-                        }
-                        return group;
-                    }
                     protected void populateViewHolder(final ItemViewHolder viewHolder, Group group, int position) {
                         String key = this.getRef(position).getKey();
-                        viewHolder.title.setText(key);
-                        viewHolder.desc.setText(group.getNbUsers()+ " members");
+                        viewHolder.show(key,group);
                     }
                 };
         mRecyclerView.setAdapter(adapter);

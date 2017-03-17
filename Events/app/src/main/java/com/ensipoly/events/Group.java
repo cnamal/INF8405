@@ -1,28 +1,36 @@
 package com.ensipoly.events;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.google.firebase.database.Exclude;
 
-/**
- * Created by namalgac on 3/15/17.
- */
+import java.util.Map;
 
 public class Group {
 
-    List<String> users;
+    private String organizer;
+    private Map<String,Boolean> members;
 
     public Group(){
-        users = new ArrayList<>();
+
     }
 
-    public void addUser(String id){
-        users.add(id);
-    }
-
+    @Exclude
     public int getNbUsers() {
-        return users.size();
+        return members.size();
     }
 
+    public Map<String, Boolean> getMembers(){
+        return members;
+    }
 
+    public String getOrganizer(){
+        return organizer;
+    }
 
+    public void setOrganizer(String org){
+        organizer = org;
+    }
+
+    public void setMembers(Map<String,Boolean> members) {
+        this.members = members;
+    }
 }
