@@ -35,7 +35,9 @@ import java.util.Map;
 public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMapLongClickListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     private GoogleMap mMap;
-    private static final int REQUEST_LOCATION = 0;
+    private static final int REQUEST_LOCATION_ON_MAP_READY = 0;
+    private static final int REQUEST_LOCATION_ON_CONNECTED = 1;
+    private static final int REQUEST_LOCATION_START_LOCATION_UPDATES = 2;
     private User mCurrentUser;
     private String mUserId;
 
@@ -53,7 +55,7 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
 
     private DatabaseReference mUserDBReference;
     private ChildEventListener mChildEventListener;
-    private HashMap<String,Marker> map;
+    private HashMap<String, Marker> map;
 
 
     @Override
@@ -68,7 +70,7 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
         if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(getActivity(),
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_LOCATION);
+                    REQUEST_LOCATION_ON_MAP_READY);
             return;
         }
         mMap.setMyLocationEnabled(true);
@@ -77,17 +79,17 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 String id = dataSnapshot.getKey();
-                if(!id.equals(mUserId)) {
+                if (!id.equals(mUserId)) {
                     User user = dataSnapshot.getValue(User.class);
                     Marker marker = mMap.addMarker(new MarkerOptions().position(new LatLng(user.latitude, user.longitude)));
-                    map.put(id,marker);
+                    map.put(id, marker);
                 }
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                 String id = dataSnapshot.getKey();
-                if(!id.equals(mUserId)) {
+                if (!id.equals(mUserId)) {
                     User user = dataSnapshot.getValue(User.class);
                     Marker marker = map.get(id);
                     marker.setPosition(new LatLng(user.latitude, user.longitude));
@@ -97,7 +99,7 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
                 String id = dataSnapshot.getKey();
-                if(!id.equals(mUserId)) {
+                if (!id.equals(mUserId)) {
                     map.get(id).remove();
                 }
             }
@@ -121,15 +123,23 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
-        switch (requestCode){
-            case REQUEST_LOCATION:
-                if(grantResults.length==0)
-                    return;
-                if(grantResults[0]==PackageManager.PERMISSION_GRANTED)
+        if(grantResults.length==0)
+            return;
+        switch (requestCode) {
+            case REQUEST_LOCATION_ON_MAP_READY:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
                     onMapReady(mMap);
                 break;
+            case REQUEST_LOCATION_ON_CONNECTED:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                    onConnected(null);
+                break;
+            case REQUEST_LOCATION_START_LOCATION_UPDATES:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                    startLocationUpdates();
+                break;
             default:
-                super.onRequestPermissionsResult(requestCode,permissions,grantResults);
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         }
     }
 
@@ -138,11 +148,15 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
     }
 
 
-
-
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         if (mCurrentLocation == null) {
+            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(getActivity(),
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        REQUEST_LOCATION_ON_CONNECTED);
+                return;
+            }
             mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
             //TODO Update UI ?
@@ -161,6 +175,12 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
     private void startLocationUpdates() {
         // The final argument to {@code requestLocationUpdates()} is a LocationListener
         // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(getActivity(),
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_LOCATION_START_LOCATION_UPDATES);
+            return;
+        }
         LocationServices.FusedLocationApi.requestLocationUpdates(
                 mGoogleApiClient, mLocationRequest, this);
     }
