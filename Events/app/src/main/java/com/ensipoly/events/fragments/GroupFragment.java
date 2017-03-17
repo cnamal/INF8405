@@ -8,7 +8,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListAdapter;
 import android.widget.TextView;
 
 import com.ensipoly.events.FirebaseUtils;
@@ -32,28 +31,34 @@ public class GroupFragment extends Fragment {
         TextView title;
         TextView desc;
         TextView organizer;
+        View root;
+
         public ItemViewHolder(View itemView) {
             super(itemView);
+            root = itemView;
             title = (TextView) itemView.findViewById(R.id.groupTitleTextView);
             desc = (TextView) itemView.findViewById(R.id.groupDescTextView);
             organizer = (TextView) itemView.findViewById(R.id.organizerTextView);
         }
 
-        public void show(String title,Group group,boolean isOrganizer) {
+        public void show(String title, Group group, boolean isOrganizer) {
             this.title.setText(title);
-            if(!isOrganizer)
+            if (!isOrganizer)
                 organizer.setVisibility(View.GONE);
-            desc.setText(group.getNbUsers()+ " members");
+            desc.setText(group.getNbUsers() + " members");
+        }
+
+        public void setOnClickListener(View.OnClickListener listener) {
+            root.setOnClickListener(listener);
         }
     }
 
-    public static final int SIZE=2;
-    public static final String POSITION="position";
+    public static final int SIZE = 2;
+    public static final String POSITION = "position";
     private int mPosition;
     private String mUserId;
 
     private DatabaseReference mGroupsDBReference;
-    private ListAdapter mListAdapter;
     private RecyclerView mRecyclerView;
 
     @Override
@@ -65,7 +70,7 @@ public class GroupFragment extends Fragment {
         mPosition = getArguments().getInt(POSITION);
         mGroupsDBReference = FirebaseUtils.getGroupDBReference();
         getCurrentUser();
-        if(mPosition==0)
+        if (mPosition == 0)
             setupMyGroups();
         else
             setupAllGroups();
@@ -73,7 +78,7 @@ public class GroupFragment extends Fragment {
         return v;
     }
 
-    public static CharSequence getPageTitle(int position){
+    public static CharSequence getPageTitle(int position) {
         switch (position) {
             case 0:
                 return "My Groups";
@@ -83,17 +88,25 @@ public class GroupFragment extends Fragment {
         return null;
     }
 
-    private void setupMyGroups(){
+    private void setupMyGroups() {
         final DatabaseReference ref = FirebaseUtils.getUserDBReference().child(mUserId);
         FirebaseRecyclerAdapter<Boolean, ItemViewHolder> adapter =
                 new FirebaseRecyclerAdapter<Boolean, ItemViewHolder>(
-                        Boolean.class, R.layout.item_group, ItemViewHolder.class, ref.child("groups")){
+                        Boolean.class, R.layout.item_group, ItemViewHolder.class, ref.child("groups")) {
                     protected void populateViewHolder(final ItemViewHolder viewHolder, Boolean model, int position) {
                         String key = this.getRef(position).getKey();
                         mGroupsDBReference.child(key).addValueEventListener(new ValueEventListener() {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 Group group = dataSnapshot.getValue(Group.class);
-                                viewHolder.show(dataSnapshot.getKey(),group,group.getOrganizer().equals(mUserId));
+                                boolean isOrganizer = group.getOrganizer().equals(mUserId);
+                                viewHolder.show(dataSnapshot.getKey(), group, isOrganizer);
+                                if (isOrganizer)
+                                    viewHolder.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            startEventActivity();
+                                        }
+                                    });
                             }
 
                             @Override
@@ -107,18 +120,29 @@ public class GroupFragment extends Fragment {
         mRecyclerView.setAdapter(adapter);
     }
 
-    private void setupAllGroups(){
+    private void setupAllGroups() {
         FirebaseRecyclerAdapter<Group, ItemViewHolder> adapter =
                 new FirebaseRecyclerAdapter<Group, ItemViewHolder>(
-                        Group.class, R.layout.item_group, ItemViewHolder.class, mGroupsDBReference){
+                        Group.class, R.layout.item_group, ItemViewHolder.class, mGroupsDBReference) {
                     protected void populateViewHolder(final ItemViewHolder viewHolder, Group group, int position) {
                         String key = this.getRef(position).getKey();
-                        viewHolder.show(key,group,group.getOrganizer().equals(mUserId));
+                        boolean isOrganizer = group.getOrganizer().equals(mUserId);
+                        viewHolder.show(key, group, isOrganizer);
+                        if(isOrganizer)
+                        viewHolder.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                startEventActivity();
+                            }
+                        });
                     }
                 };
         mRecyclerView.setAdapter(adapter);
     }
 
+    private void startEventActivity(){
+        // TODO
+    }
     private void getCurrentUser() {
         mUserId = Utils.getUserID(getContext());
     }
