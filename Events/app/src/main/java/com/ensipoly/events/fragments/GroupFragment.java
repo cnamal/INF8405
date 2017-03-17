@@ -31,14 +31,18 @@ public class GroupFragment extends Fragment {
     private static class ItemViewHolder extends RecyclerView.ViewHolder {
         TextView title;
         TextView desc;
+        TextView organizer;
         public ItemViewHolder(View itemView) {
             super(itemView);
             title = (TextView) itemView.findViewById(R.id.groupTitleTextView);
             desc = (TextView) itemView.findViewById(R.id.groupDescTextView);
+            organizer = (TextView) itemView.findViewById(R.id.organizerTextView);
         }
 
-        public void show(String title,Group group) {
+        public void show(String title,Group group,boolean isOrganizer) {
             this.title.setText(title);
+            if(!isOrganizer)
+                organizer.setVisibility(View.GONE);
             desc.setText(group.getNbUsers()+ " members");
         }
     }
@@ -60,12 +64,12 @@ public class GroupFragment extends Fragment {
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         mPosition = getArguments().getInt(POSITION);
         mGroupsDBReference = FirebaseUtils.getGroupDBReference();
-        if(mPosition==0) {
-            getCurrentUser();
+        getCurrentUser();
+        if(mPosition==0)
             setupMyGroups();
-        }else{
+        else
             setupAllGroups();
-        }
+
         return v;
     }
 
@@ -89,7 +93,7 @@ public class GroupFragment extends Fragment {
                         mGroupsDBReference.child(key).addValueEventListener(new ValueEventListener() {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 Group group = dataSnapshot.getValue(Group.class);
-                                viewHolder.show(dataSnapshot.getKey(),group);
+                                viewHolder.show(dataSnapshot.getKey(),group,group.getOrganizer().equals(mUserId));
                             }
 
                             @Override
@@ -109,7 +113,7 @@ public class GroupFragment extends Fragment {
                         Group.class, R.layout.item_group, ItemViewHolder.class, mGroupsDBReference){
                     protected void populateViewHolder(final ItemViewHolder viewHolder, Group group, int position) {
                         String key = this.getRef(position).getKey();
-                        viewHolder.show(key,group);
+                        viewHolder.show(key,group,group.getOrganizer().equals(mUserId));
                     }
                 };
         mRecyclerView.setAdapter(adapter);
