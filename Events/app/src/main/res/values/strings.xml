@@ -4,5 +4,18 @@
     <string name="drawer_close">Close</string>
 
     <string name="title_activity_sign_up">Sign Up</string>
+    <string name="title_activity_event">Create a new Event</string>
     <string name="preference_file_key" translatable="false">com.ensipoly.events.PREFERENCE_FILE_KEY</string>
+
+    <string name="create_event_name">Name of the event</string>
+    <string name="create_event_info">Put some extra information there</string>
+    <string name="create_event_place">Set the place</string>
+    <string name="create_event_begin">Begin</string>
+    <string name="create_event_end">End</string>
+    <string name="create_event_create_button">Submit</string>
+    <string name="create_event_name_missing">The name of the event is missing…</string>
+    <string name="create_event_place_missing">The place of the event is missing…</string>
+    <string name="create_event_starting_date_missing">The starting date of the event is missing…</string>
+    <string name="create_event_ending_date_missing">The ending date of the event is missing…</string>
+    <string name="create_event_ending_date_before_starting_date_error">The ending date of the event is prior to starting date…</string>
 </resources>

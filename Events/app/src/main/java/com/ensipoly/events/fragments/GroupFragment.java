@@ -1,6 +1,7 @@
 package com.ensipoly.events.fragments;
 
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
@@ -10,6 +11,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.ensipoly.events.EventActivity;
 import com.ensipoly.events.FirebaseUtils;
 import com.ensipoly.events.Group;
 import com.ensipoly.events.R;
@@ -141,8 +143,11 @@ public class GroupFragment extends Fragment {
     }
 
     private void startEventActivity(){
-        // TODO
+        Intent intent = new Intent(this.getActivity(), EventActivity.class);
+        startActivity(intent);
+        this.getActivity().finish();
     }
+
     private void getCurrentUser() {
         mUserId = Utils.getUserID(getContext());
     }

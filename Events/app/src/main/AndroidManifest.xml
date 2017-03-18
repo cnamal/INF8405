@@ -3,16 +3,18 @@
     package="com.ensipoly.events">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-feature android:name="android.hardware.camera"
+
+    <uses-feature
+        android:name="android.hardware.camera"
         android:required="true" />
 
     <application
         android:allowBackup="true"
+        android:configChanges="orientation|screenSize"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:configChanges="orientation|screenSize"
         android:theme="@style/AppTheme">
         <activity android:name=".MainActivity">
             <intent-filter>
@@ -30,6 +32,10 @@
             android:name=".SignUpActivity"
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_sign_up"
+            android:theme="@style/FullscreenTheme" />
+        <activity
+            android:name=".EventActivity"
+            android:label="@string/title_activity_event"
             android:theme="@style/FullscreenTheme"></activity>
     </application>
 

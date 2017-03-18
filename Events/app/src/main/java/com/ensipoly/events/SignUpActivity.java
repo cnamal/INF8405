@@ -74,8 +74,8 @@ public class SignUpActivity extends AppCompatActivity {
                 TextInputLayout wrapper = (TextInputLayout)findViewById(R.id.input_username_wrapper);
                 if(username.equals("")){
                     wrapper.setError("Username field is required"); // TODO R.string
-                }else if(!isEmulator() && mUri == null){
-                    Toast.makeText(SignUpActivity.this,"Image required",Toast.LENGTH_SHORT).show(); //TODO R.string
+               // }else if(!isEmulator() && mUri == null){
+                //    Toast.makeText(SignUpActivity.this,"Image required",Toast.LENGTH_SHORT).show(); //TODO R.string
                 } else {
                     createUser(username);
                 }
