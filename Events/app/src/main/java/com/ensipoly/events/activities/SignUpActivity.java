@@ -19,7 +19,6 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.ensipoly.events.FirebaseUtils;
-import com.ensipoly.events.MainActivity;
 import com.ensipoly.events.R;
 import com.ensipoly.events.User;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -134,7 +133,7 @@ public class SignUpActivity extends AppCompatActivity {
                         SharedPreferences.Editor editor = sharedPref.edit();
                         editor.putString(User.USER_ID_KEY_PREFERENCE,user_id);
                         editor.commit();
-                        Intent intent = new Intent(SignUpActivity.this,MainActivity.class);
+                        Intent intent = new Intent(SignUpActivity.this,GroupsActivity.class);
                         startActivity(intent);
                     }
                 });
