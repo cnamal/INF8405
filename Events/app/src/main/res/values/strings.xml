@@ -18,4 +18,5 @@
     <string name="create_event_starting_date_missing">The starting date of the event is missing…</string>
     <string name="create_event_ending_date_missing">The ending date of the event is missing…</string>
     <string name="create_event_ending_date_before_starting_date_error">The ending date of the event is prior to starting date…</string>
+    <string name="title_activity_maps">Maps</string>
 </resources>

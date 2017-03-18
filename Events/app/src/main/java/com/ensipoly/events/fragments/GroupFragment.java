@@ -11,11 +11,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import com.ensipoly.events.EventActivity;
 import com.ensipoly.events.FirebaseUtils;
 import com.ensipoly.events.Group;
 import com.ensipoly.events.R;
 import com.ensipoly.events.Utils;
+import com.ensipoly.events.activities.MapsActivity;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -43,8 +43,8 @@ public class GroupFragment extends Fragment {
             organizer = (TextView) itemView.findViewById(R.id.organizerTextView);
         }
 
-        public void show(String title, Group group, boolean isOrganizer) {
-            this.title.setText(title);
+        public void show(String groupID, Group group, boolean isOrganizer) {
+            this.title.setText(groupID);
             if (!isOrganizer)
                 organizer.setVisibility(View.GONE);
             desc.setText(group.getNbUsers() + " members");
@@ -99,14 +99,15 @@ public class GroupFragment extends Fragment {
                         String key = this.getRef(position).getKey();
                         mGroupsDBReference.child(key).addValueEventListener(new ValueEventListener() {
                             public void onDataChange(DataSnapshot dataSnapshot) {
+                                final String key =  dataSnapshot.getKey();
                                 Group group = dataSnapshot.getValue(Group.class);
                                 boolean isOrganizer = group.getOrganizer().equals(mUserId);
-                                viewHolder.show(dataSnapshot.getKey(), group, isOrganizer);
+                                viewHolder.show(key, group, isOrganizer);
                                 if (isOrganizer)
                                     viewHolder.setOnClickListener(new View.OnClickListener() {
                                         @Override
                                         public void onClick(View view) {
-                                            startEventActivity();
+                                            startEventActivity(key);
                                         }
                                     });
                             }
@@ -127,14 +128,14 @@ public class GroupFragment extends Fragment {
                 new FirebaseRecyclerAdapter<Group, ItemViewHolder>(
                         Group.class, R.layout.item_group, ItemViewHolder.class, mGroupsDBReference) {
                     protected void populateViewHolder(final ItemViewHolder viewHolder, Group group, int position) {
-                        String key = this.getRef(position).getKey();
+                        final String key = this.getRef(position).getKey();
                         boolean isOrganizer = group.getOrganizer().equals(mUserId);
                         viewHolder.show(key, group, isOrganizer);
                         if(isOrganizer)
                         viewHolder.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                startEventActivity();
+                                startEventActivity(key);
                             }
                         });
                     }
@@ -142,10 +143,10 @@ public class GroupFragment extends Fragment {
         mRecyclerView.setAdapter(adapter);
     }
 
-    private void startEventActivity(){
-        Intent intent = new Intent(this.getActivity(), EventActivity.class);
+    private void startEventActivity(String groupID){
+        Intent intent = new Intent(this.getActivity(), MapsActivity.class);
+        intent.putExtra(MapsActivity.GROUP_ID,groupID);
         startActivity(intent);
-        this.getActivity().finish();
     }
 
     private void getCurrentUser() {

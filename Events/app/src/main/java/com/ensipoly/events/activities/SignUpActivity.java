@@ -1,4 +1,4 @@
-package com.ensipoly.events;
+package com.ensipoly.events.activities;
 
 import android.content.Context;
 import android.content.Intent;
@@ -18,6 +18,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.ensipoly.events.FirebaseUtils;
+import com.ensipoly.events.MainActivity;
+import com.ensipoly.events.R;
+import com.ensipoly.events.User;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;

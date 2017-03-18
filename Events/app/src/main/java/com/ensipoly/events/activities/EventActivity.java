@@ -1,4 +1,4 @@
-package com.ensipoly.events;
+package com.ensipoly.events.activities;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
@@ -11,6 +11,9 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TimePicker;
 import android.widget.Toast;
+
+import com.ensipoly.events.Event;
+import com.ensipoly.events.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;

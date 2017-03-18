@@ -1,4 +1,4 @@
-package com.ensipoly.events.fragments;
+package com.ensipoly.events.activities;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -7,8 +7,10 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v7.app.AppCompatActivity;
 
 import com.ensipoly.events.FirebaseUtils;
+import com.ensipoly.events.R;
 import com.ensipoly.events.User;
 import com.ensipoly.events.Utils;
 import com.google.android.gms.common.ConnectionResult;
@@ -33,8 +35,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMapLongClickListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
+public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLongClickListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
+    public static final String GROUP_ID = "com.ensipoly.events.activities.MapsActivity.GROUP_ID";
     private GoogleMap mMap;
     private static final int REQUEST_LOCATION_ON_MAP_READY = 0;
     private static final int REQUEST_LOCATION_ON_CONNECTED = 1;
@@ -58,6 +61,7 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
     private DatabaseReference mGroupDBReference;
     private ChildEventListener mChildEventListener;
     private HashMap<String, Marker> map;
+    private String mGroupID;
 
 
     @Override
@@ -69,109 +73,41 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
         mMap.setOnMapLongClickListener(this);
-        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(),
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_LOCATION_ON_MAP_READY);
             return;
         }
         mMap.setMyLocationEnabled(true);
 
-        /*mChildEventListener = new ChildEventListener() {
+        mGroupDBReference.child(mGroupID).child("members").addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                String id = dataSnapshot.getKey();
-                if (!id.equals(mUserId)) {
-                    User user = dataSnapshot.getValue(User.class);
-                    Marker marker = mMap.addMarker(new MarkerOptions().position(new LatLng(user.latitude, user.longitude)));
-                    map.put(id, marker);
-                }
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                String id = dataSnapshot.getKey();
-                if (!id.equals(mUserId)) {
-                    User user = dataSnapshot.getValue(User.class);
-                    Marker marker = map.get(id);
-                    marker.setPosition(new LatLng(user.latitude, user.longitude));
-                }
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-                String id = dataSnapshot.getKey();
-                if (!id.equals(mUserId)) {
-                    map.get(id).remove();
-                }
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        };
-
-
-        mUserDBReference.addChildEventListener(mChildEventListener);*/
-        mUserDBReference.child(mUserId).child("groups").addChildEventListener(new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                String group = dataSnapshot.getKey();
-                mGroupDBReference.child(group).child("members").addChildEventListener(new ChildEventListener() {
-                    @Override
-                    public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                        String userID = dataSnapshot.getKey();
-                        if (!userID.equals(mUserId)) {
-                            mUserDBReference.child(userID).addValueEventListener(new ValueEventListener() {
-                                @Override
-                                public void onDataChange(DataSnapshot dataSnapshot) {
-                                    User user = dataSnapshot.getValue(User.class);
-                                    String id = dataSnapshot.getKey();
-                                    if (!map.containsKey(id)) {
-                                        Marker marker = mMap.addMarker(new MarkerOptions().position(new LatLng(user.latitude, user.longitude)));
-                                        map.put(id, marker);
-                                    }else {
-                                        Marker marker = map.get(id);
-                                        marker.setPosition(new LatLng(user.latitude, user.longitude));
-                                    }
-                                }
-
-                                @Override
-                                public void onCancelled(DatabaseError databaseError) {
-
-                                }
-                            });
+                String userID = dataSnapshot.getKey();
+                if (!userID.equals(mUserId)) {
+                    mUserDBReference.child(userID).addValueEventListener(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            User user = dataSnapshot.getValue(User.class);
+                            String id = dataSnapshot.getKey();
+                            if (!map.containsKey(id)) {
+                                Marker marker = mMap.addMarker(new MarkerOptions().position(new LatLng(user.latitude, user.longitude)));
+                                map.put(id, marker);
+                            } else {
+                                Marker marker = map.get(id);
+                                marker.setPosition(new LatLng(user.latitude, user.longitude));
+                            }
                         }
-                    }
 
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
 
-                    @Override
-                    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-                    }
-
-                    @Override
-                    public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-                    }
-
-                    @Override
-                    public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                    }
-                });
+                        }
+                    });
+                }
             }
+
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
@@ -193,7 +129,6 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
 
             }
         });
-
     }
 
     @Override
@@ -220,15 +155,15 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
     }
 
     private void getCurrentUser() {
-        mUserId = Utils.getUserID(getContext());
+        mUserId = Utils.getUserID(this);
     }
 
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         if (mCurrentLocation == null) {
-            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(getActivity(),
+            if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ) {
+                ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                         REQUEST_LOCATION_ON_CONNECTED);
                 return;
@@ -251,8 +186,8 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
     private void startLocationUpdates() {
         // The final argument to {@code requestLocationUpdates()} is a LocationListener
         // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
-        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(getActivity(),
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                     REQUEST_LOCATION_START_LOCATION_UPDATES);
             return;
@@ -295,15 +230,20 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_maps);
         updateValuesFromBundle(savedInstanceState);
 
         buildGoogleApiClient();
         getCurrentUser();
         map = new HashMap<>();
 
-        setRetainInstance(true);
+        //setRetainInstance(true);
         mUserDBReference = FirebaseUtils.getUserDBReference();
         mGroupDBReference = FirebaseUtils.getGroupDBReference();
+        mGroupID = getIntent().getStringExtra(GROUP_ID);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
     }
 
     @Override
@@ -361,7 +301,7 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
     }
 
     private synchronized void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(getContext())
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
