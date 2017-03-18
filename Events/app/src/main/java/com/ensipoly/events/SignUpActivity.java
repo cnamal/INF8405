@@ -4,9 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.ActionBar;
@@ -25,8 +26,11 @@ import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.UUID;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -41,7 +45,8 @@ public class SignUpActivity extends AppCompatActivity {
     private DatabaseReference mUserDBReference;
     private StorageReference mStorageReference;
     private byte[] mPhotoData;
-    private Uri mUri;
+    private String mFileName;
+    private String mAbsolutePath;
 
 
     @Override
@@ -74,8 +79,8 @@ public class SignUpActivity extends AppCompatActivity {
                 TextInputLayout wrapper = (TextInputLayout)findViewById(R.id.input_username_wrapper);
                 if(username.equals("")){
                     wrapper.setError("Username field is required"); // TODO R.string
-               // }else if(!isEmulator() && mUri == null){
-                //    Toast.makeText(SignUpActivity.this,"Image required",Toast.LENGTH_SHORT).show(); //TODO R.string
+                }else if(mFileName == null || mAbsolutePath == null || mPhotoData == null){
+                    Toast.makeText(SignUpActivity.this,"Image required",Toast.LENGTH_SHORT).show(); //TODO R.string
                 } else {
                     createUser(username);
                 }
@@ -86,9 +91,17 @@ public class SignUpActivity extends AppCompatActivity {
         cameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                try{
+                File f = createImageFile();
                 Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
                 if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
                     startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
+                }
+                }catch (IOException e){
+                    e.printStackTrace();
+                    mFileName = null;
+                    mAbsolutePath = null;
                 }
             }
         });
@@ -100,7 +113,7 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void createUser(final String username) {
-        StorageReference photoRef = mStorageReference.child(mUri==null ? "emulator" :mUri.getLastPathSegment());
+        StorageReference photoRef = mStorageReference.child(mFileName);
         photoRef.putBytes(mPhotoData).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @SuppressWarnings("VisibleForTests")
             @Override
@@ -130,9 +143,7 @@ public class SignUpActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
-            Bundle extras = data.getExtras();
-            mUri = data.getData();
-            Bitmap imageBitmap = (Bitmap) extras.get("data");
+            Bitmap imageBitmap = BitmapFactory.decodeFile(mAbsolutePath);
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
             mPhotoData = stream.toByteArray();
@@ -140,14 +151,12 @@ public class SignUpActivity extends AppCompatActivity {
         }
     }
 
-    private  static boolean isEmulator() {
-        return Build.FINGERPRINT.startsWith("generic")
-                || Build.FINGERPRINT.startsWith("unknown")
-                || Build.MODEL.contains("google_sdk")
-                || Build.MODEL.contains("Emulator")
-                || Build.MODEL.contains("Android SDK built for x86")
-                || Build.MANUFACTURER.contains("Genymotion")
-                || (Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic"))
-                || "google_sdk".equals(Build.PRODUCT);
+    private File createImageFile() throws IOException {
+        // Create an image file name
+        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        mFileName = UUID.randomUUID().toString();
+        File imageF = File.createTempFile(mFileName, ".jpg", storageDir);
+        mAbsolutePath = imageF.getAbsolutePath();
+        return imageF;
     }
 }
