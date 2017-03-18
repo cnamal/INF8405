@@ -26,6 +26,7 @@ import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.DateFormat;
 import java.util.Date;
@@ -54,6 +55,7 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
 
 
     private DatabaseReference mUserDBReference;
+    private DatabaseReference mGroupDBReference;
     private ChildEventListener mChildEventListener;
     private HashMap<String, Marker> map;
 
@@ -75,7 +77,7 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
         }
         mMap.setMyLocationEnabled(true);
 
-        mChildEventListener = new ChildEventListener() {
+        /*mChildEventListener = new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 String id = dataSnapshot.getKey();
@@ -116,14 +118,88 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
         };
 
 
-        mUserDBReference.addChildEventListener(mChildEventListener);
+        mUserDBReference.addChildEventListener(mChildEventListener);*/
+        mUserDBReference.child(mUserId).child("groups").addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                String group = dataSnapshot.getKey();
+                mGroupDBReference.child(group).child("members").addChildEventListener(new ChildEventListener() {
+                    @Override
+                    public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                        String userID = dataSnapshot.getKey();
+                        if (!userID.equals(mUserId)) {
+                            mUserDBReference.child(userID).addValueEventListener(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(DataSnapshot dataSnapshot) {
+                                    User user = dataSnapshot.getValue(User.class);
+                                    String id = dataSnapshot.getKey();
+                                    if (!map.containsKey(id)) {
+                                        Marker marker = mMap.addMarker(new MarkerOptions().position(new LatLng(user.latitude, user.longitude)));
+                                        map.put(id, marker);
+                                    }else {
+                                        Marker marker = map.get(id);
+                                        marker.setPosition(new LatLng(user.latitude, user.longitude));
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(DatabaseError databaseError) {
+
+                                }
+                            });
+                        }
+                    }
+
+
+                    @Override
+                    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+                    }
+
+                    @Override
+                    public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+                    }
+
+                    @Override
+                    public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
-        if(grantResults.length==0)
+        if (grantResults.length == 0)
             return;
         switch (requestCode) {
             case REQUEST_LOCATION_ON_MAP_READY:
@@ -209,15 +285,15 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
 
     @Override
     public void onLocationChanged(Location location) {
-        Map<String,Object> childUpdates = new HashMap<>();
-        childUpdates.put("/latitude",location.getLatitude());
-        childUpdates.put("/longitude",location.getLongitude());
-        childUpdates.put("/lastActive",DateFormat.getTimeInstance().format(new Date()));
+        Map<String, Object> childUpdates = new HashMap<>();
+        childUpdates.put("/latitude", location.getLatitude());
+        childUpdates.put("/longitude", location.getLongitude());
+        childUpdates.put("/lastActive", DateFormat.getTimeInstance().format(new Date()));
         mUserDBReference.child(mUserId).updateChildren(childUpdates);
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState){
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         updateValuesFromBundle(savedInstanceState);
 
@@ -227,6 +303,7 @@ public class MapsFragments extends SupportMapFragment implements GoogleMap.OnMap
 
         setRetainInstance(true);
         mUserDBReference = FirebaseUtils.getUserDBReference();
+        mGroupDBReference = FirebaseUtils.getGroupDBReference();
     }
 
     @Override

@@ -1,6 +1,8 @@
 package com.ensipoly.events;
 
 
+import java.util.Map;
+
 public class User {
 
     public static final String USER_ID_KEY_PREFERENCE = "user_id";
@@ -10,6 +12,7 @@ public class User {
     public double latitude;
     public double longitude;
     public String lastActive;
+    public Map<String,Object> groups;
 
     public User(){}
 
