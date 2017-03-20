@@ -1,4 +1,4 @@
-package com.ensipoly.events;
+package com.ensipoly.events.models;
 
 import com.google.firebase.database.Exclude;
 
@@ -9,6 +9,9 @@ public class Group {
     private String organizer;
     private Map<String,Boolean> members;
 
+    private Map<String,Boolean> locations;
+
+    private String event;
     public Group(){
 
     }
@@ -16,6 +19,14 @@ public class Group {
     @Exclude
     public int getNbUsers() {
         return members.size();
+    }
+
+    @Exclude
+    public boolean allMembersVotes(){
+        for (Boolean b : members.values())
+            if (!b)
+                return false;
+        return true;
     }
 
     public Map<String, Boolean> getMembers(){
@@ -33,4 +44,13 @@ public class Group {
     public void setMembers(Map<String,Boolean> members) {
         this.members = members;
     }
+
+    public Map<String, Boolean> getLocations() {
+        return locations;
+    }
+
+    public String getEvent() {
+        return event;
+    }
+
 }

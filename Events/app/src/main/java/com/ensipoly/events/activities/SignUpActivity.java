@@ -22,7 +22,7 @@ import android.widget.Toast;
 
 import com.ensipoly.events.FirebaseUtils;
 import com.ensipoly.events.R;
-import com.ensipoly.events.User;
+import com.ensipoly.events.models.User;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DatabaseReference;

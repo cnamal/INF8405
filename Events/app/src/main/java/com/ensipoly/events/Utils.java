@@ -3,6 +3,8 @@ package com.ensipoly.events;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.ensipoly.events.models.User;
+
 public class Utils {
 
     private static String mUserId;
@@ -16,6 +18,12 @@ public class Utils {
             mUserId = tmp;
         }
         return mUserId;
+    }
+
+    public static class Triplet<X,Y,Z> {
+        public X first;
+        public Y second;
+        public Z third;
     }
 
 }

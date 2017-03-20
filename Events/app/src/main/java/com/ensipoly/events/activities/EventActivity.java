@@ -4,15 +4,14 @@ import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
-import com.ensipoly.events.Event;
 import com.ensipoly.events.R;
 
 import java.text.SimpleDateFormat;
@@ -27,7 +26,7 @@ public class EventActivity extends AppCompatActivity {
     private Calendar endingDateCalendar = Calendar.getInstance();
     private Calendar currentCalendar = Calendar.getInstance();
     private EditText nameText;
-    private EditText placeText;
+    private TextView placeText;
     private EditText infoText;
 
     @Override
@@ -37,7 +36,7 @@ public class EventActivity extends AppCompatActivity {
         startingDateText = (EditText) findViewById(R.id.input_starting_date);
         endingDateText = (EditText) findViewById(R.id.input_ending_date);
         nameText = (EditText) findViewById(R.id.input_name);
-        placeText = (EditText) findViewById(R.id.input_place);
+        placeText = (TextView) findViewById(R.id.location);
         infoText = (EditText) findViewById(R.id.input_info);
         setupDates();
 
@@ -55,12 +54,6 @@ public class EventActivity extends AppCompatActivity {
 
                 // Else print in log the event created.
                 // TODO: Handle database
-                Event event = new Event(null, nameText.getText().toString(),
-                        infoText.getText().toString(),
-                        placeText.getText().toString(),
-                        startingDateCalendar.getTime(), endingDateCalendar.getTime());
-                Log.d("EventActivity", "**************************************");
-                Log.d("EventActivity", event.toString());
             }
         });
     }

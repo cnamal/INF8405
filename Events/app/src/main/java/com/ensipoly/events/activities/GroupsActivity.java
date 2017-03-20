@@ -17,7 +17,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.ensipoly.events.FirebaseUtils;
-import com.ensipoly.events.Group;
+import com.ensipoly.events.models.Group;
 import com.ensipoly.events.R;
 import com.ensipoly.events.Utils;
 import com.ensipoly.events.fragments.GroupFragment;
@@ -51,7 +51,7 @@ public class GroupsActivity extends AppCompatActivity {
             return;
         }
 
-        setContentView(R.layout.fragment_groups);
+        setContentView(R.layout.activity_groups);
         ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
         viewPager.setAdapter(new MyAdapter(getSupportFragmentManager()));
         mGroupsDBReference = FirebaseUtils.getGroupDBReference();
@@ -83,7 +83,7 @@ public class GroupsActivity extends AppCompatActivity {
                                 }else
                                     map = group.getMembers();
 
-                                map.put(user,true);
+                                map.put(user,false);
                                 mutableData.setValue(group);
                                 return Transaction.success(mutableData);
                             }
@@ -98,10 +98,12 @@ public class GroupsActivity extends AppCompatActivity {
                                         Toast.makeText(GroupsActivity.this,"Group created", Toast.LENGTH_SHORT).show();
                                     else
                                         Toast.makeText(GroupsActivity.this,"Added to group", Toast.LENGTH_SHORT).show();
+
                                     DatabaseReference userDBReference = FirebaseUtils.getUserDBReference();
                                     Map<String, Object> childUpdates = new HashMap<>();
                                     childUpdates.put("/"+ Utils.getUserID(GroupsActivity.this)+"/groups/"+dataSnapshot.getKey(),true);
                                     userDBReference.updateChildren(childUpdates);
+                                    startMapsActivity(dataSnapshot.getKey());
                                 }
                             }
                         });
@@ -111,6 +113,12 @@ public class GroupsActivity extends AppCompatActivity {
                 dialog.show();
             }
         });
+    }
+
+    private void startMapsActivity(String groupID){
+        Intent intent = new Intent(this, MapsActivity.class);
+        intent.putExtra(MapsActivity.GROUP_ID,groupID);
+        startActivity(intent);
     }
 
     class MyAdapter extends FragmentPagerAdapter {

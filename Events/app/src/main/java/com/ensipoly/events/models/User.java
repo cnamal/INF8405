@@ -1,4 +1,4 @@
-package com.ensipoly.events;
+package com.ensipoly.events.models;
 
 
 import java.util.Map;

@@ -12,7 +12,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.ensipoly.events.FirebaseUtils;
-import com.ensipoly.events.Group;
+import com.ensipoly.events.models.Group;
 import com.ensipoly.events.R;
 import com.ensipoly.events.Utils;
 import com.ensipoly.events.activities.MapsActivity;
@@ -99,17 +99,16 @@ public class GroupFragment extends Fragment {
                         String key = this.getRef(position).getKey();
                         mGroupsDBReference.child(key).addValueEventListener(new ValueEventListener() {
                             public void onDataChange(DataSnapshot dataSnapshot) {
-                                final String key =  dataSnapshot.getKey();
+                                final String key = dataSnapshot.getKey();
                                 Group group = dataSnapshot.getValue(Group.class);
                                 boolean isOrganizer = group.getOrganizer().equals(mUserId);
                                 viewHolder.show(key, group, isOrganizer);
-                                if (isOrganizer)
-                                    viewHolder.setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View view) {
-                                            startEventActivity(key);
-                                        }
-                                    });
+                                viewHolder.setOnClickListener(new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+                                        startMapsActivity(key);
+                                    }
+                                });
                             }
 
                             @Override
@@ -130,22 +129,23 @@ public class GroupFragment extends Fragment {
                     protected void populateViewHolder(final ItemViewHolder viewHolder, Group group, int position) {
                         final String key = this.getRef(position).getKey();
                         boolean isOrganizer = group.getOrganizer().equals(mUserId);
+                        boolean inGroup = group.getMembers().containsKey(mUserId);
                         viewHolder.show(key, group, isOrganizer);
-                        if(isOrganizer)
-                        viewHolder.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                startEventActivity(key);
-                            }
-                        });
+                        if (inGroup)
+                            viewHolder.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    startMapsActivity(key);
+                                }
+                            });
                     }
                 };
         mRecyclerView.setAdapter(adapter);
     }
 
-    private void startEventActivity(String groupID){
+    private void startMapsActivity(String groupID) {
         Intent intent = new Intent(this.getActivity(), MapsActivity.class);
-        intent.putExtra(MapsActivity.GROUP_ID,groupID);
+        intent.putExtra(MapsActivity.GROUP_ID, groupID);
         startActivity(intent);
     }
 
