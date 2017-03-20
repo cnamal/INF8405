@@ -1,10 +1,13 @@
-package com.ensipoly.events.activities;
+package com.ensipoly.events.fragments;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -12,13 +15,29 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.ensipoly.events.FirebaseUtils;
 import com.ensipoly.events.R;
+import com.ensipoly.events.Utils;
+import com.ensipoly.events.activities.MapsActivity;
+import com.ensipoly.events.models.Event;
+import com.ensipoly.events.models.Location;
+import com.github.clans.fab.FloatingActionButton;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DatabaseReference;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
-public class EventActivity extends AppCompatActivity {
+/**
+ * Created by namalgac on 3/20/17.
+ */
+
+public class CreateEventFragment extends Fragment {
+
+    private static final String GROUP_ID = "groupID";
 
     private EditText startingDateText;
     private Calendar startingDateCalendar = Calendar.getInstance();
@@ -29,51 +48,86 @@ public class EventActivity extends AppCompatActivity {
     private TextView placeText;
     private EditText infoText;
 
+    private String mGroupID;
+    private Location mLocation;
+
+    public static CreateEventFragment getInstance(Location location, String groupID) {
+        CreateEventFragment fragment = new CreateEventFragment();
+        Bundle bundle = new Bundle();
+        location.addArguments(bundle);
+        bundle.putString(GROUP_ID, groupID);
+        fragment.setArguments(bundle);
+        return fragment;
+    }
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_event);
-        startingDateText = (EditText) findViewById(R.id.input_starting_date);
-        endingDateText = (EditText) findViewById(R.id.input_ending_date);
-        nameText = (EditText) findViewById(R.id.input_name);
-        placeText = (TextView) findViewById(R.id.location);
-        infoText = (EditText) findViewById(R.id.input_info);
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.fragment_create_event, container, false);
+        final FloatingActionButton mFAB = (FloatingActionButton) getActivity().findViewById(R.id.fab_done);
+        mFAB.hide(true);
+        mLocation = Location.getLocationFromBundle(getArguments());
+        mGroupID = getArguments().getString(GROUP_ID);
+        startingDateText = (EditText) v.findViewById(R.id.input_starting_date);
+        endingDateText = (EditText) v.findViewById(R.id.input_ending_date);
+        nameText = (EditText) v.findViewById(R.id.input_name);
+        nameText.setText(mLocation.getName());
+        placeText = (TextView) v.findViewById(R.id.location);
+        placeText.setText(Utils.formatLocation(mLocation));
+        infoText = (EditText) v.findViewById(R.id.input_info);
         setupDates();
 
+        final DatabaseReference eventDBReference = FirebaseUtils.getEventDBReference();
+
         // Setup the submit button
-        Button submitButton = (Button) findViewById(R.id.create_event_create_button);
+        Button submitButton = (Button) v.findViewById(R.id.create_event_create_button);
         submitButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Check if the form is OK. If not print error and return
                 String error = verifyForm();
-                if(error != null){
-                    Toast.makeText(EventActivity.this,error,Toast.LENGTH_SHORT).show();
+                if (error != null) {
+                    Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                // Else print in log the event created.
-                // TODO: Handle database
+                Event event = new Event(nameText.getText().toString(),
+                        infoText.getText().toString().trim(),
+                        mLocation.getLatitude(),
+                        mLocation.getLongitude(),
+                        startingDateCalendar.getTime(), endingDateCalendar.getTime());
+                String eventId = eventDBReference.push().getKey();
+                DatabaseReference ref = FirebaseUtils.getDatabase().getReference();
+                Map<String, Object> children = new HashMap<>();
+                children.put("/groups/" + mGroupID + "/event", eventId);
+                children.put("/events/" + eventId, event);
+                ref.updateChildren(children).addOnSuccessListener(new OnSuccessListener<Void>() {
+                    @Override
+                    public void onSuccess(Void aVoid) {
+                        Toast.makeText(getContext(),"Event created",Toast.LENGTH_SHORT).show();
+                        ((MapsActivity)getActivity()).hideBottomSheet();
+                    }
+                });
             }
         });
+        return v;
     }
 
-    private void setupDates(){
+    private void setupDates() {
 
         // Setup the listener to call when the date is set. Therefore we need to set the time.
         // At the end, the label is updated.
-        final TimePickerDialog.OnTimeSetListener startingTime = new TimePickerDialog.OnTimeSetListener(){
+        final TimePickerDialog.OnTimeSetListener startingTime = new TimePickerDialog.OnTimeSetListener() {
             @Override
-            public void onTimeSet(TimePicker view, int hour, int minute){
+            public void onTimeSet(TimePicker view, int hour, int minute) {
                 startingDateCalendar.set(Calendar.HOUR_OF_DAY, hour);
                 startingDateCalendar.set(Calendar.MINUTE, minute);
                 updateStartingLabel();
             }
         };
 
-        final TimePickerDialog.OnTimeSetListener endingTime = new TimePickerDialog.OnTimeSetListener(){
+        final TimePickerDialog.OnTimeSetListener endingTime = new TimePickerDialog.OnTimeSetListener() {
             @Override
-            public void onTimeSet(TimePicker view, int hour, int minute){
+            public void onTimeSet(TimePicker view, int hour, int minute) {
                 endingDateCalendar.set(Calendar.HOUR_OF_DAY, hour);
                 endingDateCalendar.set(Calendar.MINUTE, minute);
                 updateEndingLabel();
@@ -93,7 +147,7 @@ public class EventActivity extends AppCompatActivity {
                 startingDateCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
                 // Now set the time
-                new TimePickerDialog(EventActivity.this, startingTime,
+                new TimePickerDialog(getContext(), startingTime,
                         currentCalendar.get(Calendar.HOUR_OF_DAY),
                         currentCalendar.get(Calendar.MINUTE),
                         false).show();
@@ -113,7 +167,7 @@ public class EventActivity extends AppCompatActivity {
 
 
                 // Now set the time
-                new TimePickerDialog(EventActivity.this, endingTime,
+                new TimePickerDialog(getContext(), endingTime,
                         currentCalendar.get(Calendar.HOUR_OF_DAY),
                         currentCalendar.get(Calendar.MINUTE),
                         false).show();
@@ -127,7 +181,7 @@ public class EventActivity extends AppCompatActivity {
         startingDateText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new DatePickerDialog(EventActivity.this, startingDate,
+                new DatePickerDialog(getContext(), startingDate,
                         currentCalendar.get(Calendar.YEAR),
                         currentCalendar.get(Calendar.MONTH),
                         currentCalendar.get(Calendar.DAY_OF_MONTH)).show();
@@ -137,7 +191,7 @@ public class EventActivity extends AppCompatActivity {
         endingDateText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new DatePickerDialog(EventActivity.this, endingDate,
+                new DatePickerDialog(getContext(), endingDate,
                         currentCalendar.get(Calendar.YEAR),
                         currentCalendar.get(Calendar.MONTH),
                         currentCalendar.get(Calendar.DAY_OF_MONTH)).show();
@@ -163,16 +217,16 @@ public class EventActivity extends AppCompatActivity {
         endingDateText.setText(sdf.format(endingDateCalendar.getTime()));
     }
 
-    private String verifyForm(){
-        if(nameText.getText().toString().equals(""))
+    private String verifyForm() {
+        if (nameText.getText().toString().equals(""))
             return getString(R.string.create_event_name_missing);
-        if(placeText.getText().toString().equals(""))
+        if (placeText.getText().toString().equals(""))
             return getString(R.string.create_event_place_missing);
-        if(startingDateText.getText().toString().equals(""))
+        if (startingDateText.getText().toString().equals(""))
             return getString(R.string.create_event_starting_date_missing);
-        if(endingDateText.getText().toString().equals(""))
+        if (endingDateText.getText().toString().equals(""))
             return getString(R.string.create_event_ending_date_missing);
-        if(startingDateCalendar.after(endingDateCalendar))
+        if (startingDateCalendar.after(endingDateCalendar))
             return getString(R.string.create_event_ending_date_before_starting_date_error);
         return null;
     }

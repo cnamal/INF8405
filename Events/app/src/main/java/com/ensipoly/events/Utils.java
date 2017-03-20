@@ -3,7 +3,11 @@ package com.ensipoly.events;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.ensipoly.events.models.Event;
 import com.ensipoly.events.models.User;
+import com.google.android.gms.maps.model.LatLng;
+
+import java.util.Locale;
 
 public class Utils {
 
@@ -20,10 +24,20 @@ public class Utils {
         return mUserId;
     }
 
-    public static class Triplet<X,Y,Z> {
-        public X first;
-        public Y second;
-        public Z third;
+    public static String formatLocation(double latitude, double longitude) {
+        return String.format(Locale.getDefault(), "Location: %1$.3f, %2$.3f ", latitude, longitude);
+    }
+
+    public static String formatLocation(com.ensipoly.events.models.Location location) {
+        return formatLocation(location.getLatitude(), location.getLongitude());
+    }
+
+    public static String formatLocation(LatLng latLng) {
+        return formatLocation(latLng.latitude, latLng.longitude);
+    }
+
+    public static String formatLocation(Event event) {
+        return formatLocation(event.getLatitude(), event.getLongitude());
     }
 
 }

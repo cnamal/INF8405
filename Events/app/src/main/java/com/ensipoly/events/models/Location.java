@@ -1,8 +1,10 @@
 package com.ensipoly.events.models;
 
-import com.google.android.gms.maps.model.LatLng;
+import android.os.Bundle;
+
 import com.google.firebase.database.Exclude;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -11,20 +13,27 @@ import java.util.Map;
 
 public class Location {
 
+    private static final String LATITUDE = "location/latitude";
+    private static final String LONGITUDE = "location/longitude";
+    private static final String NAME = "location/name";
+    private static final String PHOTO_URL = "location/photo";
+    private static final String VOTES = "location/votes";
+    private static final String ID = "location/id";
+
     private double latitude;
     private double longitude;
     private String name;
     private String photoURL;
-    private Map<String,Float> votes;
+    private HashMap<String,Float> votes;
     private String id;
 
     public Location(){
 
     }
 
-    public Location(LatLng latLng, String n, String url){
-        latitude = latLng.latitude;
-        longitude = latLng.longitude;
+    public Location(double latitude,double longitude, String n, String url){
+        this.latitude = latitude;
+        this.longitude = longitude;
         name = n;
         photoURL = url;
     }
@@ -53,6 +62,24 @@ public class Location {
     @Exclude
     public String getId(){
         return id;
+    }
+
+    @Exclude
+    public void addArguments(Bundle bundle){
+        bundle.putDouble(LATITUDE,latitude);
+        bundle.putDouble(LONGITUDE,longitude);
+        bundle.putString(NAME,name);
+        bundle.putString(PHOTO_URL,photoURL);
+        bundle.putSerializable(VOTES,votes);
+        bundle.putString(ID,id);
+    }
+
+    @Exclude
+    public static Location getLocationFromBundle(Bundle bundle){
+        Location location = new Location(bundle.getDouble(LATITUDE),bundle.getDouble(LONGITUDE),bundle.getString(NAME),bundle.getString(PHOTO_URL));
+        location.votes = (HashMap<String, Float>) bundle.getSerializable(VOTES);
+        location.id = bundle.getString(ID);
+        return location;
     }
 
     public Map<String,Float> getVotes(){
