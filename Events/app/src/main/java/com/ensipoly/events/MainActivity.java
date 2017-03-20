@@ -1,6 +1,10 @@
 package com.ensipoly.events;
 
+import android.content.BroadcastReceiver;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
@@ -29,6 +33,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private CharSequence mTitle;
     private CharSequence mDrawerTitle;
     private ActionBarDrawerToggle mDrawerToggle;
+    private BroadcastReceiver mCheckConnection;
+    private BroadcastReceiver mCheckLocation;
 
 
     @Override
@@ -43,6 +49,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             finish();
             return;
         }
+
+        // Register to Broadcast Receivers
+        mCheckConnection = new CheckConnection();
+        mCheckLocation = new CheckLocation();
+        IntentFilter networkFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        IntentFilter gpsFilter =  new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION);
+        this.registerReceiver(mCheckConnection, networkFilter);
+        this.registerReceiver(mCheckLocation, gpsFilter);
 
         setContentView(R.layout.activity_main);
         mNavigationView = (NavigationView) findViewById(R.id.navigation_view);
