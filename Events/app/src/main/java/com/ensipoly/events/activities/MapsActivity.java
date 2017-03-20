@@ -3,9 +3,13 @@ package com.ensipoly.events.activities;
 import android.Manifest;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
+import android.content.BroadcastReceiver;
 import android.content.DialogInterface;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -27,6 +31,8 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
 
+import com.ensipoly.events.CheckConnection;
+import com.ensipoly.events.CheckLocation;
 import com.ensipoly.events.FirebaseUtils;
 import com.ensipoly.events.R;
 import com.ensipoly.events.Utils;
@@ -103,6 +109,9 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
     private boolean mCanCreateEvent = false;
     private int mMaxHeigt;
     private NestedScrollView mNestedScrollView;
+    private BroadcastReceiver mCheckConnection;
+    private BroadcastReceiver mCheckLocation;
+    private TextView mConnectionTextView;
 
     @Override
     public void onMapLongClick(final LatLng latLng) {
@@ -332,11 +341,15 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
         mLocationSuggestionMap.clear();
     }
 
-    private void modifyMapPadding() {
+    public void modifyMapPadding() {
         int height = 0;
         if (mInfoTextView.getVisibility() == View.VISIBLE) {
             mInfoTextView.measure(0, 0);
             height += mInfoTextView.getMeasuredHeight();
+        }
+        if (mConnectionTextView.getVisibility() == View.VISIBLE) {
+            mConnectionTextView.measure(0, 0);
+            height += mConnectionTextView.getMeasuredHeight();
         }
 
         mMap.setPadding(0, height, 0, 0);
@@ -450,6 +463,14 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
         map = new HashMap<>();
         mLocationSuggestionMap = new HashMap<>();
         canLongClick = false;
+
+        mConnectionTextView = (TextView)findViewById(R.id.connection_text_view);
+        mCheckConnection = new CheckConnection(mConnectionTextView);
+        mCheckLocation = new CheckLocation(mConnectionTextView);
+        IntentFilter networkFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        IntentFilter gpsFilter =  new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION);
+        this.registerReceiver(mCheckConnection, networkFilter);
+        this.registerReceiver(mCheckLocation, gpsFilter);
 
         mUserDBReference = FirebaseUtils.getUserDBReference();
         mGroupDBReference = FirebaseUtils.getGroupDBReference();

@@ -6,8 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.location.LocationManager;
 import android.util.Log;
-
-import static android.location.LocationManager.GPS_PROVIDER;
+import android.view.View;
+import android.widget.TextView;
 
 /**
  * Created by Adrien on 19/03/2017.
@@ -15,11 +15,27 @@ import static android.location.LocationManager.GPS_PROVIDER;
 
 public class CheckLocation extends BroadcastReceiver {
 
+    private TextView info;
+    private static final int STATE = 1;
+
+    public CheckLocation(TextView textView){
+        info = textView;
+    }
+
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d("CheckLocation","Location change");
+        Log.d("CheckLocation", "Location change");
         LocationManager lm = (LocationManager) context.getSystemService(Service.LOCATION_SERVICE);
         boolean isEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        Log.d("CheckLocation", "GPS enabled? : " + isEnabled);
+        if (isEnabled)
+            info.setVisibility(View.GONE);
+        else
+            showInfo("GPS disabled",R.color.severity_high);
+    }
+
+    private void showInfo(String text, @android.support.annotation.DrawableRes int resId) {
+        info.setText(text);
+        info.setVisibility(View.VISIBLE);
+        info.setBackgroundResource(resId);
     }
 }

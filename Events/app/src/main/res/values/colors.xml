@@ -7,4 +7,5 @@
     <color name="black_overlay">#66000000</color>
     <color name="severity_mid">#BFFFCA28</color>
     <color name="severity_low">#BFAED581</color>
+    <color name="severity_high">#BFF44336</color>
 </resources>
