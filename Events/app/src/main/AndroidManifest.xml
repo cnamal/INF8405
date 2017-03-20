@@ -33,16 +33,24 @@
             android:configChanges="orientation|keyboardHidden|screenSize"
             android:label="@string/title_activity_sign_up"
             android:theme="@style/FullscreenTheme" />
-        <activity
-            android:name=".activities.EventActivity"
-            android:label="@string/title_activity_event"
-            android:theme="@style/FullscreenTheme"/>
+
         <activity
             android:name=".activities.MapsActivity"
             android:label="@string/title_activity_maps"
             android:theme="@style/FullscreenTheme"
             android:parentActivityName=".activities.GroupsActivity"
             />
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
+        
     </application>
 
 </manifest>
