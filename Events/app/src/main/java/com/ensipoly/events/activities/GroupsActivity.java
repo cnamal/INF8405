@@ -82,7 +82,6 @@ public class GroupsActivity extends AppCompatActivity {
                                     group.setMembers(map);
                                 }else
                                     map = group.getMembers();
-
                                 map.put(user,false);
                                 mutableData.setValue(group);
                                 return Transaction.success(mutableData);
@@ -94,7 +93,7 @@ public class GroupsActivity extends AppCompatActivity {
                                     // TODO R.string
                                     Toast.makeText(GroupsActivity.this,"An error occurred, please retry", Toast.LENGTH_SHORT).show();
                                 }else{
-                                    if(dataSnapshot.getChildrenCount()==0)
+                                    if(dataSnapshot.getValue(Group.class).getNbUsers()==1)
                                         Toast.makeText(GroupsActivity.this,"Group created", Toast.LENGTH_SHORT).show();
                                     else
                                         Toast.makeText(GroupsActivity.this,"Added to group", Toast.LENGTH_SHORT).show();
