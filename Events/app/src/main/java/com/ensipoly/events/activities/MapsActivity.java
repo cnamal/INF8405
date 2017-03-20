@@ -840,7 +840,12 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
                                                     children.put("/locations/" + entry.getKey() + "/votes/" + mUserId, entry.getValue());
                                                 }
                                                 children.put("/groups/" + mGroupID + "/members/" + mUserId, true);
-                                                FirebaseUtils.getDatabase().getReference().updateChildren(children);
+                                                FirebaseUtils.getDatabase().getReference().updateChildren(children).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                    @Override
+                                                    public void onSuccess(Void aVoid) {
+                                                        Toast.makeText(MapsActivity.this,"Location added",Toast.LENGTH_SHORT).show();
+                                                    }
+                                                });
                                             }
                                         })
                                         .setNegativeButton("Cancel", null)
