@@ -2,12 +2,15 @@ package com.ensipoly.events.activities;
 
 import android.Manifest;
 import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
@@ -17,6 +20,7 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.util.Pair;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 
@@ -56,6 +60,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+
+import static com.ensipoly.events.Utils.showInfo;
 
 public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLongClickListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, GoogleMap.OnMapClickListener, GoogleMap.OnMarkerClickListener {
 
@@ -212,7 +218,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
                     mInfoTextView.setVisibility(View.GONE);
                     if (group.allMembersVotes()) {
                         if (isOrganizer) {
-                            showInfo("Please create an event by clicking on the location of you choice.", R.color.severity_mid);
+                            showInfo(mInfoTextView,"Please create an event by clicking on the location of you choice.", R.color.severity_mid);
                             mCanCreateEvent = true;
                         }
                     }
@@ -233,7 +239,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
                                 }
                                 pair.first.setTag(location);
                                 if (location.getVotes() == null || !location.getVotes().containsKey(mUserId))
-                                    showInfo("Please vote for every location.", R.color.severity_mid);
+                                    showInfo(mInfoTextView,"Please vote for every location.", R.color.severity_mid);
 
                             }
 
@@ -251,7 +257,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
                         return;
                     canLongClick = true;
                     int remaining = locations == null ? 3 : 3 - locations.size();
-                    showInfo("Please select " + remaining + " places", R.color.severity_mid);
+                    showInfo(mInfoTextView,"Please select " + remaining + " places", R.color.severity_mid);
                 }
 
             }
@@ -396,12 +402,6 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
         canLongClick = false;
 
         mConnectionTextView = (TextView) findViewById(R.id.connection_text_view);
-        mCheckConnection = new CheckConnection(mConnectionTextView);
-        mCheckLocation = new CheckLocation(mConnectionTextView);
-        IntentFilter networkFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
-        IntentFilter gpsFilter = new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION);
-        this.registerReceiver(mCheckConnection, networkFilter);
-        this.registerReceiver(mCheckLocation, gpsFilter);
 
         mUserDBReference = FirebaseUtils.getUserDBReference();
         mGroupDBReference = FirebaseUtils.getGroupDBReference();
@@ -462,6 +462,17 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
         if (mGoogleApiClient.isConnected()) {
             startLocationUpdates();
         }
+
+        Utils.ConnectionInfoManager manager = new Utils.ConnectionInfoManager(mConnectionTextView);
+        mCheckConnection = new CheckConnection(manager);
+        mCheckLocation = new CheckLocation(manager);
+        IntentFilter networkFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        IntentFilter gpsFilter = new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION);
+        this.registerReceiver(mCheckConnection, networkFilter);
+        this.registerReceiver(mCheckLocation, gpsFilter);
+
+        if(!isLocationEnabled(getApplicationContext()))
+            manager.onLocationChanged(false);
     }
 
     @Override
@@ -471,6 +482,8 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
         if (mGoogleApiClient.isConnected()) {
             stopLocationUpdates();
         }
+        this.unregisterReceiver(mCheckConnection);
+        this.unregisterReceiver(mCheckLocation);
     }
 
     @Override
@@ -577,13 +590,6 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
         fragmentTransaction.commit();
     }
 
-    private void showInfo(String text, @android.support.annotation.DrawableRes int resId) {
-        mInfoTextView.setText(text);
-        mInfoTextView.setVisibility(View.VISIBLE);
-        mInfoTextView.setBackgroundResource(resId);
-        modifyMapPadding();
-    }
-
     private boolean shouldNotShowDetails(boolean force, String id) {
         return !force && (mBottomSheetBehavior1.getState() == BottomSheetBehavior.STATE_HIDDEN || mCurrentBottomSheetID == null || !mCurrentBottomSheetID.equals(id));
     }
@@ -639,4 +645,24 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
         }
     }
 
+    private static boolean isLocationEnabled(Context context) {
+        int locationMode = 0;
+        String locationProviders;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
+            try {
+                locationMode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
+
+            } catch (Settings.SettingNotFoundException e) {
+                e.printStackTrace();
+                return false;
+            }
+
+            return locationMode != Settings.Secure.LOCATION_MODE_OFF;
+
+        }else{
+            locationProviders = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+            return !TextUtils.isEmpty(locationProviders);
+        }
+    }
 }

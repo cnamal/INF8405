@@ -6,8 +6,6 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
-import android.view.View;
-import android.widget.TextView;
 
 /**
  * Created by Adrien on 19/03/2017.
@@ -15,28 +13,23 @@ import android.widget.TextView;
 
 public class CheckConnection extends BroadcastReceiver {
 
-    private TextView info;
+    private Utils.ConnectionInfoManager manager;
 
-    public CheckConnection(TextView textView){
-        info = textView;
+    public CheckConnection(Utils.ConnectionInfoManager manager) {
+        this.manager = manager;
     }
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d("CheckConnection","Network connectivity change");
-        if(intent.getExtras()!=null) {
+        Log.d("CheckConnection", "Network connectivity change");
+        if (intent.getExtras() != null) {
             NetworkInfo ni = (NetworkInfo) intent.getExtras().get(ConnectivityManager.EXTRA_NETWORK_INFO);
-            if (ni != null && ni.getState() == NetworkInfo.State.CONNECTED) {
-                info.setVisibility(View.GONE);
-            } else if (intent.getBooleanExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY, Boolean.FALSE)) {
-                showInfo("There's no network connectivity",R.color.severity_high);
-            }
+            if (ni != null && ni.getState() == NetworkInfo.State.CONNECTED)
+                manager.onInternetConnectionChanged(true);
+            else if (intent.getBooleanExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY, Boolean.FALSE))
+                manager.onInternetConnectionChanged(false);
+
         }
     }
 
-    private void showInfo(String text, @android.support.annotation.DrawableRes int resId) {
-        info.setText(text);
-        info.setVisibility(View.VISIBLE);
-        info.setBackgroundResource(resId);
-    }
 }
