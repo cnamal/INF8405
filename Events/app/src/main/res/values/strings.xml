@@ -2,6 +2,8 @@
     <string name="app_name">Events</string>
     <string name="drawer_open">Open</string>
     <string name="drawer_close">Close</string>
+    <string name="member">Member</string>
+    <string name="members">Members</string>
 
     <string name="title_activity_sign_up">Sign Up</string>
     <string name="title_activity_event">Create a new Event</string>
@@ -19,4 +21,9 @@
     <string name="create_event_ending_date_missing">The ending date of the event is missing…</string>
     <string name="create_event_ending_date_before_starting_date_error">The ending date of the event is prior to starting date…</string>
     <string name="title_activity_maps">Maps</string>
+
+    <string name="dialog_group_join_confirm">OK</string>
+    <string name="dialog_group_join_cancel">Cancel</string>
+    <string name="dialog_group_join_text_info_click">"Join already created group?"</string>
+    <string name="dialog_group_join_text_info_same_name">Same name, join it?</string>
 </resources>

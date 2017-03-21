@@ -11,6 +11,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
@@ -27,6 +28,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -69,49 +71,70 @@ public class GroupsActivity extends AppCompatActivity {
                 dialog.setPositiveButton("Add", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        mGroupsDBReference.child(groupInput.getText().toString()).runTransaction(new Transaction.Handler() {
-                            @Override
-                            public Transaction.Result doTransaction(MutableData mutableData) {
-                                Group group = mutableData.getValue(Group.class);
-                                Map<String,Boolean> map;
-                                String user = Utils.getUserID(GroupsActivity.this);
-                                if(group==null){
-                                    group = new Group();
-                                    group.setOrganizer(user);
-                                    map = new HashMap<>();
-                                    group.setMembers(map);
-                                }else
-                                    map = group.getMembers();
-                                map.put(user,false);
-                                mutableData.setValue(group);
-                                return Transaction.success(mutableData);
-                            }
-
-                            @Override
-                            public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
-                                if(databaseError!=null){
-                                    // TODO R.string
-                                    Toast.makeText(GroupsActivity.this,"An error occurred, please retry", Toast.LENGTH_SHORT).show();
-                                }else{
-                                    if(dataSnapshot.getValue(Group.class).getNbUsers()==1)
-                                        Toast.makeText(GroupsActivity.this,"Group created", Toast.LENGTH_SHORT).show();
-                                    else
-                                        Toast.makeText(GroupsActivity.this,"Added to group", Toast.LENGTH_SHORT).show();
-
-                                    DatabaseReference userDBReference = FirebaseUtils.getUserDBReference();
-                                    Map<String, Object> childUpdates = new HashMap<>();
-                                    childUpdates.put("/"+ Utils.getUserID(GroupsActivity.this)+"/groups/"+dataSnapshot.getKey(),true);
-                                    userDBReference.updateChildren(childUpdates);
-                                    startMapsActivity(dataSnapshot.getKey());
-                                }
-                            }
-                        });
+                        String user = Utils.getUserID(GroupsActivity.this);
+                        addGroupToDatabase(groupInput.getText().toString(), user);
                     }
                 });
                 dialog.setNegativeButton("Cancel",null);
                 dialog.show();
             }
         });
+    }
+
+    public void addGroupToDatabase(final String name, final String user) {
+        mGroupsDBReference.child(name).runTransaction(new Transaction.Handler() {
+            @Override
+            public Transaction.Result doTransaction(MutableData mutableData) {
+                Group group = mutableData.getValue(Group.class);
+                Map<String, Boolean> map;
+                if (group == null) {
+                    group = new Group();
+                    group.setOrganizer(user);
+                    map = new HashMap<>();
+                    group.setMembers(map);
+                } else{
+                    map = group.getMembers();
+                }
+
+                map.put(user, false);
+                mutableData.setValue(group);
+                return Transaction.success(mutableData);
+            }
+
+            @Override
+            public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+                if (databaseError != null) {
+                    // TODO R.string
+                        Toast.makeText(GroupsActivity.this, "An error occurred, please retry", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    if (dataSnapshot.getValue(Group.class).getNbUsers() == 1)
+                        Toast.makeText(GroupsActivity.this, "Group created", Toast.LENGTH_SHORT).show();
+                    else
+                        Toast.makeText(GroupsActivity.this, "Added to group", Toast.LENGTH_SHORT).show();
+
+                    DatabaseReference userDBReference = FirebaseUtils.getUserDBReference();
+                    Map<String, Object> childUpdates = new HashMap<>();
+                    childUpdates.put("/" + Utils.getUserID(GroupsActivity.this) + "/groups/" + dataSnapshot.getKey(), true);
+                    userDBReference.updateChildren(childUpdates);
+                    startMapsActivity(dataSnapshot.getKey());
+                }
+            }
+        });
+    }
+    private class CustomValueEventListener implements ValueEventListener {
+
+        public boolean res;
+
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+            res = !(null == dataSnapshot);
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
     }
 
     private void startMapsActivity(String groupID){

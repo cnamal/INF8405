@@ -1,17 +1,22 @@
 package com.ensipoly.events.fragments;
 
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.ensipoly.events.FirebaseUtils;
+import com.ensipoly.events.activities.GroupsActivity;
 import com.ensipoly.events.models.Group;
 import com.ensipoly.events.R;
 import com.ensipoly.events.Utils;
@@ -43,11 +48,14 @@ public class GroupFragment extends Fragment {
             organizer = (TextView) itemView.findViewById(R.id.organizerTextView);
         }
 
-        public void show(String groupID, Group group, boolean isOrganizer) {
+        public void show(String groupID, Group group, boolean isOrganizer, boolean isMember) {
             this.title.setText(groupID);
-            if (!isOrganizer)
+            if (!isOrganizer && !isMember)
                 organizer.setVisibility(View.GONE);
-            desc.setText(group.getNbUsers() + " members");
+            if(!isOrganizer && isMember)
+                organizer.setText(R.string.member);
+            desc.setText(group.getNbUsers() + " " +
+                    ((group.getNbUsers() == 1) ? root.getContext().getResources().getString(R.string.member) : root.getContext().getResources().getString(R.string.members)));
         }
 
         public void setOnClickListener(View.OnClickListener listener) {
@@ -102,7 +110,7 @@ public class GroupFragment extends Fragment {
                                 final String key = dataSnapshot.getKey();
                                 Group group = dataSnapshot.getValue(Group.class);
                                 boolean isOrganizer = group.getOrganizer().equals(mUserId);
-                                viewHolder.show(key, group, isOrganizer);
+                                viewHolder.show(key, group, isOrganizer, true);
                                 viewHolder.setOnClickListener(new View.OnClickListener() {
                                     @Override
                                     public void onClick(View view) {
@@ -130,12 +138,19 @@ public class GroupFragment extends Fragment {
                         final String key = this.getRef(position).getKey();
                         boolean isOrganizer = group.getOrganizer().equals(mUserId);
                         boolean inGroup = group.getMembers().containsKey(mUserId);
-                        viewHolder.show(key, group, isOrganizer);
+                        viewHolder.show(key, group, isOrganizer, inGroup);
                         if (inGroup)
                             viewHolder.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
                                     startMapsActivity(key);
+                                }
+                            });
+                        else
+                            viewHolder.setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    joinAlreadyCreatedGroup(key);
                                 }
                             });
                     }
@@ -152,5 +167,21 @@ public class GroupFragment extends Fragment {
     private void getCurrentUser() {
         mUserId = Utils.getUserID(getContext());
     }
+
+    private void joinAlreadyCreatedGroup(final String groupName){
+        LayoutInflater inflater = getActivity().getLayoutInflater();
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
+
+        dialog.setTitle(R.string.dialog_group_join_text_info_click);
+        dialog.setPositiveButton(R.string.dialog_group_join_confirm, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                ((GroupsActivity)getActivity()).addGroupToDatabase(groupName, Utils.getUserID((GroupsActivity)getActivity()));
+            }
+        });
+        dialog.setNegativeButton(R.string.dialog_group_join_cancel, null);
+        dialog.show();
+    }
+
 
 }

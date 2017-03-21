@@ -23,4 +23,12 @@ public class User {
         longitude = lng;
         lastActive = time;
     }
+
+    @Override
+    public String toString(){
+        return "User={username=" + username +
+                "; latitude=" + latitude +
+                "; longitude=" + longitude +
+                "; lastActive=" + lastActive + "}";
+    }
 }
