@@ -21,6 +21,7 @@ import android.support.v4.util.Pair;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -119,7 +120,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
 
             mCurrentLocationSuggestion = mMap.addMarker(new MarkerOptions().position(latLng));
             mNestedScrollView.removeAllViews();
-            mNestedScrollView.getLayoutParams().height = 600;
+            mNestedScrollView.getLayoutParams().height = 900;
         }
     }
 
@@ -471,8 +472,10 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
         this.registerReceiver(mCheckConnection, networkFilter);
         this.registerReceiver(mCheckLocation, gpsFilter);
 
-        if(!isLocationEnabled(getApplicationContext()))
+        if(!((CheckLocation)(mCheckLocation)).isGPSConnected(getApplicationContext()))
             manager.onLocationChanged(false);
+        else
+            manager.onLocationChanged(true);
     }
 
     @Override
@@ -645,24 +648,4 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
         }
     }
 
-    private static boolean isLocationEnabled(Context context) {
-        int locationMode = 0;
-        String locationProviders;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
-            try {
-                locationMode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
-
-            } catch (Settings.SettingNotFoundException e) {
-                e.printStackTrace();
-                return false;
-            }
-
-            return locationMode != Settings.Secure.LOCATION_MODE_OFF;
-
-        }else{
-            locationProviders = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
-            return !TextUtils.isEmpty(locationProviders);
-        }
-    }
 }

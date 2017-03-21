@@ -23,9 +23,12 @@ public class CheckLocation extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d("CheckLocation", "Location change");
+        manager.onLocationChanged(isGPSConnected(context));
+    }
+
+    public boolean isGPSConnected(Context context){
         LocationManager lm = (LocationManager) context.getSystemService(Service.LOCATION_SERVICE);
-        boolean isEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        manager.onLocationChanged(isEnabled);
+        return lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
 
 }
