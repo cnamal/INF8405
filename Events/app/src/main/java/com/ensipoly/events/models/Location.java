@@ -82,6 +82,10 @@ public class Location {
         return location;
     }
 
+    public void setPhotoURL(String url){
+        photoURL = url;
+    }
+
     public Map<String,Float> getVotes(){
         return votes;
     }

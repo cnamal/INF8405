@@ -3,14 +3,32 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/location_name"
-        android:textAllCaps="true"
-        android:textSize="16sp"
         android:minHeight="56dp"
-        />
+        android:orientation="horizontal"
+        >
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:visibility="gone"
+            android:layout_marginRight="16dp"
+            android:id="@+id/location_photo"
+            />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/location_name"
+            android:textAllCaps="true"
+            android:textSize="16sp"
+            android:minHeight="56dp"
+            android:gravity="center_vertical"
+            />
+    </LinearLayout>
+    
 
     <RatingBar
         android:id="@+id/vote"

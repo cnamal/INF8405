@@ -31,4 +31,27 @@
             android:inputType="textCapSentences"
             android:hint="Location name" />
     </android.support.design.widget.TextInputLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:text="Add photo (optional):"
+            android:gravity="center"
+            />
+
+        <ImageView
+            android:id="@+id/location_photo"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/ic_insert_photo_black_48dp"
+            />
+
+
+    </LinearLayout>
 </LinearLayout>

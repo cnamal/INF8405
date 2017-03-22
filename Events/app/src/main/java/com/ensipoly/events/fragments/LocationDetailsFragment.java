@@ -17,11 +17,15 @@ import com.ensipoly.events.activities.MapsActivity;
 import com.ensipoly.events.models.Location;
 import com.github.clans.fab.FloatingActionButton;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.squareup.picasso.Picasso;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import de.hdodenhof.circleimageview.CircleImageView;
+
+import static com.ensipoly.events.R.id.location_photo;
 import static com.ensipoly.events.R.id.vote;
 
 public class LocationDetailsFragment extends Fragment {
@@ -57,6 +61,11 @@ public class LocationDetailsFragment extends Fragment {
         mUserId = getArguments().getString(USER_ID);
         mCanCreateEvent = getArguments().getBoolean(CAN_CREATE);
         mVotes = ((MapsActivity)getActivity()).getVotes();
+        if(mLocation.getPhotoURL()!=null){
+            CircleImageView imageView = (CircleImageView) v.findViewById(location_photo);
+            imageView.setVisibility(View.VISIBLE);
+            Picasso.with(getContext()).load(mLocation.getPhotoURL()).into(imageView);
+        }
         TextView name = (TextView) v.findViewById(R.id.location_name);
         final RatingBar ratingBar = (RatingBar) v.findViewById(vote);
         name.setText(mLocation.getName());

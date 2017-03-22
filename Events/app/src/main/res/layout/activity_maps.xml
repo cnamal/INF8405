@@ -17,7 +17,7 @@
             android:textAlignment="center"
             android:textColor="#fff"
             android:visibility="gone"/>
-        
+
         <TextView
             android:id="@+id/info_text_view"
             android:layout_width="match_parent"
