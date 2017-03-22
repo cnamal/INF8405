@@ -89,4 +89,12 @@ public class Location {
     public Map<String,Float> getVotes(){
         return votes;
     }
+
+    @Exclude
+    public float getAverage(){
+        float sum = 0;
+        for(float vote : votes.values())
+            sum+=vote;
+        return sum/votes.size();
+    }
 }

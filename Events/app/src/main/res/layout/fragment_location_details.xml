@@ -3,31 +3,59 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="wrap_content">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="56dp"
-        android:orientation="horizontal"
         >
 
         <de.hdodenhof.circleimageview.CircleImageView
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:visibility="gone"
-            android:layout_marginRight="16dp"
+            android:layout_marginEnd="16dp"
             android:id="@+id/location_photo"
             />
 
         <TextView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/location_name"
             android:textAllCaps="true"
             android:textSize="16sp"
             android:minHeight="56dp"
             android:gravity="center_vertical"
+            android:layout_toEndOf="@+id/location_photo"
             />
-    </LinearLayout>
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentBottom="true"
+            android:id="@+id/average"
+            android:visibility="gone"
+            >
+            <RatingBar
+                style="?attr/ratingBarStyleSmall"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:numStars="5"
+                android:id="@+id/average_rb"
+                android:layout_centerVertical="true"
+                />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/average_rb"
+                android:text="Average"
+                android:layout_centerHorizontal="true"
+                android:paddingTop="6dp"
+                />
+
+        </RelativeLayout>
+
+    </RelativeLayout>
     
 
     <RatingBar

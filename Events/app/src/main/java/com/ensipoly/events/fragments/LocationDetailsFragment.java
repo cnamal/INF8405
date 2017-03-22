@@ -72,6 +72,9 @@ public class LocationDetailsFragment extends Fragment {
         final FloatingActionButton mFAB = (FloatingActionButton) getActivity().findViewById(R.id.fab_done);
         if (mLocation.getVotes() != null && mLocation.getVotes().containsKey(mUserId)) {
             float vote = mLocation.getVotes().get(mUserId);
+            v.findViewById(R.id.average).setVisibility(View.VISIBLE);
+            RatingBar average = (RatingBar) v.findViewById(R.id.average_rb);
+            average.setRating(mLocation.getAverage());
             ratingBar.setRating(vote);
             if (mCanCreateEvent) {
                 mFAB.setImageResource(R.drawable.ic_event_white_24dp);
