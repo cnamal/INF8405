@@ -11,24 +11,22 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
 import com.ensipoly.events.FirebaseUtils;
-import com.ensipoly.events.models.Group;
 import com.ensipoly.events.R;
 import com.ensipoly.events.Utils;
 import com.ensipoly.events.fragments.GroupFragment;
+import com.ensipoly.events.models.Group;
 import com.github.clans.fab.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
-import com.google.firebase.database.ValueEventListener;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -121,20 +119,6 @@ public class GroupsActivity extends AppCompatActivity {
                 }
             }
         });
-    }
-    private class CustomValueEventListener implements ValueEventListener {
-
-        public boolean res;
-
-        @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
-            res = !(null == dataSnapshot);
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }
     }
 
     private void startMapsActivity(String groupID){

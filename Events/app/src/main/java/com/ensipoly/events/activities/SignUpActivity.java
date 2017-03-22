@@ -1,6 +1,5 @@
 package com.ensipoly.events.activities;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -34,7 +33,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.UUID;
 
@@ -47,7 +45,6 @@ public class SignUpActivity extends AppCompatActivity {
     static final int REQUEST_IMAGE_CAPTURE = 1;
     private ImageView mImageView;
 
-    private FirebaseStorage mFirebaseStorage;
     private DatabaseReference mUserDBReference;
     private StorageReference mStorageReference;
     private byte[] mPhotoData;
@@ -98,33 +95,12 @@ public class SignUpActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 dispatchTakePictureIntent();
-                /*
-                try{
-                    File f = createImageFile();
-                    Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-                    Uri apkURI = FileProvider.getUriForFile(
-                            SignUpActivity.this,
-                            SignUpActivity.this.getApplicationContext()
-                                    .getPackageName() + ".provider", f);
-                    takePictureIntent.setDataAndType(apkURI, "image/jpg");
-                    takePictureIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    //takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(f));
-                    if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
-                        startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
-                    }
-                }catch (IOException e){
-                    e.printStackTrace();
-                    mFileName = null;
-                    mAbsolutePath = null;
-                }
-                */
             }
         });
 
-        mFirebaseStorage = FirebaseStorage.getInstance();
 
         mUserDBReference = FirebaseUtils.getUserDBReference();
-        mStorageReference = mFirebaseStorage.getReference("user_pp_photos");
+        mStorageReference = FirebaseStorage.getInstance().getReference("user_pp_photos");
     }
 
     private void createUser(final String username) {
@@ -147,6 +123,7 @@ public class SignUpActivity extends AppCompatActivity {
                         editor.commit();
                         Intent intent = new Intent(SignUpActivity.this,GroupsActivity.class);
                         startActivity(intent);
+                        finish();
                     }
                 });
             }
@@ -170,8 +147,7 @@ public class SignUpActivity extends AppCompatActivity {
 
     private File createImageFile() throws IOException {
         // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        mFileName = "JPEG_" + timeStamp + "_";
+        mFileName = UUID.randomUUID().toString();
         File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
                 mFileName,  /* prefix */

@@ -1,16 +1,12 @@
 package com.ensipoly.events.activities;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
@@ -20,8 +16,6 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.util.Pair;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
-import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -101,8 +95,8 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
     private boolean mCanCreateEvent = false;
     private int mMaxHeight;
     private NestedScrollView mNestedScrollView;
-    private BroadcastReceiver mCheckConnection;
-    private BroadcastReceiver mCheckLocation;
+    private CheckConnection mCheckConnection;
+    private CheckLocation mCheckLocation;
     private TextView mConnectionTextView;
 
     @Override
@@ -279,20 +273,6 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
             mLocationDBReference.child(locationId).removeEventListener(listener);
         }
         mLocationSuggestionMap.clear();
-    }
-
-    public void modifyMapPadding() {
-        int height = 0;
-        if (mInfoTextView.getVisibility() == View.VISIBLE) {
-            mInfoTextView.measure(0, 0);
-            height += mInfoTextView.getMeasuredHeight();
-        }
-        if (mConnectionTextView.getVisibility() == View.VISIBLE) {
-            mConnectionTextView.measure(0, 0);
-            height += mConnectionTextView.getMeasuredHeight();
-        }
-
-        mMap.setPadding(0, height, 0, 0);
     }
 
     @Override
@@ -472,7 +452,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
         this.registerReceiver(mCheckConnection, networkFilter);
         this.registerReceiver(mCheckLocation, gpsFilter);
 
-        if(!((CheckLocation)(mCheckLocation)).isGPSConnected(getApplicationContext()))
+        if(!(mCheckLocation.isGPSConnected(getApplicationContext())))
             manager.onLocationChanged(false);
         else
             manager.onLocationChanged(true);

@@ -8,19 +8,17 @@ import android.support.v4.app.Fragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import com.ensipoly.events.FirebaseUtils;
-import com.ensipoly.events.activities.GroupsActivity;
-import com.ensipoly.events.models.Group;
 import com.ensipoly.events.R;
 import com.ensipoly.events.Utils;
+import com.ensipoly.events.activities.GroupsActivity;
 import com.ensipoly.events.activities.MapsActivity;
+import com.ensipoly.events.models.Group;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -65,7 +63,6 @@ public class GroupFragment extends Fragment {
 
     public static final int SIZE = 2;
     public static final String POSITION = "position";
-    private int mPosition;
     private String mUserId;
 
     private DatabaseReference mGroupsDBReference;
@@ -77,10 +74,10 @@ public class GroupFragment extends Fragment {
         View v = inflater.inflate(R.layout.fragment_group, container, false);
         mRecyclerView = (RecyclerView) v.findViewById(R.id.myList);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        mPosition = getArguments().getInt(POSITION);
+        int position = getArguments().getInt(POSITION);
         mGroupsDBReference = FirebaseUtils.getGroupDBReference();
         getCurrentUser();
-        if (mPosition == 0)
+        if (position == 0)
             setupMyGroups();
         else
             setupAllGroups();
@@ -169,14 +166,13 @@ public class GroupFragment extends Fragment {
     }
 
     private void joinAlreadyCreatedGroup(final String groupName){
-        LayoutInflater inflater = getActivity().getLayoutInflater();
         AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
 
         dialog.setTitle(R.string.dialog_group_join_text_info_click);
         dialog.setPositiveButton(R.string.dialog_group_join_confirm, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                ((GroupsActivity)getActivity()).addGroupToDatabase(groupName, Utils.getUserID((GroupsActivity)getActivity()));
+                ((GroupsActivity)getActivity()).addGroupToDatabase(groupName, Utils.getUserID(getActivity()));
             }
         });
         dialog.setNegativeButton(R.string.dialog_group_join_cancel, null);
