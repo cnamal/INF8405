@@ -7,10 +7,6 @@ import android.content.Intent;
 import android.location.LocationManager;
 import android.util.Log;
 
-/**
- * Created by Adrien on 19/03/2017.
- */
-
 public class CheckLocation extends BroadcastReceiver {
 
 

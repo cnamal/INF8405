@@ -34,9 +34,7 @@ import com.google.firebase.database.Transaction;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * A simple {@link Fragment} subclass.
- */
+
 public class GroupsActivity extends AppCompatActivity {
 
     private DatabaseReference mGroupsDBReference;
@@ -172,7 +170,6 @@ public class GroupsActivity extends AppCompatActivity {
                 Intent intent = new Intent(this,SettingsActivity.class);
                 startActivity(intent);
                 return true;
-
             default:
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.

@@ -7,10 +7,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.util.Log;
 
-/**
- * Created by Adrien on 19/03/2017.
- */
-
 public class CheckConnection extends BroadcastReceiver {
 
     private Utils.ConnectionInfoManager manager;

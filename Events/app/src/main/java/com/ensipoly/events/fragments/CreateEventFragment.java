@@ -31,9 +31,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-/**
- * Created by namalgac on 3/20/17.
- */
 
 public class CreateEventFragment extends Fragment {
 

@@ -7,10 +7,6 @@ import com.google.firebase.database.Exclude;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by namalgac on 3/19/17.
- */
-
 public class Location {
 
     private static final String LATITUDE = "location/latitude";

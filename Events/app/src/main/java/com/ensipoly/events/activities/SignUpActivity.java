@@ -36,10 +36,6 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.UUID;
 
-/**
- * An example full-screen activity that shows and hides the system UI (i.e.
- * status bar and navigation/system bar) with user interaction.
- */
 public class SignUpActivity extends AppCompatActivity {
 
     static final int REQUEST_IMAGE_CAPTURE = 1;
