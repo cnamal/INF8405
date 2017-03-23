@@ -25,6 +25,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.ensipoly.events.R.string.members;
+
 
 public class GroupFragment extends Fragment {
 
@@ -50,11 +55,15 @@ public class GroupFragment extends Fragment {
             if(!isOrganizer && isMember)
                 organizer.setText(R.string.member);
             desc.setText(group.getNbUsers() + " " +
-                    ((group.getNbUsers() == 1) ? root.getContext().getResources().getString(R.string.member) : root.getContext().getResources().getString(R.string.members)));
+                    ((group.getNbUsers() == 1) ? root.getContext().getResources().getString(R.string.member) : root.getContext().getResources().getString(members)));
         }
 
         public void setOnClickListener(View.OnClickListener listener) {
             root.setOnClickListener(listener);
+        }
+
+        public void setOnLongClickListener(View.OnLongClickListener listener){
+            root.setOnLongClickListener(listener);
         }
     }
 
@@ -102,7 +111,7 @@ public class GroupFragment extends Fragment {
                         mGroupsDBReference.child(key).addValueEventListener(new ValueEventListener() {
                             public void onDataChange(DataSnapshot dataSnapshot) {
                                 final String key = dataSnapshot.getKey();
-                                Group group = dataSnapshot.getValue(Group.class);
+                                final Group group = dataSnapshot.getValue(Group.class);
                                 boolean isOrganizer = group.getOrganizer().equals(mUserId);
                                 viewHolder.show(key, group, isOrganizer, true);
                                 viewHolder.setOnClickListener(new View.OnClickListener() {
@@ -111,6 +120,14 @@ public class GroupFragment extends Fragment {
                                         startMapsActivity(key);
                                     }
                                 });
+                                if(!isOrganizer)
+                                    viewHolder.setOnLongClickListener(new View.OnLongClickListener() {
+                                        @Override
+                                        public boolean onLongClick(View view) {
+                                            quitGroup(key,group);
+                                            return true;
+                                        }
+                                    });
                             }
 
                             @Override
@@ -124,23 +141,54 @@ public class GroupFragment extends Fragment {
         mRecyclerView.setAdapter(adapter);
     }
 
+    private void quitGroup(final String key, final Group group) {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(getContext());
+        dialog.setMessage("Quit this group?")
+                .setPositiveButton("Quit", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        Map<String,Object> children = new HashMap<>();
+                        children.put("/groups/"+key+"/members/"+mUserId,null);
+                        children.put("/users/"+mUserId+"/groups/"+key,null);
+                        if(group.getEvent()!=null){
+                            String eventId = group.getEvent();
+                            children.put("/events/"+eventId+"/participations/"+mUserId,null);
+                        }else if(group.getLocations()!=null){
+                            for(String locationID : group.getLocations().keySet())
+                                children.put("/locations/"+locationID+"/votes/"+mUserId,null);
+                        }
+                        FirebaseUtils.getDatabase().getReference().updateChildren(children);
+                    }
+                })
+                .setNegativeButton("Cancel",null)
+                .show();
+    }
+
     private void setupAllGroups() {
         FirebaseRecyclerAdapter<Group, ItemViewHolder> adapter =
                 new FirebaseRecyclerAdapter<Group, ItemViewHolder>(
                         Group.class, R.layout.item_group, ItemViewHolder.class, mGroupsDBReference) {
-                    protected void populateViewHolder(final ItemViewHolder viewHolder, Group group, int position) {
+                    protected void populateViewHolder(final ItemViewHolder viewHolder, final Group group, int position) {
                         final String key = this.getRef(position).getKey();
                         boolean isOrganizer = group.getOrganizer().equals(mUserId);
                         boolean inGroup = group.getMembers().containsKey(mUserId);
                         viewHolder.show(key, group, isOrganizer, inGroup);
-                        if (inGroup)
+                        if (inGroup) {
                             viewHolder.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
                                     startMapsActivity(key);
                                 }
                             });
-                        else
+                            if(!isOrganizer)
+                                viewHolder.setOnLongClickListener(new View.OnLongClickListener() {
+                                    @Override
+                                    public boolean onLongClick(View view) {
+                                        quitGroup(key,group);
+                                        return true;
+                                    }
+                                });
+                        }else
                             viewHolder.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
