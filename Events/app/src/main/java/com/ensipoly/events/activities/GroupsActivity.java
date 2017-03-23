@@ -1,8 +1,12 @@
 package com.ensipoly.events.activities;
 
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -11,6 +15,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -78,6 +83,13 @@ public class GroupsActivity extends AppCompatActivity {
                 dialog.show();
             }
         });
+        IntentFilter batteryFilter = new IntentFilter(Intent.ACTION_BATTERY_LOW);
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                lowBattery();
+            }
+        },batteryFilter);
     }
 
     public void addGroupToDatabase(final String name, final String user) {
@@ -128,11 +140,26 @@ public class GroupsActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    class MyAdapter extends FragmentPagerAdapter {
+    private void lowBattery() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle("Low battery detected")
+                .setMessage("Do you wish to set location update frequency to 30min?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(GroupsActivity.this);
+                        p.edit().putString("pref_locationFrequency",30*60*1000+"").commit();
+                    }
+                })
+                .setNegativeButton("Cancel",null)
+                .show();
+    }
+
+    private class MyAdapter extends FragmentPagerAdapter {
 
 
 
-        public MyAdapter(FragmentManager fm) {
+        MyAdapter(FragmentManager fm) {
             super(fm);
         }
 

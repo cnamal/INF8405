@@ -1,6 +1,9 @@
 package com.ensipoly.events.activities;
 
 import android.Manifest;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -17,6 +20,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.util.Pair;
 import android.support.v4.widget.NestedScrollView;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
 import android.util.Log;
@@ -456,11 +460,34 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
         IntentFilter gpsFilter = new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION);
         this.registerReceiver(mCheckConnection, networkFilter);
         this.registerReceiver(mCheckLocation, gpsFilter);
+        IntentFilter batteryFilter = new IntentFilter(Intent.ACTION_BATTERY_LOW);
+        registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                lowBattery();
+            }
+        },batteryFilter);
 
         if(!(mCheckLocation.isGPSConnected(getApplicationContext())))
             manager.onLocationChanged(false);
         else
             manager.onLocationChanged(true);
+    }
+
+    private void lowBattery() {
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+        dialog.setTitle("Low battery detected")
+                .setMessage("Do you wish to set location update frequency to 30min?")
+                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(MapsActivity.this);
+                        p.edit().putString("pref_locationFrequency",30*60*1000+"").commit();
+                        createLocationRequest(false);
+                    }
+                })
+                .setNegativeButton("Cancel",null)
+                .show();
     }
 
     @Override
@@ -514,7 +541,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
         if(newRequest)
             mLocationRequest = new LocationRequest();
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
-        long freq = Long.parseLong(p.getString("pref_locationFrequency",null));
+        long freq = Long.parseLong(p.getString("pref_locationFrequency",getString(R.string.pref_locationFrequency_default)));
         Log.d("HERE","update freq " + freq);
         // Sets the desired interval for active location updates. This interval is
         // inexact. You may not receive updates at all if no location sources are available, or
