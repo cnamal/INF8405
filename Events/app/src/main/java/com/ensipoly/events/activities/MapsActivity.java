@@ -107,6 +107,9 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
     private CheckConnection mCheckConnection;
     private CheckLocation mCheckLocation;
     private TextView mConnectionTextView;
+    private BroadcastReceiver mBatteryReceiver;
+    private Map<String,ChildEventListener> mMapChildEventListeners;
+    private Map<String,ValueEventListener> mMapValueEventListeners;
 
     @Override
     public void onMapLongClick(final LatLng latLng) {
@@ -140,12 +143,12 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
             return;
         }
         mMap.setMyLocationEnabled(true);
-        mGroupDBReference.child(mGroupID).child("members").addChildEventListener(new ChildEventListener() {
+        ChildEventListener groupMembersListener = mGroupDBReference.child(mGroupID).child("members").addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 String userID = dataSnapshot.getKey();
                 if (!userID.equals(mUserId)) {
-                    mUserDBReference.child(userID).addValueEventListener(new ValueEventListener() {
+                    ValueEventListener userListener = mUserDBReference.child(userID).addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             User user = dataSnapshot.getValue(User.class);
@@ -167,6 +170,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
                         public void onCancelled(DatabaseError databaseError) {
                         }
                     });
+                    mMapValueEventListeners.put("/users/"+userID,userListener);
                 }
             }
 
@@ -188,7 +192,9 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
             }
         });
 
-        mGroupDBReference.child(mGroupID).addValueEventListener(new ValueEventListener() {
+        mMapChildEventListeners.put("/groups/"+mGroupID+"/members/",groupMembersListener);
+
+        ValueEventListener groupListener = mGroupDBReference.child(mGroupID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Group group = dataSnapshot.getValue(Group.class);
@@ -200,7 +206,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
                         mInfoTextView.setVisibility(View.GONE);
                         mCanCreateEvent = false;
                     }
-                    mEventDBReference.child(group.getEvent()).addValueEventListener(new ValueEventListener() {
+                    ValueEventListener eventListener = mEventDBReference.child(group.getEvent()).addValueEventListener(new ValueEventListener() {
                         Marker marker;
 
                         @Override
@@ -218,6 +224,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
 
                         }
                     });
+                    mMapValueEventListeners.put("/events/"+group.getEvent(),eventListener);
                 } else if (locations != null && locations.size() == 3) {
                     mInfoTextView.setVisibility(View.GONE);
                     if (group.allMembersVotes()) {
@@ -255,6 +262,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
                         Pair<Marker, ValueEventListener> pair = new Pair<>(marker, listener);
                         mLocationSuggestionMap.put(locationId, pair);
                         mLocationDBReference.child(locationId).addValueEventListener(listener);
+                        mMapValueEventListeners.put("/locations/"+locationId,listener);
                     }
                 } else {
                     if (!isOrganizer)
@@ -270,6 +278,8 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
             public void onCancelled(DatabaseError databaseError) {
             }
         });
+
+        mMapValueEventListeners.put("/groups/"+mGroupID,groupListener);
     }
 
     private void clearLocationSuggestions() {
@@ -280,6 +290,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
             marker.setTag(null);
             marker.remove();
             mLocationDBReference.child(locationId).removeEventListener(listener);
+            mMapValueEventListeners.remove("/locations/"+locationId);
         }
         mLocationSuggestionMap.clear();
     }
@@ -389,6 +400,8 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
         getCurrentUser();
         map = new HashMap<>();
         mLocationSuggestionMap = new HashMap<>();
+        mMapChildEventListeners = new HashMap<>();
+        mMapValueEventListeners = new HashMap<>();
         canLongClick = false;
 
         mConnectionTextView = (TextView) findViewById(R.id.connection_text_view);
@@ -461,17 +474,27 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
         this.registerReceiver(mCheckConnection, networkFilter);
         this.registerReceiver(mCheckLocation, gpsFilter);
         IntentFilter batteryFilter = new IntentFilter(Intent.ACTION_BATTERY_LOW);
-        registerReceiver(new BroadcastReceiver() {
+        mBatteryReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 lowBattery();
             }
-        },batteryFilter);
+        };
+
+        registerReceiver(mBatteryReceiver,batteryFilter);
 
         if(!(mCheckLocation.isGPSConnected(getApplicationContext())))
             manager.onLocationChanged(false);
         else
             manager.onLocationChanged(true);
+
+        for(Map.Entry<String,ValueEventListener> entry : mMapValueEventListeners.entrySet())
+            FirebaseUtils.getDatabase().getReference().child(entry.getKey())
+                    .addValueEventListener(entry.getValue());
+
+        for(Map.Entry<String,ChildEventListener> entry : mMapChildEventListeners.entrySet())
+            FirebaseUtils.getDatabase().getReference().child(entry.getKey())
+                    .addChildEventListener(entry.getValue());
     }
 
     private void lowBattery() {
@@ -499,6 +522,17 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
         }
         this.unregisterReceiver(mCheckConnection);
         this.unregisterReceiver(mCheckLocation);
+        this.unregisterReceiver(mBatteryReceiver);
+
+        for(Map.Entry<String,ValueEventListener> entry : mMapValueEventListeners.entrySet())
+            FirebaseUtils.getDatabase().getReference().child(entry.getKey())
+                    .removeEventListener(entry.getValue());
+
+
+        for(Map.Entry<String,ChildEventListener> entry : mMapChildEventListeners.entrySet())
+            FirebaseUtils.getDatabase().getReference().child(entry.getKey())
+                    .removeEventListener(entry.getValue());
+
     }
 
     @Override
