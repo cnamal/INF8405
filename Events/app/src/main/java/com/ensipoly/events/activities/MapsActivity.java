@@ -628,4 +628,10 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
         }
     }
 
+    public User getUser(String id){
+        Marker marker = map.get(id);
+        if(marker==null)
+            return null;
+        return (User) marker.getTag();
+    }
 }

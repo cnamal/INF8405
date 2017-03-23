@@ -121,7 +121,7 @@ public class LocationDetailsFragment extends Fragment {
                                             @Override
                                             public void onSuccess(Void aVoid) {
                                                 ((MapsActivity)getActivity()).hideBottomSheet();
-                                                Toast.makeText(getContext(), "Location added", Toast.LENGTH_SHORT).show();
+                                                Toast.makeText(getContext(), "Votes saved", Toast.LENGTH_SHORT).show();
                                             }
                                         });
                                     }

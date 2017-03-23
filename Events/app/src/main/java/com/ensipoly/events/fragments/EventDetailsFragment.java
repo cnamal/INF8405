@@ -1,5 +1,6 @@
 package com.ensipoly.events.fragments;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -9,15 +10,24 @@ import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ensipoly.events.FirebaseUtils;
 import com.ensipoly.events.R;
+import com.ensipoly.events.activities.MapsActivity;
 import com.ensipoly.events.models.Event;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static com.ensipoly.events.Utils.formatLocation;
 import static com.ensipoly.events.models.Event.GOING;
@@ -34,6 +44,7 @@ public class EventDetailsFragment extends Fragment {
     private Button going;
     private Button maybe;
     private Button notGoing;
+    private ListView participations;
 
     public static EventDetailsFragment getInstance(Event event, @NonNull String userId) {
         EventDetailsFragment fragment = new EventDetailsFragment();
@@ -55,6 +66,7 @@ public class EventDetailsFragment extends Fragment {
         going = (Button) v.findViewById(R.id.going);
         maybe = (Button) v.findViewById(R.id.maybe);
         notGoing = (Button) v.findViewById(R.id.not_going);
+        participations = (ListView) v.findViewById(R.id.participations);
         final Event event = Event.getEventFromBundle(getArguments());
         final String userId = getArguments().getString(USER_ID);
         setup(event,userId);
@@ -129,6 +141,70 @@ public class EventDetailsFragment extends Fragment {
             maybe.setOnClickListener(listener);
             notGoing.setOnClickListener(listener);
         }
+        if(event.getParticipations()!=null) {
+            Set<Map.Entry<String,Integer>> set = event.getParticipations().entrySet();
+            Iterator<Map.Entry<String,Integer>> it = set.iterator();
+            while(it.hasNext()){
+                if(it.next().getKey().equals(userId)){
+                    it.remove();
+                    break;
+                }
+            }
+            ParticipationsAdapter adapter = new ParticipationsAdapter(getContext(), new ArrayList<>(set));
+            participations.setAdapter(adapter);
+        }
     }
 
+    private class ParticipationsAdapter extends ArrayAdapter<Map.Entry<String,Integer>>{
+        public ParticipationsAdapter(Context context, List<Map.Entry<String,Integer>> participations) {
+            super(context, 0, participations);
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+
+            if(convertView == null){
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_partication,parent, false);
+            }
+
+            ParticipationViewHolder viewHolder = (ParticipationViewHolder) convertView.getTag();
+            if(viewHolder == null){
+                viewHolder = new ParticipationViewHolder();
+                viewHolder.username = (TextView) convertView.findViewById(R.id.username);
+                viewHolder.going = (Button) convertView.findViewById(R.id.going);
+                viewHolder.maybe = (Button) convertView.findViewById(R.id.maybe);
+                viewHolder.notGoing = (Button) convertView.findViewById(R.id.not_going);
+                convertView.setTag(viewHolder);
+            }
+
+            Map.Entry<String,Integer> entry = getItem(position);
+
+            viewHolder.username.setText(((MapsActivity)getActivity()).getUser(entry.getKey()).username);
+
+            viewHolder.going.setEnabled(false);
+            viewHolder.maybe.setEnabled(false);
+            viewHolder.notGoing.setEnabled(false);
+            switch (entry.getValue()) {
+                case Event.GOING:
+                    viewHolder.going.setEnabled(true);
+                    break;
+                case Event.MAYBE:
+                    viewHolder.maybe.setEnabled(true);
+                    break;
+                case Event.NOT_GOING:
+                    viewHolder.notGoing.setEnabled(true);
+                    break;
+            }
+
+            return convertView;
+        }
+
+        private class ParticipationViewHolder {
+            TextView username;
+            Button going;
+            Button maybe;
+            Button notGoing;
+
+        }
+    }
 }
