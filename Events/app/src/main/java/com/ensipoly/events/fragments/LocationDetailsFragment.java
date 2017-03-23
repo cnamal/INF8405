@@ -124,7 +124,7 @@ public class LocationDetailsFragment extends Fragment {
             RatingBar average = (RatingBar) v.findViewById(R.id.average_rb);
             average.setRating(mLocation.getAverage());
             ratingBar.setRating(vote);
-            ratingBar.setEnabled(false);
+            ratingBar.setIsIndicator(true);
             if (mCanCreateEvent) {
                 mFAB.setImageResource(R.drawable.ic_event_white_24dp);
                 mFAB.show(true);
