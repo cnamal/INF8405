@@ -481,7 +481,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
             }
         };
 
-        registerReceiver(mBatteryReceiver,batteryFilter);
+        this.registerReceiver(mBatteryReceiver,batteryFilter);
 
         if(!(mCheckLocation.isGPSConnected(getApplicationContext())))
             manager.onLocationChanged(false);
@@ -727,5 +727,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if(requestCode==SETTING_CODE)
             createLocationRequest(false);
+        else
+            super.onActivityResult(requestCode,resultCode,data);
     }
 }

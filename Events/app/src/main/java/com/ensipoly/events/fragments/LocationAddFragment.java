@@ -173,7 +173,7 @@ public class LocationAddFragment extends Fragment {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_PHOTO_FOR_AVATAR && resultCode == Activity.RESULT_OK) {
             if (data == null) {
-                Toast.makeText(getContext(), "An error occured, please retry", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "An error occurred, please retry", Toast.LENGTH_SHORT).show();
                 return;
             }
             uri = data.getData();

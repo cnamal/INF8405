@@ -43,6 +43,7 @@ import java.util.Map;
 public class GroupsActivity extends AppCompatActivity {
 
     private DatabaseReference mGroupsDBReference;
+    private BroadcastReceiver mBatteryReceiver;
 
 
     @Override
@@ -83,13 +84,28 @@ public class GroupsActivity extends AppCompatActivity {
                 dialog.show();
             }
         });
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
         IntentFilter batteryFilter = new IntentFilter(Intent.ACTION_BATTERY_LOW);
-        registerReceiver(new BroadcastReceiver() {
+        mBatteryReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 lowBattery();
             }
-        },batteryFilter);
+        };
+
+        this.registerReceiver(mBatteryReceiver,batteryFilter);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        this.unregisterReceiver(mBatteryReceiver);
     }
 
     public void addGroupToDatabase(final String name, final String user) {
