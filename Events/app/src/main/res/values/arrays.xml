@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="pref_locationFrequency_entries">
+        <item>5 seconds</item>
+        <item>30 seconds</item>
+        <item>1 min</item>
+        <item>10 min</item>
+        <item>30 min</item>
+    </string-array>
+    <string-array name="pref_locationFrequency_values">
+        <item>5000</item>
+        <item>30000</item>
+        <item>60000</item>
+        <item>600000</item>
+        <item>1800000</item>
+    </string-array>
+</resources>

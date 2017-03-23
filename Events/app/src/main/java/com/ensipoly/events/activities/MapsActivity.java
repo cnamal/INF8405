@@ -1,7 +1,9 @@
 package com.ensipoly.events.activities;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -16,6 +18,11 @@ import android.support.v4.app.FragmentTransaction;
 import android.support.v4.util.Pair;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.preference.PreferenceManager;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.TextView;
 
@@ -61,18 +68,16 @@ import static com.ensipoly.events.Utils.showInfo;
 public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLongClickListener, OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener, LocationListener, GoogleMap.OnMapClickListener, GoogleMap.OnMarkerClickListener {
 
     public static final String GROUP_ID = "com.ensipoly.events.activities.MapsActivity.GROUP_ID";
+    private static final short SETTING_CODE = 0;
     private GoogleMap mMap;
     private static final int REQUEST_LOCATION_ON_MAP_READY = 0;
     private static final int REQUEST_LOCATION_ON_CONNECTED = 1;
     private static final int REQUEST_LOCATION_START_LOCATION_UPDATES = 2;
     private String mUserId;
 
-    private static final long UPDATE_INTERVAL_IN_MILLISECONDS = 10000;
-    private static final long FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS =
-            UPDATE_INTERVAL_IN_MILLISECONDS / 2;
-
     private final static String LOCATION_KEY = "location-key";
     private final static String LAST_UPDATED_TIME_STRING_KEY = "last-updated-time-string-key";
+
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     private Location mCurrentLocation;
@@ -502,21 +507,24 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
                 .build();
-        createLocationRequest();
+        createLocationRequest(true);
     }
 
-    private void createLocationRequest() {
-        mLocationRequest = new LocationRequest();
-
+    private void createLocationRequest(boolean newRequest) {
+        if(newRequest)
+            mLocationRequest = new LocationRequest();
+        SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
+        long freq = Long.parseLong(p.getString("pref_locationFrequency",null));
+        Log.d("HERE","update freq " + freq);
         // Sets the desired interval for active location updates. This interval is
         // inexact. You may not receive updates at all if no location sources are available, or
         // you may receive them slower than requested. You may also receive updates faster than
         // requested if other applications are requesting location at a faster interval.
-        mLocationRequest.setInterval(UPDATE_INTERVAL_IN_MILLISECONDS);
+        mLocationRequest.setInterval(freq);
 
         // Sets the fastest rate for active location updates. This interval is exact, and your
         // application will never receive updates faster than this value.
-        mLocationRequest.setFastestInterval(FASTEST_UPDATE_INTERVAL_IN_MILLISECONDS);
+        mLocationRequest.setFastestInterval(freq/2);
 
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
@@ -633,5 +641,30 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
         if(marker==null)
             return null;
         return (User) marker.getTag();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_settings:
+                Intent intent = new Intent(this,SettingsActivity.class);
+                startActivityForResult(intent,SETTING_CODE);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode==SETTING_CODE)
+            createLocationRequest(false);
     }
 }
