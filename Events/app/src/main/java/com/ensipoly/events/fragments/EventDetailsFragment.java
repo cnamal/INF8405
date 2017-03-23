@@ -2,7 +2,9 @@ package com.ensipoly.events.fragments;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
+import android.provider.CalendarContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -129,6 +131,26 @@ public class EventDetailsFragment extends Fragment {
                                                 @Override
                                                 public void onSuccess(Void aVoid) {
                                                     Toast.makeText(getActivity(),"Vote added successfully", Toast.LENGTH_SHORT).show();
+                                                    if(((int)view.getTag())!=Event.NOT_GOING){
+                                                        AlertDialog.Builder calendarDialog = new AlertDialog.Builder(getContext());
+                                                        calendarDialog.setMessage("Save to calendar?")
+                                                                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                                                    @Override
+                                                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                                                        Intent intent = new Intent(Intent.ACTION_INSERT)
+                                                                                .setData(CalendarContract.Events.CONTENT_URI)
+                                                                                .putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, event.getStartingDate().getTime())
+                                                                                .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, event.getEndingDate().getTime())
+                                                                                .putExtra(CalendarContract.Events.TITLE, event.getName())
+                                                                                .putExtra(CalendarContract.Events.DESCRIPTION, event.getInfo())
+                                                                                .putExtra(CalendarContract.Events.EVENT_LOCATION, event.getLatitude()+","+event.getLongitude())
+                                                                                .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY);
+                                                                        startActivity(intent);
+                                                                    }
+                                                                })
+                                                                .setNegativeButton("No",null)
+                                                                .show();
+                                                    }
                                                 }
                                             })
                                     ;
