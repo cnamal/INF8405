@@ -20,21 +20,21 @@ public class Location {
     private double longitude;
     private String name;
     private String photoURL;
-    private HashMap<String,Float> votes;
+    private HashMap<String, Float> votes;
     private String id;
 
-    public Location(){
+    public Location() {
 
     }
 
-    public Location(double latitude,double longitude, String n, String url){
+    public Location(double latitude, double longitude, String n, String url) {
         this.latitude = latitude;
         this.longitude = longitude;
         name = n;
         photoURL = url;
     }
 
-    public double getLatitude(){
+    public double getLatitude() {
         return latitude;
     }
 
@@ -51,46 +51,46 @@ public class Location {
     }
 
     @Exclude
-    public void setId(String id){
+    public void setId(String id) {
         this.id = id;
     }
 
     @Exclude
-    public String getId(){
+    public String getId() {
         return id;
     }
 
     @Exclude
-    public void addArguments(Bundle bundle){
-        bundle.putDouble(LATITUDE,latitude);
-        bundle.putDouble(LONGITUDE,longitude);
-        bundle.putString(NAME,name);
-        bundle.putString(PHOTO_URL,photoURL);
-        bundle.putSerializable(VOTES,votes);
-        bundle.putString(ID,id);
+    public void addArguments(Bundle bundle) {
+        bundle.putDouble(LATITUDE, latitude);
+        bundle.putDouble(LONGITUDE, longitude);
+        bundle.putString(NAME, name);
+        bundle.putString(PHOTO_URL, photoURL);
+        bundle.putSerializable(VOTES, votes);
+        bundle.putString(ID, id);
     }
 
     @Exclude
-    public static Location getLocationFromBundle(Bundle bundle){
-        Location location = new Location(bundle.getDouble(LATITUDE),bundle.getDouble(LONGITUDE),bundle.getString(NAME),bundle.getString(PHOTO_URL));
+    public static Location getLocationFromBundle(Bundle bundle) {
+        Location location = new Location(bundle.getDouble(LATITUDE), bundle.getDouble(LONGITUDE), bundle.getString(NAME), bundle.getString(PHOTO_URL));
         location.votes = (HashMap<String, Float>) bundle.getSerializable(VOTES);
         location.id = bundle.getString(ID);
         return location;
     }
 
-    public void setPhotoURL(String url){
+    public void setPhotoURL(String url) {
         photoURL = url;
     }
 
-    public Map<String,Float> getVotes(){
+    public Map<String, Float> getVotes() {
         return votes;
     }
 
     @Exclude
-    public float getAverage(){
+    public float getAverage() {
         float sum = 0;
-        for(float vote : votes.values())
-            sum+=vote;
-        return sum/votes.size();
+        for (float vote : votes.values())
+            sum += vote;
+        return sum / votes.size();
     }
 }

@@ -54,6 +54,7 @@ public class SignUpActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_sign_up);
 
+        // Fullscreen activity
         View contentView = findViewById(R.id.form);
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
@@ -66,6 +67,7 @@ public class SignUpActivity extends AppCompatActivity {
                 | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                 | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 
+        // View to show image when user will have taken a picture
         mImageView = (ImageView) findViewById(R.id.image_pic);
 
         Button signUpButton = (Button) findViewById(R.id.btn_signup);
@@ -73,16 +75,16 @@ public class SignUpActivity extends AppCompatActivity {
         signUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String username = ((EditText)findViewById(R.id.input_username)).getText().toString();
+                String username = ((EditText) findViewById(R.id.input_username)).getText().toString();
                 findViewById(R.id.input_username).clearFocus();
-                TextInputLayout wrapper = (TextInputLayout)findViewById(R.id.input_username_wrapper);
-                if(username.equals("")){
-                    wrapper.setError("Username field is required"); // TODO R.string
-                }else if(mFileName == null || mAbsolutePath == null || mPhotoData == null){
-                    Toast.makeText(SignUpActivity.this,"Image required",Toast.LENGTH_SHORT).show(); //TODO R.string
-                } else {
+                TextInputLayout wrapper = (TextInputLayout) findViewById(R.id.input_username_wrapper);
+                if (username.trim().equals(""))
+                    wrapper.setError("Username field is required");
+                else if (mFileName == null || mAbsolutePath == null || mPhotoData == null)
+                    Toast.makeText(SignUpActivity.this, "Image required", Toast.LENGTH_SHORT).show();
+                else
                     createUser(username);
-                }
+
             }
         });
 
@@ -100,24 +102,27 @@ public class SignUpActivity extends AppCompatActivity {
     }
 
     private void createUser(final String username) {
+        // First upload the picture
         StorageReference photoRef = mStorageReference.child(mFileName);
         photoRef.putBytes(mPhotoData).addOnSuccessListener(this, new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @SuppressWarnings("VisibleForTests")
             @Override
             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                // Create the user data
                 Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                final User user = new User(username,downloadUrl.toString(),0,0, DateFormat.getTimeInstance().format(new Date()));
+                final User user = new User(username, downloadUrl.toString(), 0, 0, DateFormat.getTimeInstance().format(new Date()));
                 DatabaseReference ref = mUserDBReference.push();
                 Task<Void> task = ref.setValue(user);
                 final String user_id = ref.getKey();
                 task.addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
+                        // When the user is created, save it's ID in preference for future use.
                         SharedPreferences sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
                         SharedPreferences.Editor editor = sharedPref.edit();
-                        editor.putString(User.USER_ID_KEY_PREFERENCE,user_id);
+                        editor.putString(User.USER_ID_KEY_PREFERENCE, user_id);
                         editor.commit();
-                        Intent intent = new Intent(SignUpActivity.this,GroupsActivity.class);
+                        Intent intent = new Intent(SignUpActivity.this, GroupsActivity.class);
                         startActivity(intent);
                         finish();
                     }
@@ -131,6 +136,7 @@ public class SignUpActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
+            // Get photo data and show it
             Bitmap imageBitmap = BitmapFactory.decodeFile(mAbsolutePath);
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
@@ -138,7 +144,6 @@ public class SignUpActivity extends AppCompatActivity {
             mImageView.setImageBitmap(imageBitmap);
         }
     }
-
 
 
     private File createImageFile() throws IOException {

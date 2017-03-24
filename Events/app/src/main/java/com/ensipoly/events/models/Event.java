@@ -10,9 +10,9 @@ import java.util.Map;
 
 public class Event {
 
-    public static final int GOING=0;
-    public static final int MAYBE=1;
-    public static final int NOT_GOING=2;
+    public static final int GOING = 0;
+    public static final int MAYBE = 1;
+    public static final int NOT_GOING = 2;
 
     private static final String LATITUDE = "event/latitude";
     private static final String LONGITUDE = "event/longitude";
@@ -28,14 +28,14 @@ public class Event {
     private double latitude;
     private double longitude;
     private Date startingDate, endingDate;  // Two dates start and end (with the time)
-    private HashMap<String,Integer> participations;
+    private HashMap<String, Integer> participations;
     private String id;
 
-    public Event(){
+    public Event() {
 
     }
 
-    public Event(String name, String info, double latitude,double longitude, Date startingDate, Date endingDate){
+    public Event(String name, String info, double latitude, double longitude, Date startingDate, Date endingDate) {
         this.name = name;
         this.info = info;
         this.latitude = latitude;
@@ -44,36 +44,36 @@ public class Event {
         this.endingDate = endingDate;
     }
 
-    public String getName(){
+    public String getName() {
         return name;
     }
 
-    public String getInfo(){
+    public String getInfo() {
         return info;
     }
 
-    public double getLatitude(){
+    public double getLatitude() {
         return latitude;
     }
 
-    public double getLongitude(){
+    public double getLongitude() {
         return longitude;
     }
 
-    public Date getStartingDate(){
+    public Date getStartingDate() {
         return startingDate;
     }
 
-    public Date getEndingDate(){
+    public Date getEndingDate() {
         return endingDate;
     }
 
-    public Map<String,Integer> getParticipations(){
+    public Map<String, Integer> getParticipations() {
         return participations;
     }
 
     @Exclude
-    public boolean hasAnswered(String userID){
+    public boolean hasAnswered(String userID) {
         return participations != null && participations.containsKey(userID);
     }
 
@@ -86,20 +86,20 @@ public class Event {
     }
 
     @Exclude
-    public void addArguments(Bundle bundle){
-        bundle.putDouble(LATITUDE,latitude);
-        bundle.putDouble(LONGITUDE,longitude);
-        bundle.putString(NAME,name);
-        bundle.putString(ID,id);
-        bundle.putString(INFO,info);
-        bundle.putSerializable(PARTICIPATIONS,participations);
-        bundle.putSerializable(START,startingDate);
-        bundle.putSerializable(END,endingDate);
+    public void addArguments(Bundle bundle) {
+        bundle.putDouble(LATITUDE, latitude);
+        bundle.putDouble(LONGITUDE, longitude);
+        bundle.putString(NAME, name);
+        bundle.putString(ID, id);
+        bundle.putString(INFO, info);
+        bundle.putSerializable(PARTICIPATIONS, participations);
+        bundle.putSerializable(START, startingDate);
+        bundle.putSerializable(END, endingDate);
     }
 
     @Exclude
-    public static Event getEventFromBundle(Bundle bundle){
-        Event event = new Event(bundle.getString(NAME),bundle.getString(INFO),bundle.getDouble(LATITUDE),bundle.getDouble(LONGITUDE), (Date)bundle.getSerializable(START), (Date)bundle.getSerializable(END));
+    public static Event getEventFromBundle(Bundle bundle) {
+        Event event = new Event(bundle.getString(NAME), bundle.getString(INFO), bundle.getDouble(LATITUDE), bundle.getDouble(LONGITUDE), (Date) bundle.getSerializable(START), (Date) bundle.getSerializable(END));
         event.id = bundle.getString(ID);
         event.participations = (HashMap) bundle.getSerializable(PARTICIPATIONS);
         return event;

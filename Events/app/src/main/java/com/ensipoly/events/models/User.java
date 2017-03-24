@@ -12,20 +12,21 @@ public class User {
     public double latitude;
     public double longitude;
     public String lastActive;
-    public Map<String,Object> groups;
+    public Map<String, Object> groups;
 
-    public User(){}
+    public User() {
+    }
 
-    public User(String name,String url,double lat,double lng, String time){
+    public User(String name, String url, double lat, double lng, String time) {
         username = name;
-        photoUrl =url;
+        photoUrl = url;
         latitude = lat;
         longitude = lng;
         lastActive = time;
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "User={username=" + username +
                 "; latitude=" + latitude +
                 "; longitude=" + longitude +

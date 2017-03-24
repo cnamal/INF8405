@@ -7,12 +7,13 @@ import java.util.Map;
 public class Group {
 
     private String organizer;
-    private Map<String,Boolean> members;
+    private Map<String, Boolean> members;
 
-    private Map<String,Boolean> locations;
+    private Map<String, Boolean> locations;
 
     private String event;
-    public Group(){
+
+    public Group() {
 
     }
 
@@ -22,26 +23,26 @@ public class Group {
     }
 
     @Exclude
-    public boolean allMembersVotes(){
+    public boolean allMembersVotes() {
         for (Boolean b : members.values())
             if (!b)
                 return false;
         return true;
     }
 
-    public Map<String, Boolean> getMembers(){
+    public Map<String, Boolean> getMembers() {
         return members;
     }
 
-    public String getOrganizer(){
+    public String getOrganizer() {
         return organizer;
     }
 
-    public void setOrganizer(String org){
+    public void setOrganizer(String org) {
         organizer = org;
     }
 
-    public void setMembers(Map<String,Boolean> members) {
+    public void setMembers(Map<String, Boolean> members) {
         this.members = members;
     }
 

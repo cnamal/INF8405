@@ -50,8 +50,9 @@ public class GroupsActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Check if a user has been created
         String userId = Utils.getUserID(getApplicationContext());
-        if ( userId == null) {
+        if (userId == null) {
             Intent intent = new Intent(this, SignUpActivity.class);
             startActivity(intent);
             finish();
@@ -59,19 +60,21 @@ public class GroupsActivity extends AppCompatActivity {
         }
 
         setContentView(R.layout.activity_groups);
+
         ViewPager viewPager = (ViewPager) findViewById(R.id.pager);
-        viewPager.setAdapter(new MyAdapter(getSupportFragmentManager()));
+        viewPager.setAdapter(new GroupAdapter(getSupportFragmentManager()));
+
         mGroupsDBReference = FirebaseUtils.getGroupDBReference();
         FloatingActionButton button = (FloatingActionButton) findViewById(R.id.add_button);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 LayoutInflater inflater = GroupsActivity.this.getLayoutInflater();
-                View layout = inflater.inflate(R.layout.dialog_group_add,null);
+                View layout = inflater.inflate(R.layout.dialog_group_add, null);
                 final EditText groupInput = (EditText) layout.findViewById(R.id.input_group);
                 AlertDialog.Builder dialog = new AlertDialog.Builder(GroupsActivity.this);
 
-                dialog.setTitle("Add Group"); // TODO R.string
+                dialog.setTitle("Add Group");
                 dialog.setView(layout);
                 dialog.setPositiveButton("Add", new DialogInterface.OnClickListener() {
                     @Override
@@ -80,7 +83,7 @@ public class GroupsActivity extends AppCompatActivity {
                         addGroupToDatabase(groupInput.getText().toString(), user);
                     }
                 });
-                dialog.setNegativeButton("Cancel",null);
+                dialog.setNegativeButton("Cancel", null);
                 dialog.show();
             }
         });
@@ -90,6 +93,7 @@ public class GroupsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
+        // Show dialog when battery becomes too low
         IntentFilter batteryFilter = new IntentFilter(Intent.ACTION_BATTERY_LOW);
         mBatteryReceiver = new BroadcastReceiver() {
             @Override
@@ -98,7 +102,7 @@ public class GroupsActivity extends AppCompatActivity {
             }
         };
 
-        this.registerReceiver(mBatteryReceiver,batteryFilter);
+        this.registerReceiver(mBatteryReceiver, batteryFilter);
     }
 
     @Override
@@ -108,51 +112,57 @@ public class GroupsActivity extends AppCompatActivity {
         this.unregisterReceiver(mBatteryReceiver);
     }
 
+    /**
+     * @param name group's name. Note: groups are index by their name
+     * @param user user's ID
+     */
     public void addGroupToDatabase(final String name, final String user) {
+        // We use a transaction in case 2 users create the same group at the same time.
         mGroupsDBReference.child(name).runTransaction(new Transaction.Handler() {
             @Override
             public Transaction.Result doTransaction(MutableData mutableData) {
                 Group group = mutableData.getValue(Group.class);
                 Map<String, Boolean> map;
                 if (group == null) {
+                    // Group didn't exist
                     group = new Group();
                     group.setOrganizer(user);
                     map = new HashMap<>();
                     group.setMembers(map);
-                } else{
+                } else {
+                    // Group existed
                     map = group.getMembers();
                 }
 
+                // Add user to group
                 map.put(user, false);
+
                 mutableData.setValue(group);
                 return Transaction.success(mutableData);
             }
 
             @Override
             public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
-                if (databaseError != null) {
-                    // TODO R.string
-                        Toast.makeText(GroupsActivity.this, "An error occurred, please retry", Toast.LENGTH_SHORT).show();
-
-                } else {
+                if (databaseError != null)
+                    Toast.makeText(GroupsActivity.this, "An error occurred, please retry", Toast.LENGTH_SHORT).show();
+                else {
                     if (dataSnapshot.getValue(Group.class).getNbUsers() == 1)
                         Toast.makeText(GroupsActivity.this, "Group created", Toast.LENGTH_SHORT).show();
                     else
                         Toast.makeText(GroupsActivity.this, "Added to group", Toast.LENGTH_SHORT).show();
 
-                    DatabaseReference userDBReference = FirebaseUtils.getUserDBReference();
-                    Map<String, Object> childUpdates = new HashMap<>();
-                    childUpdates.put("/" + Utils.getUserID(GroupsActivity.this) + "/groups/" + dataSnapshot.getKey(), true);
-                    userDBReference.updateChildren(childUpdates);
+                    // Add group to user's data
+                    FirebaseUtils.getUserDBReference().child(user).child("groups").child(dataSnapshot.getKey()).setValue(true);
+
                     startMapsActivity(dataSnapshot.getKey());
                 }
             }
         });
     }
 
-    private void startMapsActivity(String groupID){
+    private void startMapsActivity(String groupID) {
         Intent intent = new Intent(this, MapsActivity.class);
-        intent.putExtra(MapsActivity.GROUP_ID,groupID);
+        intent.putExtra(MapsActivity.GROUP_ID, groupID);
         startActivity(intent);
     }
 
@@ -164,25 +174,27 @@ public class GroupsActivity extends AppCompatActivity {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(GroupsActivity.this);
-                        p.edit().putString("pref_locationFrequency",30*60*1000+"").commit();
+                        p.edit().putString("pref_locationFrequency", 30 * 60 * 1000 + "").commit();
                     }
                 })
-                .setNegativeButton("Cancel",null)
+                .setNegativeButton("Cancel", null)
                 .show();
     }
 
-    private class MyAdapter extends FragmentPagerAdapter {
+    /**
+     * Adapter for tabs.
+     */
+    private class GroupAdapter extends FragmentPagerAdapter {
 
 
-
-        MyAdapter(FragmentManager fm) {
+        GroupAdapter(FragmentManager fm) {
             super(fm);
         }
 
         @Override
         public Fragment getItem(int position) {
             Bundle bundle = new Bundle();
-            bundle.putInt(GroupFragment.POSITION,position);
+            bundle.putInt(GroupFragment.POSITION, position);
             GroupFragment fragment = new GroupFragment();
             fragment.setArguments(bundle);
             return fragment;
@@ -210,7 +222,7 @@ public class GroupsActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_settings:
-                Intent intent = new Intent(this,SettingsActivity.class);
+                Intent intent = new Intent(this, SettingsActivity.class);
                 startActivity(intent);
                 return true;
             default:
@@ -220,5 +232,5 @@ public class GroupsActivity extends AppCompatActivity {
 
         }
     }
-    
+
 }

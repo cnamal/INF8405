@@ -21,32 +21,32 @@ public class FirebaseUtils {
         return mDatabase;
     }
 
-    public static DatabaseReference getUserDBReference(){
-        if(mUserDBReference==null){
+    public static DatabaseReference getUserDBReference() {
+        if (mUserDBReference == null) {
             mUserDBReference = getDatabase().getReference("users");
             mUserDBReference.keepSynced(true);
         }
         return mUserDBReference;
     }
 
-    public static DatabaseReference getGroupDBReference(){
-        if(mGroupDBReference==null){
+    public static DatabaseReference getGroupDBReference() {
+        if (mGroupDBReference == null) {
             mGroupDBReference = getDatabase().getReference("groups");
             mGroupDBReference.keepSynced(true);
         }
         return mGroupDBReference;
     }
 
-    public static DatabaseReference getLocationDBReference(){
-        if(mLocationDBReference==null){
+    public static DatabaseReference getLocationDBReference() {
+        if (mLocationDBReference == null) {
             mLocationDBReference = getDatabase().getReference("locations");
             mLocationDBReference.keepSynced(true);
         }
         return mLocationDBReference;
     }
 
-    public static DatabaseReference getEventDBReference(){
-        if(mEventDBReference==null){
+    public static DatabaseReference getEventDBReference() {
+        if (mEventDBReference == null) {
             mEventDBReference = getDatabase().getReference("events");
             mEventDBReference.keepSynced(true);
         }

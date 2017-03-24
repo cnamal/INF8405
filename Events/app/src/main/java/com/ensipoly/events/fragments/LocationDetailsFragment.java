@@ -62,7 +62,7 @@ public class LocationDetailsFragment extends Fragment {
     // very frequently.
     private int mShortAnimationDuration;
 
-    public static LocationDetailsFragment getInstance(Location location, String groupID, String userID, boolean canCreateEvent){
+    public static LocationDetailsFragment getInstance(Location location, String groupID, String userID, boolean canCreateEvent) {
         LocationDetailsFragment fragment = new LocationDetailsFragment();
         Bundle bundle = new Bundle();
         location.addArguments(bundle);
@@ -82,13 +82,13 @@ public class LocationDetailsFragment extends Fragment {
         mGroupID = getArguments().getString(GROUP_ID);
         mUserId = getArguments().getString(USER_ID);
         mCanCreateEvent = getArguments().getBoolean(CAN_CREATE);
-        mVotes = ((MapsActivity)getActivity()).getVotes();
-        if(mLocation.getPhotoURL()!=null){
+        mVotes = ((MapsActivity) getActivity()).getVotes();
+        if (mLocation.getPhotoURL() != null) {
             final CircleImageView imageView = (CircleImageView) v.findViewById(location_photo);
             imageView.setVisibility(View.VISIBLE);
             Picasso.with(getContext()).load(mLocation.getPhotoURL()).into(new Target() {
                 @Override
-                public void onBitmapLoaded (final Bitmap bitmap, Picasso.LoadedFrom from){
+                public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
                     /* Save the bitmap or do something with it here */
                     mCurrentLoadedImage = bitmap.copy(bitmap.getConfig(), false);
                     //Set it in the ImageView
@@ -96,10 +96,12 @@ public class LocationDetailsFragment extends Fragment {
                 }
 
                 @Override
-                public void onPrepareLoad(Drawable placeHolderDrawable) {}
+                public void onPrepareLoad(Drawable placeHolderDrawable) {
+                }
 
                 @Override
-                public void onBitmapFailed(Drawable errorDrawable) {}
+                public void onBitmapFailed(Drawable errorDrawable) {
+                }
             });
             imageView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -119,6 +121,7 @@ public class LocationDetailsFragment extends Fragment {
         name.setText(mLocation.getName());
         final FloatingActionButton mFAB = (FloatingActionButton) getActivity().findViewById(R.id.fab_done);
         if (mLocation.getVotes() != null && mLocation.getVotes().containsKey(mUserId)) {
+            // Has already voted
             float vote = mLocation.getVotes().get(mUserId);
             v.findViewById(R.id.average).setVisibility(View.VISIBLE);
             RatingBar average = (RatingBar) v.findViewById(R.id.average_rb);
@@ -133,7 +136,7 @@ public class LocationDetailsFragment extends Fragment {
 
                     @Override
                     public void onClick(View view) {
-                        ((MapsActivity)getActivity()).showCreateEvent(mLocation);
+                        ((MapsActivity) getActivity()).showCreateEvent(mLocation);
                     }
                 });
             }
@@ -153,7 +156,6 @@ public class LocationDetailsFragment extends Fragment {
                     mVotes.addVote(mLocation.getId(), vote);
 
                     if (mVotes.getNbVotes() == 3) {
-                        // TODO R.string
                         AlertDialog.Builder dialog = new AlertDialog.Builder(getContext());
                         dialog.setMessage("Save votes? You won't be able to modify your votes after.")
                                 .setPositiveButton("Submit", new DialogInterface.OnClickListener() {
@@ -169,7 +171,7 @@ public class LocationDetailsFragment extends Fragment {
                                         FirebaseUtils.getDatabase().getReference().updateChildren(children).addOnSuccessListener(new OnSuccessListener<Void>() {
                                             @Override
                                             public void onSuccess(Void aVoid) {
-                                                ((MapsActivity)getActivity()).hideBottomSheet();
+                                                ((MapsActivity) getActivity()).hideBottomSheet();
                                                 Toast.makeText(getContext(), "Votes saved", Toast.LENGTH_SHORT).show();
                                             }
                                         });
@@ -196,8 +198,8 @@ public class LocationDetailsFragment extends Fragment {
         }
 
         // Load the high-resolution "zoomed-in" image.
-        final ImageView expandedImageView = (ImageView)(getActivity().findViewById(R.id.image_zoom));
-        if(mCurrentLoadedImage != null)
+        final ImageView expandedImageView = (ImageView) (getActivity().findViewById(R.id.image_zoom));
+        if (mCurrentLoadedImage != null)
             expandedImageView.setImageBitmap(mCurrentLoadedImage);
         else
             Picasso.with(getContext()).load(mLocation.getPhotoURL()).into(expandedImageView);
@@ -214,7 +216,7 @@ public class LocationDetailsFragment extends Fragment {
         // bounds, since that's the origin for the positioning animation
         // properties (X, Y).
         thumbView.getGlobalVisibleRect(startBounds);
-        final FrameLayout image_wrapper = (FrameLayout)getActivity().findViewById(R.id.layout_image_zoom);
+        final FrameLayout image_wrapper = (FrameLayout) getActivity().findViewById(R.id.layout_image_zoom);
         image_wrapper.getGlobalVisibleRect(finalBounds, globalOffset);
         startBounds.offset(-globalOffset.x, -globalOffset.y);
         finalBounds.offset(-globalOffset.x, -globalOffset.y);
@@ -245,7 +247,7 @@ public class LocationDetailsFragment extends Fragment {
         // begins, it will position the zoomed-in view in the place of the
         // thumbnail.
         thumbView.setAlpha(0f);
-        final FrameLayout background_image = (FrameLayout)getActivity().findViewById(R.id.background_image_zoom);
+        final FrameLayout background_image = (FrameLayout) getActivity().findViewById(R.id.background_image_zoom);
         image_wrapper.setVisibility(View.VISIBLE);
 
         // Set the pivot point for SCALE_X and SCALE_Y transformations
@@ -300,7 +302,7 @@ public class LocationDetailsFragment extends Fragment {
                         .ofFloat(image_wrapper, View.X, startBounds.left))
                         .with(ObjectAnimator
                                 .ofFloat(image_wrapper,
-                                        View.Y,startBounds.top))
+                                        View.Y, startBounds.top))
                         .with(ObjectAnimator
                                 .ofFloat(image_wrapper,
                                         View.SCALE_X, startScaleFinal))
@@ -331,6 +333,5 @@ public class LocationDetailsFragment extends Fragment {
             }
         });
     }
-
 
 }

@@ -100,8 +100,8 @@ public class CreateEventFragment extends Fragment {
                 ref.updateChildren(children).addOnSuccessListener(new OnSuccessListener<Void>() {
                     @Override
                     public void onSuccess(Void aVoid) {
-                        Toast.makeText(getContext(),"Event created",Toast.LENGTH_SHORT).show();
-                        ((MapsActivity)getActivity()).hideBottomSheet();
+                        Toast.makeText(getContext(), "Event created", Toast.LENGTH_SHORT).show();
+                        ((MapsActivity) getActivity()).hideBottomSheet();
                     }
                 });
             }

@@ -48,21 +48,21 @@ public class GroupFragment extends Fragment {
             organizer = (TextView) itemView.findViewById(R.id.organizerTextView);
         }
 
-        public void show(String groupID, Group group, boolean isOrganizer, boolean isMember) {
+        void show(String groupID, Group group, boolean isOrganizer, boolean isMember) {
             this.title.setText(groupID);
             if (!isOrganizer && !isMember)
                 organizer.setVisibility(View.GONE);
-            if(!isOrganizer && isMember)
+            if (!isOrganizer && isMember)
                 organizer.setText(R.string.member);
             desc.setText(group.getNbUsers() + " " +
                     ((group.getNbUsers() == 1) ? root.getContext().getResources().getString(R.string.member) : root.getContext().getResources().getString(members)));
         }
 
-        public void setOnClickListener(View.OnClickListener listener) {
+        void setOnClickListener(View.OnClickListener listener) {
             root.setOnClickListener(listener);
         }
 
-        public void setOnLongClickListener(View.OnLongClickListener listener){
+        void setOnLongClickListener(View.OnLongClickListener listener) {
             root.setOnLongClickListener(listener);
         }
     }
@@ -120,11 +120,11 @@ public class GroupFragment extends Fragment {
                                         startMapsActivity(key);
                                     }
                                 });
-                                if(!isOrganizer)
+                                if (!isOrganizer)
                                     viewHolder.setOnLongClickListener(new View.OnLongClickListener() {
                                         @Override
                                         public boolean onLongClick(View view) {
-                                            quitGroup(key,group);
+                                            quitGroup(key, group);
                                             return true;
                                         }
                                     });
@@ -147,20 +147,20 @@ public class GroupFragment extends Fragment {
                 .setPositiveButton("Quit", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        Map<String,Object> children = new HashMap<>();
-                        children.put("/groups/"+key+"/members/"+mUserId,null);
-                        children.put("/users/"+mUserId+"/groups/"+key,null);
-                        if(group.getEvent()!=null){
+                        Map<String, Object> children = new HashMap<>();
+                        children.put("/groups/" + key + "/members/" + mUserId, null);
+                        children.put("/users/" + mUserId + "/groups/" + key, null);
+                        if (group.getEvent() != null) {
                             String eventId = group.getEvent();
-                            children.put("/events/"+eventId+"/participations/"+mUserId,null);
-                        }else if(group.getLocations()!=null){
-                            for(String locationID : group.getLocations().keySet())
-                                children.put("/locations/"+locationID+"/votes/"+mUserId,null);
+                            children.put("/events/" + eventId + "/participations/" + mUserId, null);
+                        } else if (group.getLocations() != null) {
+                            for (String locationID : group.getLocations().keySet())
+                                children.put("/locations/" + locationID + "/votes/" + mUserId, null);
                         }
                         FirebaseUtils.getDatabase().getReference().updateChildren(children);
                     }
                 })
-                .setNegativeButton("Cancel",null)
+                .setNegativeButton("Cancel", null)
                 .show();
     }
 
@@ -180,15 +180,15 @@ public class GroupFragment extends Fragment {
                                     startMapsActivity(key);
                                 }
                             });
-                            if(!isOrganizer)
+                            if (!isOrganizer)
                                 viewHolder.setOnLongClickListener(new View.OnLongClickListener() {
                                     @Override
                                     public boolean onLongClick(View view) {
-                                        quitGroup(key,group);
+                                        quitGroup(key, group);
                                         return true;
                                     }
                                 });
-                        }else
+                        } else
                             viewHolder.setOnClickListener(new View.OnClickListener() {
                                 @Override
                                 public void onClick(View view) {
@@ -210,14 +210,14 @@ public class GroupFragment extends Fragment {
         mUserId = Utils.getUserID(getContext());
     }
 
-    private void joinAlreadyCreatedGroup(final String groupName){
+    private void joinAlreadyCreatedGroup(final String groupName) {
         AlertDialog.Builder dialog = new AlertDialog.Builder(getActivity());
 
         dialog.setTitle(R.string.dialog_group_join_text_info_click);
         dialog.setPositiveButton(R.string.dialog_group_join_confirm, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialogInterface, int i) {
-                ((GroupsActivity)getActivity()).addGroupToDatabase(groupName, Utils.getUserID(getActivity()));
+                ((GroupsActivity) getActivity()).addGroupToDatabase(groupName, Utils.getUserID(getActivity()));
             }
         });
         dialog.setNegativeButton(R.string.dialog_group_join_cancel, null);

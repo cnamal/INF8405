@@ -23,7 +23,6 @@ import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -108,25 +107,29 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
     private CheckLocation mCheckLocation;
     private TextView mConnectionTextView;
     private BroadcastReceiver mBatteryReceiver;
-    private Map<String,ChildEventListener> mMapChildEventListeners;
-    private Map<String,ValueEventListener> mMapValueEventListeners;
+
+    // Save listeners to remove them in onPause
+    private Map<String, ChildEventListener> mMapChildEventListeners;
+    private Map<String, ValueEventListener> mMapValueEventListeners;
 
     @Override
     public void onMapLongClick(final LatLng latLng) {
         if (canLongClick) {
-            if (mCurrentLocationSuggestion != null) {
+            //Should only be called by an organizer
+
+            if (mCurrentLocationSuggestion != null)
                 mCurrentLocationSuggestion.remove();
-            } else {
+            else
                 mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_COLLAPSED);
-            }
+
+            mNestedScrollView.getLayoutParams().height = 900;
+
             FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
             Fragment fragment = LocationAddFragment.getInstance(latLng, mGroupID);
             fragmentTransaction.replace(R.id.bottom_sheet1, fragment);
             fragmentTransaction.commit();
 
             mCurrentLocationSuggestion = mMap.addMarker(new MarkerOptions().position(latLng));
-            mNestedScrollView.removeAllViews();
-            mNestedScrollView.getLayoutParams().height = 900;
         }
     }
 
@@ -143,11 +146,16 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
             return;
         }
         mMap.setMyLocationEnabled(true);
+
+        // Main logic ahead! We need to wait for onMapReady since it modifies the map (markers)
+
+        // Listen members added/removed to/from group
         ChildEventListener groupMembersListener = mGroupDBReference.child(mGroupID).child("members").addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                 String userID = dataSnapshot.getKey();
                 if (!userID.equals(mUserId)) {
+                    // Listen to user
                     ValueEventListener userListener = mUserDBReference.child(userID).addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(DataSnapshot dataSnapshot) {
@@ -170,7 +178,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
                         public void onCancelled(DatabaseError databaseError) {
                         }
                     });
-                    mMapValueEventListeners.put("/users/"+userID,userListener);
+                    mMapValueEventListeners.put("/users/" + userID, userListener);
                 }
             }
 
@@ -192,20 +200,26 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
             }
         });
 
-        mMapChildEventListeners.put("/groups/"+mGroupID+"/members/",groupMembersListener);
+        mMapChildEventListeners.put("/groups/" + mGroupID + "/members/", groupMembersListener);
 
+        // Listen to group modifications (location and event)
         ValueEventListener groupListener = mGroupDBReference.child(mGroupID).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Group group = dataSnapshot.getValue(Group.class);
                 boolean isOrganizer = group.getOrganizer().equals(mUserId);
                 Map<String, Boolean> locations = group.getLocations();
+                // Event > 3 locations > less than 3 location
                 if (group.getEvent() != null) {
+
+                    // Clear previously set locations from the map
                     if (mLocationSuggestionMap.size() > 0) {
                         clearLocationSuggestions();
                         mInfoTextView.setVisibility(View.GONE);
                         mCanCreateEvent = false;
                     }
+
+                    // Get event informations
                     ValueEventListener eventListener = mEventDBReference.child(group.getEvent()).addValueEventListener(new ValueEventListener() {
                         Marker marker;
 
@@ -224,12 +238,13 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
 
                         }
                     });
-                    mMapValueEventListeners.put("/events/"+group.getEvent(),eventListener);
+
+                    mMapValueEventListeners.put("/events/" + group.getEvent(), eventListener);
                 } else if (locations != null && locations.size() == 3) {
                     mInfoTextView.setVisibility(View.GONE);
                     if (group.allMembersVotes()) {
                         if (isOrganizer) {
-                            showInfo(mInfoTextView,"Please create an event by clicking on the location of you choice.", R.color.severity_mid);
+                            showInfo(mInfoTextView, "Please create an event by clicking on the location of you choice.", R.color.severity_mid);
                             mCanCreateEvent = true;
                         }
                     }
@@ -250,7 +265,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
                                 }
                                 pair.first.setTag(location);
                                 if (location.getVotes() == null || !location.getVotes().containsKey(mUserId))
-                                    showInfo(mInfoTextView,"Please vote for every location.", R.color.severity_mid);
+                                    showInfo(mInfoTextView, "Please vote for every location.", R.color.severity_mid);
 
                             }
 
@@ -262,14 +277,14 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
                         Pair<Marker, ValueEventListener> pair = new Pair<>(marker, listener);
                         mLocationSuggestionMap.put(locationId, pair);
                         mLocationDBReference.child(locationId).addValueEventListener(listener);
-                        mMapValueEventListeners.put("/locations/"+locationId,listener);
+                        mMapValueEventListeners.put("/locations/" + locationId, listener);
                     }
                 } else {
                     if (!isOrganizer)
                         return;
                     canLongClick = true;
                     int remaining = locations == null ? 3 : 3 - locations.size();
-                    showInfo(mInfoTextView,"Please select " + remaining + " places", R.color.severity_mid);
+                    showInfo(mInfoTextView, "Please select " + remaining + " places", R.color.severity_mid);
                 }
 
             }
@@ -279,7 +294,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
             }
         });
 
-        mMapValueEventListeners.put("/groups/"+mGroupID,groupListener);
+        mMapValueEventListeners.put("/groups/" + mGroupID, groupListener);
     }
 
     private void clearLocationSuggestions() {
@@ -290,7 +305,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
             marker.setTag(null);
             marker.remove();
             mLocationDBReference.child(locationId).removeEventListener(listener);
-            mMapValueEventListeners.remove("/locations/"+locationId);
+            mMapValueEventListeners.remove("/locations/" + locationId);
         }
         mLocationSuggestionMap.clear();
     }
@@ -334,7 +349,6 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
             }
             mCurrentLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
             mLastUpdateTime = DateFormat.getTimeInstance().format(new Date());
-            //TODO Update UI ?
         }
 
         startLocationUpdates();
@@ -382,6 +396,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
 
     @Override
     public void onLocationChanged(Location location) {
+        // Location update received
         Map<String, Object> childUpdates = new HashMap<>();
         childUpdates.put("/latitude", location.getLatitude());
         childUpdates.put("/longitude", location.getLongitude());
@@ -466,6 +481,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
             startLocationUpdates();
         }
 
+        // Setup various BroadcastReceivers
         Utils.ConnectionInfoManager manager = new Utils.ConnectionInfoManager(mConnectionTextView);
         mCheckConnection = new CheckConnection(manager);
         mCheckLocation = new CheckLocation(manager);
@@ -480,19 +496,20 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
                 lowBattery();
             }
         };
+        this.registerReceiver(mBatteryReceiver, batteryFilter);
 
-        this.registerReceiver(mBatteryReceiver,batteryFilter);
-
-        if(!(mCheckLocation.isGPSConnected(getApplicationContext())))
+        // Initial GPS status is not given by the BroadcastReceiver. We query it ourselves.
+        if (!(mCheckLocation.isGPSConnected(getApplicationContext())))
             manager.onLocationChanged(false);
         else
             manager.onLocationChanged(true);
 
-        for(Map.Entry<String,ValueEventListener> entry : mMapValueEventListeners.entrySet())
+        // Reset the listeners
+        for (Map.Entry<String, ValueEventListener> entry : mMapValueEventListeners.entrySet())
             FirebaseUtils.getDatabase().getReference().child(entry.getKey())
                     .addValueEventListener(entry.getValue());
 
-        for(Map.Entry<String,ChildEventListener> entry : mMapChildEventListeners.entrySet())
+        for (Map.Entry<String, ChildEventListener> entry : mMapChildEventListeners.entrySet())
             FirebaseUtils.getDatabase().getReference().child(entry.getKey())
                     .addChildEventListener(entry.getValue());
     }
@@ -505,11 +522,11 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
                         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(MapsActivity.this);
-                        p.edit().putString("pref_locationFrequency",30*60*1000+"").commit();
+                        p.edit().putString("pref_locationFrequency", 30 * 60 * 1000 + "").commit();
                         createLocationRequest(false);
                     }
                 })
-                .setNegativeButton("Cancel",null)
+                .setNegativeButton("Cancel", null)
                 .show();
     }
 
@@ -520,16 +537,19 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
         if (mGoogleApiClient.isConnected()) {
             stopLocationUpdates();
         }
+
+        // Unregister Broadcast Receivers
         this.unregisterReceiver(mCheckConnection);
         this.unregisterReceiver(mCheckLocation);
         this.unregisterReceiver(mBatteryReceiver);
 
-        for(Map.Entry<String,ValueEventListener> entry : mMapValueEventListeners.entrySet())
+        // Remove the receivers.
+        for (Map.Entry<String, ValueEventListener> entry : mMapValueEventListeners.entrySet())
             FirebaseUtils.getDatabase().getReference().child(entry.getKey())
                     .removeEventListener(entry.getValue());
 
 
-        for(Map.Entry<String,ChildEventListener> entry : mMapChildEventListeners.entrySet())
+        for (Map.Entry<String, ChildEventListener> entry : mMapChildEventListeners.entrySet())
             FirebaseUtils.getDatabase().getReference().child(entry.getKey())
                     .removeEventListener(entry.getValue());
 
@@ -572,11 +592,13 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
     }
 
     private void createLocationRequest(boolean newRequest) {
-        if(newRequest)
+        if (newRequest)
             mLocationRequest = new LocationRequest();
+
+        // Get frequency from preferences
         SharedPreferences p = PreferenceManager.getDefaultSharedPreferences(this);
-        long freq = Long.parseLong(p.getString("pref_locationFrequency",getString(R.string.pref_locationFrequency_default)));
-        Log.d("HERE","update freq " + freq);
+        long freq = Long.parseLong(p.getString("pref_locationFrequency", getString(R.string.pref_locationFrequency_default)));
+
         // Sets the desired interval for active location updates. This interval is
         // inexact. You may not receive updates at all if no location sources are available, or
         // you may receive them slower than requested. You may also receive updates faster than
@@ -585,7 +607,7 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
 
         // Sets the fastest rate for active location updates. This interval is exact, and your
         // application will never receive updates faster than this value.
-        mLocationRequest.setFastestInterval(freq/2);
+        mLocationRequest.setFastestInterval(freq / 2);
 
         mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
@@ -670,6 +692,9 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
         return mVotes;
     }
 
+    /**
+     * Helper class. Keeps a local copy of the votes before they are sent to the server
+     */
     public static class Votes {
         HashMap<String, Float> map;
 
@@ -697,9 +722,9 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
         }
     }
 
-    public User getUser(String id){
+    public User getUser(String id) {
         Marker marker = map.get(id);
-        if(marker==null)
+        if (marker == null)
             return null;
         return (User) marker.getTag();
     }
@@ -715,8 +740,8 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_settings:
-                Intent intent = new Intent(this,SettingsActivity.class);
-                startActivityForResult(intent,SETTING_CODE);
+                Intent intent = new Intent(this, SettingsActivity.class);
+                startActivityForResult(intent, SETTING_CODE);
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -725,9 +750,10 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if(requestCode==SETTING_CODE)
+        if (requestCode == SETTING_CODE)
             createLocationRequest(false);
         else
-            super.onActivityResult(requestCode,resultCode,data);
+            super.onActivityResult(requestCode, resultCode, data);
     }
+
 }

@@ -69,14 +69,15 @@ public class EventDetailsFragment extends Fragment {
         maybe = (Button) v.findViewById(R.id.maybe);
         notGoing = (Button) v.findViewById(R.id.not_going);
         participations = (ListView) v.findViewById(R.id.participations);
+
         final Event event = Event.getEventFromBundle(getArguments());
         final String userId = getArguments().getString(USER_ID);
-        setup(event,userId);
+        setup(event, userId);
         return v;
     }
 
-    public void update(Event event, String userId){
-        setup(event,userId);
+    public void update(Event event, String userId) {
+        setup(event, userId);
     }
 
     private void setup(final Event event, final String userId) {
@@ -130,8 +131,8 @@ public class EventDetailsFragment extends Fragment {
                                             .addOnSuccessListener(new OnSuccessListener<Void>() {
                                                 @Override
                                                 public void onSuccess(Void aVoid) {
-                                                    Toast.makeText(getActivity(),"Vote added successfully", Toast.LENGTH_SHORT).show();
-                                                    if(((int)view.getTag())!=Event.NOT_GOING){
+                                                    Toast.makeText(getActivity(), "Vote added successfully", Toast.LENGTH_SHORT).show();
+                                                    if (((int) view.getTag()) != Event.NOT_GOING) {
                                                         AlertDialog.Builder calendarDialog = new AlertDialog.Builder(getContext());
                                                         calendarDialog.setMessage("Save to calendar?")
                                                                 .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
@@ -143,12 +144,12 @@ public class EventDetailsFragment extends Fragment {
                                                                                 .putExtra(CalendarContract.EXTRA_EVENT_END_TIME, event.getEndingDate().getTime())
                                                                                 .putExtra(CalendarContract.Events.TITLE, event.getName())
                                                                                 .putExtra(CalendarContract.Events.DESCRIPTION, event.getInfo())
-                                                                                .putExtra(CalendarContract.Events.EVENT_LOCATION, event.getLatitude()+","+event.getLongitude())
+                                                                                .putExtra(CalendarContract.Events.EVENT_LOCATION, event.getLatitude() + "," + event.getLongitude())
                                                                                 .putExtra(CalendarContract.Events.AVAILABILITY, CalendarContract.Events.AVAILABILITY_BUSY);
                                                                         startActivity(intent);
                                                                     }
                                                                 })
-                                                                .setNegativeButton("No",null)
+                                                                .setNegativeButton("No", null)
                                                                 .show();
                                                     }
                                                 }
@@ -163,11 +164,12 @@ public class EventDetailsFragment extends Fragment {
             maybe.setOnClickListener(listener);
             notGoing.setOnClickListener(listener);
         }
-        if(event.getParticipations()!=null) {
-            Set<Map.Entry<String,Integer>> set = event.getParticipations().entrySet();
-            Iterator<Map.Entry<String,Integer>> it = set.iterator();
-            while(it.hasNext()){
-                if(it.next().getKey().equals(userId)){
+
+        if (event.getParticipations() != null) {
+            Set<Map.Entry<String, Integer>> set = event.getParticipations().entrySet();
+            Iterator<Map.Entry<String, Integer>> it = set.iterator();
+            while (it.hasNext()) {
+                if (it.next().getKey().equals(userId)) {
                     it.remove();
                     break;
                 }
@@ -177,20 +179,20 @@ public class EventDetailsFragment extends Fragment {
         }
     }
 
-    private class ParticipationsAdapter extends ArrayAdapter<Map.Entry<String,Integer>>{
-        public ParticipationsAdapter(Context context, List<Map.Entry<String,Integer>> participations) {
+    private class ParticipationsAdapter extends ArrayAdapter<Map.Entry<String, Integer>> {
+        public ParticipationsAdapter(Context context, List<Map.Entry<String, Integer>> participations) {
             super(context, 0, participations);
         }
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
 
-            if(convertView == null){
-                convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_partication,parent, false);
+            if (convertView == null) {
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_partication, parent, false);
             }
 
             ParticipationViewHolder viewHolder = (ParticipationViewHolder) convertView.getTag();
-            if(viewHolder == null){
+            if (viewHolder == null) {
                 viewHolder = new ParticipationViewHolder();
                 viewHolder.username = (TextView) convertView.findViewById(R.id.username);
                 viewHolder.going = (Button) convertView.findViewById(R.id.going);
@@ -199,9 +201,9 @@ public class EventDetailsFragment extends Fragment {
                 convertView.setTag(viewHolder);
             }
 
-            Map.Entry<String,Integer> entry = getItem(position);
+            Map.Entry<String, Integer> entry = getItem(position);
 
-            viewHolder.username.setText(((MapsActivity)getActivity()).getUser(entry.getKey()).username);
+            viewHolder.username.setText(((MapsActivity) getActivity()).getUser(entry.getKey()).username);
 
             viewHolder.going.setEnabled(false);
             viewHolder.maybe.setEnabled(false);

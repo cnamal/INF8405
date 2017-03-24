@@ -101,7 +101,7 @@ public class LocationAddFragment extends Fragment {
                     ActivityCompat.requestPermissions(getActivity(),
                             new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
                             READ_PERMISSION
-                            );
+                    );
                     return;
                 }
                 openGallery();
@@ -153,7 +153,7 @@ public class LocationAddFragment extends Fragment {
         ref.updateChildren(children).addOnSuccessListener(new OnSuccessListener<Void>() {
             @Override
             public void onSuccess(Void aVoid) {
-                Toast.makeText(getContext(),"Location added",Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Location added", Toast.LENGTH_SHORT).show();
                 ((MapsActivity) getActivity()).hideBottomSheet();
                 hideSoftKeyboard();
             }
@@ -177,7 +177,7 @@ public class LocationAddFragment extends Fragment {
                 return;
             }
             uri = data.getData();
-
+            Toast.makeText(getContext(), "Photo retrieved successfully", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -186,11 +186,11 @@ public class LocationAddFragment extends Fragment {
                                            @NonNull String permissions[], @NonNull int[] grantResults) {
         if (grantResults.length == 0)
             return;
-        if(requestCode == READ_PERMISSION && grantResults[0] == PackageManager.PERMISSION_GRANTED)
+        if (requestCode == READ_PERMISSION && grantResults[0] == PackageManager.PERMISSION_GRANTED)
             openGallery();
     }
 
-    private void openGallery(){
+    private void openGallery() {
         Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
         intent.setType("image/*");
         startActivityForResult(intent, PICK_PHOTO_FOR_AVATAR);

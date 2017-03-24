@@ -15,11 +15,11 @@
     <string name="create_event_begin">Begin</string>
     <string name="create_event_end">End</string>
     <string name="create_event_create_button">Submit</string>
-    <string name="create_event_name_missing">The name of the event is missing…</string>
-    <string name="create_event_place_missing">The place of the event is missing…</string>
-    <string name="create_event_starting_date_missing">The starting date of the event is missing…</string>
-    <string name="create_event_ending_date_missing">The ending date of the event is missing…</string>
-    <string name="create_event_ending_date_before_starting_date_error">The ending date of the event is prior to starting date…</string>
+    <string name="create_event_name_missing">The name of the event is missing</string>
+    <string name="create_event_place_missing">The place of the event is missing</string>
+    <string name="create_event_starting_date_missing">The starting date of the event is missing</string>
+    <string name="create_event_ending_date_missing">The ending date of the event is missing</string>
+    <string name="create_event_ending_date_before_starting_date_error">The ending date of the event is prior to starting date</string>
     <string name="title_activity_maps">Maps</string>
 
     <string name="dialog_group_join_confirm">OK</string>

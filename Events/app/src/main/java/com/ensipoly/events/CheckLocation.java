@@ -12,7 +12,7 @@ public class CheckLocation extends BroadcastReceiver {
 
     private Utils.ConnectionInfoManager manager;
 
-    public CheckLocation(Utils.ConnectionInfoManager manager){
+    public CheckLocation(Utils.ConnectionInfoManager manager) {
         this.manager = manager;
     }
 
@@ -22,7 +22,7 @@ public class CheckLocation extends BroadcastReceiver {
         manager.onLocationChanged(isGPSConnected(context));
     }
 
-    public boolean isGPSConnected(Context context){
+    public boolean isGPSConnected(Context context) {
         LocationManager lm = (LocationManager) context.getSystemService(Service.LOCATION_SERVICE);
         return lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
     }
