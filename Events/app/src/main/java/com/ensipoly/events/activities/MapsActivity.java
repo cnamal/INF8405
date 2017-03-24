@@ -189,6 +189,15 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
+                String userID = dataSnapshot.getKey();
+                if(map.containsKey(userID)){
+                    map.get(userID).remove();
+                    map.remove(userID);
+                    String uri = "/users/" + userID;
+                    FirebaseUtils.getDatabase().getReference().child(uri).removeEventListener(mMapValueEventListeners.get(uri));
+                    mMapChildEventListeners.remove(uri);
+                }
+
             }
 
             @Override
