@@ -256,7 +256,8 @@ public class MapsActivity extends AppCompatActivity implements GoogleMap.OnMapLo
                             showInfo(mInfoTextView, "Please create an event by clicking on the location of you choice.", R.color.severity_mid);
                             mCanCreateEvent = true;
                         }
-                    }
+                    }else
+                        mCanCreateEvent = false;
                     if (mLocationSuggestionMap.size() == 3)
                         return;
                     mVotes = new Votes();
