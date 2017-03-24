@@ -1,0 +1,87 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[USenglish]{babel}
+\usepackage{gensymb}
+\usepackage{hyperref}
+\usepackage{etoolbox}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{xifthen}
+\usepackage{float}
+\usepackage{ulem}
+\usepackage{multirow}
+\edef\restoreparindent{\parindent=\the\parindent\relax}
+\usepackage[parfill]{parskip}
+\restoreparindent
+\usepackage{indentfirst}
+
+\title{Report: Event app for Android\\ INF8405 \textit{Informatique mobile}\\ Winter 2017 }
+\author{GRAILLE Raphaël  (1815074), LOGUT Adrien (1815142) \\ \& NAMALGAMUWA Chathura (1815118)\\ Ecole Polytechnique de Montréal}
+\date{March 23, 2017}
+
+
+
+\begin{document}
+\maketitle
+
+Submitted to: \textbf{Fabien Berquez}
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Introduction}
+
+This is the report for the second lab in the course INF8405. The objective was to create an event organizer app.
+
+\section{Technical details}
+
+
+\subsection{\href{http://data.whicdn.com/images/28718572/large.gif}{Activities + Fragments}}
+
+The app has 3 activities with explicit names: SignUpActivity, GroupsActivity and MapsActivity. SignUpActivity is called only if a user hasn't been created. The work-flow afterwards is simple GroupsActivity -\textgreater MapsActivity with the possibility to go back. 
+
+To show different details or ask for user input, we used \href{https://material.io/guidelines/components/bottom-sheets.html}{bottom sheets}, \textit{à la} Google Maps. We think it blends well with the map and still allows the user to navigate the map while looking at information. 
+
+\subsection{\href{http://bestanimations.com/Nature/Fire/simpsons-fire-gif.gif}{Firebase}}
+
+For our backend we used Firebase. Furthermore, for our local cache we also used Firebase instead of SQLLite. While this solution is said to be limiting for large applications, it was sufficient for us. Indeed, otherwise we should have handled ourselves the syncing of the local and online databases, which is quite tedious. 
+
+We used a flatten structure as advised by the Firebase guidelines. 
+
+A \textit{user} has it's name, avatar, position and references to groups. We also added a timestamp for the location. It allowed us to test the location update frequency easily. 
+
+A \textit{group} has a name (which is it's index), an organizer (reference to a user), a list of members (reference to users), a list of locations (references) and a reference to an event.
+
+A \textit{location} has a name, a photo, a position, and votes (indexed by user). An optimization was done at this point. Indeed to figure out if a user had voted for all 3 places, we use the boolean in member list of the associated group. When a user is added to the group it is initially set to false. When he/she has voted for all 3 locations, it is set to true.
+
+An \textit{event} has a name, a position, a starting/ending date, some information and participations (indexed by user). The participation can take 3 integer values to indicate Going/Maybe Going/Not Going.
+
+\subsection{\href{https://media.giphy.com/media/J0qooSNU20Q3m/giphy.gif}{Bonus}}
+
+We added a information text when the user is not connected to the internet or has the GPS disabled, \textit{à la} Facebook Messenger. We wanted to go further and show if users were \href{https://firebase.google.com/docs/database/android/offline-capabilities#section-sample}{connected} but unfortunately didn't have enough time.
+
+\section{Issues encountered}
+
+\subsection{\href{https://cdn.netlify.com/ecf5f8b45c8f47745f2eff6c5938d1fb34c124f3/4848c/img/blog/instant-cache-invalidation-joy.gif}{Local cache}}
+
+Managing the local cache was really hard initially. We started to work with SQLite as recommended. However, we quickly saw it had a lot of drawbacks. For a school project, it seemed too complicated for no addition value to the work. Fortunately, we found that Firebase had an option for offline caching.
+
+\subsection{\href{http://1.bp.blogspot.com/-lvbNllD8faM/U53uHuJGYgI/AAAAAAAAAiY/ZJB1OQj0L-M/s1600/homer.gif}{Work at 2}}
+
+The work to be done was already overwhelming enough that on top of that only 2 of us worked on it.
+
+\section{Additional notes and recommendations}
+
+This second lab was way more overwhelming than the first one. We are still happy to have completed every required functionality and some more, even with one teammate down. The known bug currently is if a location detail fragment is shown and a vote is added/removed by another user, that fragment isn't updated automatically (you need to hide it and re-click on that location). However, we solved that problem with the event details. Indeed, if another user says he/she is coming or not, the information is updated automatically. Therefore, if we had more time, we would have used the same technique to update the location details. 
+
+A few recommendations for future labs however:
+
+\begin{itemize}
+\item The gap between the first and second lab is a bit too big. 
+\item Don't ask to use SQLite for local caching. It introduces too many work-flows to handle.
+\end{itemize}
+
+\end{document}
