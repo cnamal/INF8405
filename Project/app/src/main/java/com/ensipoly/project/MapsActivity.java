@@ -1,46 +1,63 @@
 package com.ensipoly.project;
 
-import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
+import android.widget.TextView;
 
+import com.ensipoly.project.strategy.CreateItinerary;
+import com.ensipoly.project.strategy.Strategy;
+import com.github.clans.fab.FloatingActionButton;
+import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
+
+import static com.ensipoly.project.R.id.map;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    private Strategy strategy;
+    private Strategy.StrateyParameters params;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        TextView infoView = (TextView) findViewById(R.id.info_text_view);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
-                .findFragmentById(R.id.map);
+                .findFragmentById(map);
         mapFragment.getMapAsync(this);
+        FloatingActionMenu menu = (FloatingActionMenu) findViewById(R.id.fab_menu);
+        FloatingActionButton undo = (FloatingActionButton) findViewById(R.id.undo);
+        FloatingActionButton cancel = (FloatingActionButton) findViewById(R.id.cancel);
+        FloatingActionButton done = (FloatingActionButton) findViewById(R.id.done);
+        params = new Strategy.StrateyParameters();
+        params.infoView = infoView;
+        params.menu = menu;
+        params.undo = undo;
+        params.cancel = cancel;
+        params.done = done;
     }
 
-
-    /**
-     * Manipulates the map once available.
-     * This callback is triggered when the map is ready to be used.
-     * This is where we can add markers or lines, add listeners or move the camera. In this case,
-     * we just add a marker near Sydney, Australia.
-     * If Google Play services is not installed on the device, the user will be prompted to install
-     * it inside the SupportMapFragment. This method will only be triggered once the user has
-     * installed Google Play services and returned to the app.
-     */
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-
+        params.map = mMap;
         // Add a marker in Sydney and move the camera
-        LatLng sydney = new LatLng(-34, 151);
-        mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));
+        LatLng montreal = new LatLng(45.5016889, -73.56725599999999);
+        mMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder().target(montreal).zoom(18).build()));
+        strategy = new CreateItinerary(params);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if(!strategy.onBackPressed()){
+            super.onBackPressed();
+        }
     }
 }
