@@ -22,6 +22,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private GoogleMap mMap;
     private Strategy strategy;
     private Strategy.StrateyParameters params;
+    private StepsCounter stepsCounter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +43,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         params.undo = undo;
         params.cancel = cancel;
         params.done = done;
+        stepsCounter = new StepsCounter(this);
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        stepsCounter.registerListener();
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        stepsCounter.unregisterListener();
     }
 
     @Override

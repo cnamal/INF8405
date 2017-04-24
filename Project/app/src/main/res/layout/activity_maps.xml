@@ -86,4 +86,10 @@
 
     </com.github.clans.fab.FloatingActionMenu>
 
+    <TextView
+        android:id="@+id/stepText"
+        android:layout_width="126dp"
+        android:layout_height="32dp"
+        android:text="Steps = " />
+
 </android.support.design.widget.CoordinatorLayout>
