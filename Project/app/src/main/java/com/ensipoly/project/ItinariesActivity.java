@@ -1,6 +1,5 @@
 package com.ensipoly.project;
 
-import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.res.Configuration;
@@ -8,7 +7,6 @@ import android.os.Bundle;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
@@ -17,9 +15,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.ensipoly.project.fragments.ItinariesListFragment;
+import com.ensipoly.project.fragments.MapsFragment;
 import com.ensipoly.project.fragments.OptionsFragment;
-
-import static android.support.v7.app.AppCompatDelegate.FEATURE_SUPPORT_ACTION_BAR;
 
 /**
  * Created by Adrien on 25/04/2017.
@@ -41,9 +38,10 @@ public class ItinariesActivity extends AppCompatActivity {
         setContentView(R.layout.activity_list_itinaries);
 
 
-        list = new String[2];
+        list = new String[3];
         list[0] = "Itinaries List";
         list[1] = "Options";
+        list[2] = "New Itinary";
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
 
@@ -115,13 +113,17 @@ public class ItinariesActivity extends AppCompatActivity {
     private void selectItem(int position) {
         // Position 0 : List the itinaries created
         // Position 1 : Options
+        // Position 2 : New itinary
         Fragment nextFragment = null;
         switch(position) {
             case 0:
                 nextFragment = new ItinariesListFragment();
                 break;
-            default:
+            case 1:
                 nextFragment = new OptionsFragment();
+                break;
+            default:
+                nextFragment = new MapsFragment();
         }
 
         // Insert the fragment by replacing any existing fragment
