@@ -1,28 +1,23 @@
-package com.ensipoly.project.fragments;
+package com.ensipoly.project;
 
-import android.app.Fragment;
 import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.support.v4.app.FragmentActivity;
 import android.widget.TextView;
 
-import com.ensipoly.project.R;
-import com.ensipoly.project.StepsCounter;
 import com.ensipoly.project.strategy.CreateItinerary;
 import com.ensipoly.project.strategy.Strategy;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 
 import static com.ensipoly.project.R.id.map;
 
-public class MapsFragment extends Fragment implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private Strategy strategy;
@@ -30,25 +25,25 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
     private StepsCounter stepsCounter;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        View v = inflater.inflate(R.layout.activity_maps, container, false);
-        TextView infoView = (TextView) v.findViewById(R.id.info_text_view);
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_maps);
+        TextView infoView = (TextView) findViewById(R.id.info_text_view);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        MapFragment mapFragment = (MapFragment) getChildFragmentManager().findFragmentById(map);
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(map);
         mapFragment.getMapAsync(this);
-        FloatingActionMenu menu = (FloatingActionMenu) v.findViewById(R.id.fab_menu);
-        FloatingActionButton undo = (FloatingActionButton) v.findViewById(R.id.undo);
-        FloatingActionButton cancel = (FloatingActionButton) v.findViewById(R.id.cancel);
-        FloatingActionButton done = (FloatingActionButton) v.findViewById(R.id.done);
+        FloatingActionMenu menu = (FloatingActionMenu) findViewById(R.id.fab_menu);
+        FloatingActionButton undo = (FloatingActionButton) findViewById(R.id.undo);
+        FloatingActionButton cancel = (FloatingActionButton) findViewById(R.id.cancel);
+        FloatingActionButton done = (FloatingActionButton) findViewById(R.id.done);
         params = new Strategy.StrateyParameters();
         params.infoView = infoView;
         params.menu = menu;
         params.undo = undo;
         params.cancel = cancel;
         params.done = done;
-        stepsCounter = new StepsCounter(getActivity());
-        return v;
+        stepsCounter = new StepsCounter(this);
     }
 
     @Override
@@ -73,4 +68,10 @@ public class MapsFragment extends Fragment implements OnMapReadyCallback {
         strategy = new CreateItinerary(params);
     }
 
+    @Override
+    public void onBackPressed() {
+        if(!strategy.onBackPressed()){
+            super.onBackPressed();
+        }
+    }
 }
