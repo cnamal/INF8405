@@ -5,6 +5,7 @@ import android.support.v4.app.FragmentActivity;
 import android.widget.TextView;
 
 import com.ensipoly.project.strategy.CreateItinerary;
+import com.ensipoly.project.strategy.Default;
 import com.ensipoly.project.strategy.Strategy;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
@@ -21,8 +22,11 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
     private Strategy strategy;
-    private Strategy.StrateyParameters params;
+    private Strategy.StrategyParameters params;
     private StepsCounter stepsCounter;
+
+    public static final int DEFAULT_STRATEGY = 0;
+    public static final int CREATE_STRATEGY = 1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,12 +41,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         FloatingActionButton undo = (FloatingActionButton) findViewById(R.id.undo);
         FloatingActionButton cancel = (FloatingActionButton) findViewById(R.id.cancel);
         FloatingActionButton done = (FloatingActionButton) findViewById(R.id.done);
-        params = new Strategy.StrateyParameters();
+        FloatingActionButton go = (FloatingActionButton) findViewById(R.id.go);
+        FloatingActionButton create = (FloatingActionButton) findViewById(R.id.create);
+        params = new Strategy.StrategyParameters();
         params.infoView = infoView;
         params.menu = menu;
         params.undo = undo;
         params.cancel = cancel;
         params.done = done;
+        params.go = go;
+        params.create = create;
+        params.activity = this;
         stepsCounter = new StepsCounter(this);
     }
 
@@ -65,13 +74,27 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // Add a marker in Sydney and move the camera
         LatLng montreal = new LatLng(45.5016889, -73.56725599999999);
         mMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder().target(montreal).zoom(18).build()));
-        strategy = new CreateItinerary(params);
+        strategy = new Default(params);
     }
 
     @Override
     public void onBackPressed() {
         if(!strategy.onBackPressed()){
-            super.onBackPressed();
+            if(strategy instanceof Default)
+                super.onBackPressed();
+            else
+                strategy = new Default(params);
+        }
+    }
+
+    public void switchStrategy(int strategy){
+        switch (strategy){
+            case DEFAULT_STRATEGY:
+                this.strategy = new Default(params);
+                return;
+            case CREATE_STRATEGY:
+                this.strategy = new CreateItinerary(params);
+                return;
         }
     }
 }

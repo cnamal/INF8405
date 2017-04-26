@@ -29,7 +29,7 @@ public class CreateItinerary extends Strategy {
     private static final int WAYPOINTS = 0;
     private static final int PICTURES = 1;
 
-    public CreateItinerary(Strategy.StrateyParameters parameters) {
+    public CreateItinerary(StrategyParameters parameters) {
         super(parameters);
         waypoints = new LinkedList<>();
         line = mMap.addPolyline(new PolylineOptions().color(Color.RED).jointType(JointType.ROUND));
@@ -38,8 +38,6 @@ public class CreateItinerary extends Strategy {
         first = null;
         last = null;
         mode = WAYPOINTS;
-        hide(undo);
-        hide(done);
         undo.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -65,6 +63,16 @@ public class CreateItinerary extends Strategy {
         if (mode == WAYPOINTS)
             return onBackPressedWaypoints();
         return onBackPressedPictures();
+    }
+
+    @Override
+    protected int initiallyShownButtons() {
+        return MENU|CANCEL;
+    }
+
+    @Override
+    public void cleanup() {
+
     }
 
     private boolean onBackPressedWaypoints() {

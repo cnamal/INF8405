@@ -3,6 +3,7 @@ package com.ensipoly.project.strategy;
 import android.view.View;
 import android.widget.TextView;
 
+import com.ensipoly.project.MapsActivity;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.gms.maps.GoogleMap;
@@ -16,17 +17,30 @@ public abstract class Strategy implements GoogleMap.OnMarkerClickListener, Googl
     protected FloatingActionButton undo;
     protected FloatingActionButton cancel;
     protected FloatingActionButton done;
+    protected FloatingActionButton go;
+    protected FloatingActionButton create;
+    private MapsActivity activity;
 
-    public static class StrateyParameters {
+    protected static final int MENU = 1;
+    protected static final int UNDO = 2;
+    protected static final int CANCEL = 4;
+    protected static final int DONE = 8;
+    protected static final int GO = 16;
+    protected static final int CREATE = 32;
+
+    public static class StrategyParameters {
+        public MapsActivity activity;
         public FloatingActionMenu menu;
         public FloatingActionButton undo;
         public FloatingActionButton cancel;
         public FloatingActionButton done;
+        public FloatingActionButton go;
+        public FloatingActionButton create;
         public TextView infoView;
         public GoogleMap map;
     }
 
-    protected Strategy(StrateyParameters params) {
+    protected Strategy(StrategyParameters params) {
         mInfoView = params.infoView;
         mMap = params.map;
         mMap.setOnMarkerClickListener(this);
@@ -35,6 +49,10 @@ public abstract class Strategy implements GoogleMap.OnMarkerClickListener, Googl
         undo = params.undo;
         cancel = params.cancel;
         done = params.done;
+        go = params.go;
+        create = params.create;
+        activity = params.activity;
+        initialButtonState();
     }
 
     public abstract boolean onBackPressed();
@@ -54,5 +72,56 @@ public abstract class Strategy implements GoogleMap.OnMarkerClickListener, Googl
     protected void hide(FloatingActionButton button) {
         button.setVisibility(View.GONE);
         button.setLabelVisibility(View.GONE);
+    }
+
+    private boolean isHidden(FloatingActionButton button){
+        return button.getVisibility() == View.GONE;
+    }
+
+    private void initialButtonState(){
+        int i = 1;
+        int flags = initiallyShownButtons();
+        while (true){
+            FloatingActionButton button = getButton(1<<i);
+            if(button==null)
+                break;
+            if((flags & (1<<i))!=0 && isHidden(button)){
+                show(button);
+            }else if ((flags & (1<<i))==0 && !isHidden(button)){
+                hide(button);
+            }
+            i++;
+        }
+    }
+
+    abstract protected int initiallyShownButtons();
+
+
+    private FloatingActionButton getButton(int id){
+        switch (id){
+            case UNDO:
+                return undo;
+
+            case CANCEL:
+                return cancel;
+
+            case DONE:
+                return done;
+
+            case GO:
+                return go;
+
+            case CREATE:
+                return create;
+
+            default:
+                return null;
+        }
+    }
+
+    public abstract void cleanup();
+
+    protected void switchStrategy(int strategy){
+        activity.switchStrategy(strategy);
     }
 }
