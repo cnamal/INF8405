@@ -65,6 +65,14 @@ public class CreateItinerary extends Strategy {
                 menu.close(true);
             }
         });
+
+        cancel.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                switchStrategy(MapsActivity.DEFAULT_STRATEGY);
+            }
+        });
+
         waypointsText();
     }
 
