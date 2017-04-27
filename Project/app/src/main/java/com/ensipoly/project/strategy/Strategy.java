@@ -1,5 +1,6 @@
 package com.ensipoly.project.strategy;
 
+import android.content.Intent;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -22,7 +23,7 @@ public abstract class Strategy implements GoogleMap.OnMarkerClickListener, Googl
     protected FloatingActionButton done;
     protected FloatingActionButton go;
     protected FloatingActionButton create;
-    private MapsActivity activity;
+    protected MapsActivity activity;
     protected BottomSheetBehavior mBottomSheetBehavior1;
 
     protected static final int MENU = 1;
@@ -82,28 +83,28 @@ public abstract class Strategy implements GoogleMap.OnMarkerClickListener, Googl
         button.setLabelVisibility(View.GONE);
     }
 
-    private boolean isHidden(FloatingActionButton button){
+    private boolean isHidden(FloatingActionButton button) {
         return button.getVisibility() == View.GONE;
     }
 
-    private void initialButtonState(){
+    private void initialButtonState() {
         initialButtonState(initiallyShownButtons());
     }
 
-    protected void initialButtonState(int flags){
+    protected void initialButtonState(int flags) {
         int i = 1;
-        if(flags==0){
+        if (flags == 0) {
             menu.hideMenu(true);
             return;
-        }else
+        } else
             menu.showMenu(true);
-        while (true){
-            FloatingActionButton button = getButton(1<<i);
-            if(button==null)
+        while (true) {
+            FloatingActionButton button = getButton(1 << i);
+            if (button == null)
                 break;
-            if((flags & (1<<i))!=0 && isHidden(button)){
+            if ((flags & (1 << i)) != 0 && isHidden(button)) {
                 show(button);
-            }else if ((flags & (1<<i))==0 && !isHidden(button)){
+            } else if ((flags & (1 << i)) == 0 && !isHidden(button)) {
                 hide(button);
             }
             i++;
@@ -113,8 +114,8 @@ public abstract class Strategy implements GoogleMap.OnMarkerClickListener, Googl
     abstract protected int initiallyShownButtons();
 
 
-    private FloatingActionButton getButton(int id){
-        switch (id){
+    private FloatingActionButton getButton(int id) {
+        switch (id) {
             case UNDO:
                 return undo;
 
@@ -137,7 +138,12 @@ public abstract class Strategy implements GoogleMap.OnMarkerClickListener, Googl
 
     public abstract void cleanup();
 
-    protected void switchStrategy(int strategy){
+    protected void switchStrategy(int strategy) {
         activity.switchStrategy(strategy);
     }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        throw new RuntimeException("Stub!");
+    }
+
 }

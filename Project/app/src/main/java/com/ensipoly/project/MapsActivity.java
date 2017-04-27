@@ -1,5 +1,6 @@
 package com.ensipoly.project;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.FragmentActivity;
@@ -127,5 +128,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             case GO_STRATEGY:
                 this.strategy = new GoItinerary(params);
         }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        strategy.onActivityResult(requestCode,resultCode,data);
     }
 }
