@@ -1,6 +1,8 @@
 package com.ensipoly.project;
 
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.FragmentActivity;
@@ -13,6 +15,8 @@ import com.ensipoly.project.strategy.CreateItinerary;
 import com.ensipoly.project.strategy.Default;
 import com.ensipoly.project.strategy.GoItinerary;
 import com.ensipoly.project.strategy.Strategy;
+import com.ensipoly.project.utils.CheckConnection;
+import com.ensipoly.project.utils.Utils;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -40,6 +44,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private NestedScrollView mNestedScrollView;
     private FloatingActionButton mFAB;
     private RecyclerView recyclerView;
+    private CheckConnection mCheckConnection;
+    private TextView mConnectionTextView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,12 +94,18 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onResume(){
         super.onResume();
         stepsCounter.registerListener();
+        mConnectionTextView = (TextView) findViewById(R.id.connection_text_view);
+        Utils.ConnectionInfoManager manager = new Utils.ConnectionInfoManager(mConnectionTextView);
+        mCheckConnection = new CheckConnection(manager);
+        IntentFilter networkFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        registerReceiver(mCheckConnection, networkFilter);
     }
 
     @Override
     public void onPause(){
         super.onPause();
         stepsCounter.unregisterListener();
+        unregisterReceiver(mCheckConnection);
     }
 
     @Override

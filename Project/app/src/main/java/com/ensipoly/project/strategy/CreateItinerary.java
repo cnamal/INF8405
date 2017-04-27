@@ -4,8 +4,10 @@ import android.graphics.Color;
 import android.view.View;
 
 import com.ensipoly.project.MapsActivity;
+import com.ensipoly.project.R;
 import com.ensipoly.project.models.Itinerary;
 import com.ensipoly.project.utils.FirebaseUtils;
+import com.ensipoly.project.utils.Utils;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
@@ -52,9 +54,10 @@ public class CreateItinerary extends Strategy {
         done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (mode == WAYPOINTS)
+                if (mode == WAYPOINTS) {
                     mode = PICTURES;
-                else {
+                    Utils.showInfo(mInfoView,"Add picture points if you want", R.color.severity_low);
+                } else {
                     DatabaseReference itinerariesDB = FirebaseUtils.getItinerariesDBReference();
                     itinerariesDB.push().setValue(new Itinerary(waypoints,pictures));
                     switchStrategy(MapsActivity.DEFAULT_STRATEGY);
@@ -62,6 +65,7 @@ public class CreateItinerary extends Strategy {
                 menu.close(true);
             }
         });
+        waypointsText();
     }
 
     @Override
@@ -110,6 +114,7 @@ public class CreateItinerary extends Strategy {
             hide(undo);
         if (waypoints.size() < 2)
             hide(done);
+        waypointsText();
         return true;
     }
 
@@ -117,8 +122,9 @@ public class CreateItinerary extends Strategy {
         if (pictures.isEmpty()) {
             mode = WAYPOINTS;
             menu.close(true);
+            waypointsText();
         } else {
-            Marker marker = pictures.get(pictures.size()-1);
+            Marker marker = pictures.remove(pictures.size()-1);
             marker.remove();
         }
         return true;
@@ -156,6 +162,7 @@ public class CreateItinerary extends Strategy {
 
         if (waypoints.size() > 1)
             show(done);
+        waypointsText();
     }
 
     private void onMapClickPictures(LatLng latLng) {
@@ -177,4 +184,10 @@ public class CreateItinerary extends Strategy {
         return true;
     }
 
+    private void waypointsText(){
+        if(waypoints.size()>1)
+            Utils.showInfo(mInfoView,"Add waypoints if you want", R.color.severity_low);
+        else
+            Utils.showInfo(mInfoView,"Add at least two points", R.color.severity_high);
+    }
 }

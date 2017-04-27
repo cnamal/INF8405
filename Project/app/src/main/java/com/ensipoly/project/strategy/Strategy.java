@@ -62,6 +62,7 @@ public abstract class Strategy implements GoogleMap.OnMarkerClickListener, Googl
         mBottomSheetBehavior1 = params.mBottomSheetBehavior1;
         recyclerView = params.recyclerView;
         initialButtonState();
+        mInfoView.setVisibility(View.INVISIBLE);
     }
 
     public abstract boolean onBackPressed();
