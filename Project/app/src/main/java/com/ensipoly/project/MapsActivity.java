@@ -1,11 +1,16 @@
 package com.ensipoly.project;
 
 import android.os.Bundle;
+import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.widget.NestedScrollView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.widget.TextView;
 
 import com.ensipoly.project.strategy.CreateItinerary;
 import com.ensipoly.project.strategy.Default;
+import com.ensipoly.project.strategy.GoItinerary;
 import com.ensipoly.project.strategy.Strategy;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
@@ -27,6 +32,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     public static final int DEFAULT_STRATEGY = 0;
     public static final int CREATE_STRATEGY = 1;
+    public static final int GO_STRATEGY = 2;
+
+    private BottomSheetBehavior mBottomSheetBehavior1;
+    private int mMaxHeight;
+    private NestedScrollView mNestedScrollView;
+    private FloatingActionButton mFAB;
+    private RecyclerView recyclerView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +55,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         FloatingActionButton done = (FloatingActionButton) findViewById(R.id.done);
         FloatingActionButton go = (FloatingActionButton) findViewById(R.id.go);
         FloatingActionButton create = (FloatingActionButton) findViewById(R.id.create);
+
+        mNestedScrollView = (NestedScrollView) findViewById(R.id.bottom_sheet1);
+        mMaxHeight = mNestedScrollView.getLayoutParams().height;
+        mBottomSheetBehavior1 = BottomSheetBehavior.from(mNestedScrollView);
+        mBottomSheetBehavior1.setHideable(true);
+        mBottomSheetBehavior1.setPeekHeight(300);
+        mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_HIDDEN);
+
+        mFAB = (FloatingActionButton) findViewById(R.id.fab_done);
+        mFAB.hide(false);
+        recyclerView = (RecyclerView) findViewById(R.id.myList);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
         params = new Strategy.StrategyParameters();
         params.infoView = infoView;
         params.menu = menu;
@@ -52,7 +77,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         params.go = go;
         params.create = create;
         params.activity = this;
+        params.mBottomSheetBehavior1 = mBottomSheetBehavior1;
+        params.recyclerView = recyclerView;
         stepsCounter = new StepsCounter(this);
+
     }
 
     @Override
@@ -83,11 +111,12 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             if(strategy instanceof Default)
                 super.onBackPressed();
             else
-                strategy = new Default(params);
+                switchStrategy(DEFAULT_STRATEGY);
         }
     }
 
     public void switchStrategy(int strategy){
+        this.strategy.cleanup();
         switch (strategy){
             case DEFAULT_STRATEGY:
                 this.strategy = new Default(params);
@@ -95,6 +124,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             case CREATE_STRATEGY:
                 this.strategy = new CreateItinerary(params);
                 return;
+            case GO_STRATEGY:
+                this.strategy = new GoItinerary(params);
         }
     }
 }

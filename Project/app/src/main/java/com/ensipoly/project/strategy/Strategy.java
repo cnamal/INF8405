@@ -1,5 +1,7 @@
 package com.ensipoly.project.strategy;
 
+import android.support.design.widget.BottomSheetBehavior;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 import android.widget.TextView;
 
@@ -10,6 +12,7 @@ import com.google.android.gms.maps.GoogleMap;
 
 public abstract class Strategy implements GoogleMap.OnMarkerClickListener, GoogleMap.OnMapClickListener {
 
+    protected final RecyclerView recyclerView;
     protected TextView mInfoView;
     protected GoogleMap mMap;
 
@@ -20,6 +23,7 @@ public abstract class Strategy implements GoogleMap.OnMarkerClickListener, Googl
     protected FloatingActionButton go;
     protected FloatingActionButton create;
     private MapsActivity activity;
+    protected BottomSheetBehavior mBottomSheetBehavior1;
 
     protected static final int MENU = 1;
     protected static final int UNDO = 2;
@@ -29,6 +33,7 @@ public abstract class Strategy implements GoogleMap.OnMarkerClickListener, Googl
     protected static final int CREATE = 32;
 
     public static class StrategyParameters {
+        public BottomSheetBehavior mBottomSheetBehavior1;
         public MapsActivity activity;
         public FloatingActionMenu menu;
         public FloatingActionButton undo;
@@ -38,6 +43,7 @@ public abstract class Strategy implements GoogleMap.OnMarkerClickListener, Googl
         public FloatingActionButton create;
         public TextView infoView;
         public GoogleMap map;
+        public RecyclerView recyclerView;
     }
 
     protected Strategy(StrategyParameters params) {
@@ -52,6 +58,8 @@ public abstract class Strategy implements GoogleMap.OnMarkerClickListener, Googl
         go = params.go;
         create = params.create;
         activity = params.activity;
+        mBottomSheetBehavior1 = params.mBottomSheetBehavior1;
+        recyclerView = params.recyclerView;
         initialButtonState();
     }
 
@@ -79,8 +87,16 @@ public abstract class Strategy implements GoogleMap.OnMarkerClickListener, Googl
     }
 
     private void initialButtonState(){
+        initialButtonState(initiallyShownButtons());
+    }
+
+    protected void initialButtonState(int flags){
         int i = 1;
-        int flags = initiallyShownButtons();
+        if(flags==0){
+            menu.hideMenu(true);
+            return;
+        }else
+            menu.showMenu(true);
         while (true){
             FloatingActionButton button = getButton(1<<i);
             if(button==null)

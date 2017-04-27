@@ -3,6 +3,9 @@ package com.ensipoly.project.strategy;
 import android.graphics.Color;
 import android.view.View;
 
+import com.ensipoly.project.MapsActivity;
+import com.ensipoly.project.models.Itinerary;
+import com.ensipoly.project.utils.FirebaseUtils;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
 import com.google.android.gms.maps.model.CircleOptions;
@@ -12,6 +15,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.firebase.database.DatabaseReference;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -21,7 +25,7 @@ public class CreateItinerary extends Strategy {
 
     private List<LatLng> waypoints;
     private Stack<Circle> circles;
-    private Stack<Marker> pictures;
+    private List<Marker> pictures;
     private Polyline line;
     private Marker first;
     private Marker last;
@@ -51,7 +55,9 @@ public class CreateItinerary extends Strategy {
                 if (mode == WAYPOINTS)
                     mode = PICTURES;
                 else {
-                    //TODO
+                    DatabaseReference itinerariesDB = FirebaseUtils.getItinerariesDBReference();
+                    itinerariesDB.push().setValue(new Itinerary(waypoints,pictures));
+                    switchStrategy(MapsActivity.DEFAULT_STRATEGY);
                 }
                 menu.close(true);
             }
@@ -72,7 +78,15 @@ public class CreateItinerary extends Strategy {
 
     @Override
     public void cleanup() {
-
+        if(first!=null)
+            first.remove();
+        if(last!=null)
+            last.remove();
+        line.remove();
+        for(Marker marker : pictures)
+            marker.remove();
+        for(Circle circle : circles)
+            circle.remove();
     }
 
     private boolean onBackPressedWaypoints() {
@@ -104,7 +118,7 @@ public class CreateItinerary extends Strategy {
             mode = WAYPOINTS;
             menu.close(true);
         } else {
-            Marker marker = pictures.pop();
+            Marker marker = pictures.get(pictures.size()-1);
             marker.remove();
         }
         return true;

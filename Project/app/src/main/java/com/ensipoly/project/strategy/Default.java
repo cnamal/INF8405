@@ -16,6 +16,12 @@ public class Default extends Strategy {
                 switchStrategy(MapsActivity.CREATE_STRATEGY);
             }
         });
+        go.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                switchStrategy(MapsActivity.GO_STRATEGY);
+            }
+        });
     }
 
     @Override
