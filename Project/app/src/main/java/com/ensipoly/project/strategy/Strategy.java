@@ -24,6 +24,7 @@ public abstract class Strategy implements GoogleMap.OnMarkerClickListener, Googl
     protected FloatingActionButton done;
     protected FloatingActionButton go;
     protected FloatingActionButton create;
+    protected FloatingActionButton history;
     protected MapsActivity activity;
     protected BottomSheetBehavior mBottomSheetBehavior1;
 
@@ -33,6 +34,7 @@ public abstract class Strategy implements GoogleMap.OnMarkerClickListener, Googl
     protected static final int DONE = 8;
     protected static final int GO = 16;
     protected static final int CREATE = 32;
+    protected static final int HISTORY = 64;
 
     public static class StrategyParameters {
         public BottomSheetBehavior mBottomSheetBehavior1;
@@ -43,6 +45,7 @@ public abstract class Strategy implements GoogleMap.OnMarkerClickListener, Googl
         public FloatingActionButton done;
         public FloatingActionButton go;
         public FloatingActionButton create;
+        public FloatingActionButton history;
         public TextView infoView;
         public GoogleMap map;
         public RecyclerView recyclerView;
@@ -60,6 +63,7 @@ public abstract class Strategy implements GoogleMap.OnMarkerClickListener, Googl
         done = params.done;
         go = params.go;
         create = params.create;
+        history = params.history;
         activity = params.activity;
         mBottomSheetBehavior1 = params.mBottomSheetBehavior1;
         recyclerView = params.recyclerView;
@@ -134,6 +138,9 @@ public abstract class Strategy implements GoogleMap.OnMarkerClickListener, Googl
 
             case CREATE:
                 return create;
+
+            case HISTORY:
+                return history;
 
             default:
                 return null;

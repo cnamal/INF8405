@@ -5,8 +5,10 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -31,9 +33,11 @@ import android.widget.TextView;
 import com.ensipoly.project.strategy.CreateItinerary;
 import com.ensipoly.project.strategy.Default;
 import com.ensipoly.project.strategy.GoItinerary;
+import com.ensipoly.project.strategy.History;
 import com.ensipoly.project.strategy.Strategy;
 import com.ensipoly.project.utils.CheckConnection;
 import com.ensipoly.project.utils.CheckLocation;
+import com.ensipoly.project.utils.FirebaseUtils;
 import com.ensipoly.project.utils.Utils;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
@@ -44,7 +48,11 @@ import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+<<<<<<< HEAD
 import com.google.android.gms.maps.model.Marker;
+=======
+import com.google.firebase.database.DatabaseReference;
+>>>>>>> 4dc6c52a34e13c1ac56416d01384ba144f63a8d1
 
 import static com.ensipoly.project.R.id.map;
 
@@ -58,6 +66,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public static final int DEFAULT_STRATEGY = 0;
     public static final int CREATE_STRATEGY = 1;
     public static final int GO_STRATEGY = 2;
+    public static final int HISTORY_STRATEGY = 3;
 
     private BottomSheetBehavior mBottomSheetBehavior1;
     private NestedScrollView mNestedScrollView;
@@ -76,6 +85,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private int mShortAnimationDuration = 300;
 
     private static final int REQUEST_LOCATION_ON_MAP_READY = 0;
+    private static final String USER_ID_KEY_PREFERENCE = "user_id";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,6 +102,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         FloatingActionButton done = (FloatingActionButton) findViewById(R.id.done);
         FloatingActionButton go = (FloatingActionButton) findViewById(R.id.go);
         FloatingActionButton create = (FloatingActionButton) findViewById(R.id.create);
+        FloatingActionButton history = (FloatingActionButton) findViewById(R.id.history);
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_done);
 
         mNestedScrollView = (NestedScrollView) findViewById(R.id.bottom_sheet1);
@@ -112,12 +123,24 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         params.done = done;
         params.go = go;
         params.create = create;
+        params.history = history;
         params.activity = this;
         params.mBottomSheetBehavior1 = mBottomSheetBehavior1;
         params.recyclerView = recyclerView;
         params.fab = fab;
         stepsCounter = new StepsCounter(this);
 
+        SharedPreferences sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        String userID = sharedPref.getString(USER_ID_KEY_PREFERENCE, "");
+        if(userID.equals("")){
+            DatabaseReference userDB = FirebaseUtils.getUserDBReference();
+            DatabaseReference user = userDB.push();
+            userID = user.getKey();
+            user.setValue(true);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString(USER_ID_KEY_PREFERENCE, userID);
+            editor.commit();
+        }
     }
 
     @Override
@@ -187,6 +210,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 return;
             case GO_STRATEGY:
                 this.strategy = new GoItinerary(params);
+                return;
+            case HISTORY_STRATEGY:
+                this.strategy = new History(params);
         }
     }
 

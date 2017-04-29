@@ -155,6 +155,17 @@
             app:fab_label="@string/run"
             app:layout_anchorGravity="bottom|right|end" />
 
+        <com.github.clans.fab.FloatingActionButton
+            android:id="@+id/history"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_margin="@dimen/fab_margin"
+            android:src="@drawable/ic_history_white_24dp"
+            app:fabSize="auto"
+            app:fab_label="@string/history"
+            app:layout_anchorGravity="bottom|right|end" />
+
     </com.github.clans.fab.FloatingActionMenu>
 
 

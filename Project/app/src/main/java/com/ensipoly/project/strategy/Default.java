@@ -22,6 +22,12 @@ public class Default extends Strategy {
                 switchStrategy(MapsActivity.GO_STRATEGY);
             }
         });
+        history.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                switchStrategy(MapsActivity.HISTORY_STRATEGY);
+            }
+        });
     }
 
     @Override
@@ -31,7 +37,7 @@ public class Default extends Strategy {
 
     @Override
     protected int initiallyShownButtons() {
-        return MENU|CREATE|GO;
+        return MENU|CREATE|GO|HISTORY;
     }
 
     @Override
