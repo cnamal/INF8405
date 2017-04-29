@@ -1,10 +1,14 @@
 package com.ensipoly.project;
 
+import android.Manifest;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.design.widget.BottomSheetBehavior;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.widget.LinearLayoutManager;
@@ -16,6 +20,7 @@ import com.ensipoly.project.strategy.Default;
 import com.ensipoly.project.strategy.GoItinerary;
 import com.ensipoly.project.strategy.Strategy;
 import com.ensipoly.project.utils.CheckConnection;
+import com.ensipoly.project.utils.CheckLocation;
 import com.ensipoly.project.utils.Utils;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
@@ -43,7 +48,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private NestedScrollView mNestedScrollView;
     private RecyclerView recyclerView;
     private CheckConnection mCheckConnection;
+    private CheckLocation mCheckLocation;
     private TextView mConnectionTextView;
+
+    private static final int REQUEST_LOCATION_ON_MAP_READY = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,21 +97,31 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
         stepsCounter.registerListener();
         mConnectionTextView = (TextView) findViewById(R.id.connection_text_view);
         Utils.ConnectionInfoManager manager = new Utils.ConnectionInfoManager(mConnectionTextView);
         mCheckConnection = new CheckConnection(manager);
+        mCheckLocation = new CheckLocation(manager);
         IntentFilter networkFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        IntentFilter gpsFilter = new IntentFilter(LocationManager.PROVIDERS_CHANGED_ACTION);
         registerReceiver(mCheckConnection, networkFilter);
+        registerReceiver(mCheckLocation, gpsFilter);
+
+        // Initial GPS status is not given by the BroadcastReceiver. We query it ourselves.
+        if (!(mCheckLocation.isGPSConnected(getApplicationContext())))
+            manager.onLocationChanged(false);
+        else
+            manager.onLocationChanged(true);
     }
 
     @Override
-    public void onPause(){
+    public void onPause() {
         super.onPause();
         stepsCounter.unregisterListener();
         unregisterReceiver(mCheckConnection);
+        unregisterReceiver(mCheckLocation);
     }
 
     @Override
@@ -114,6 +132,14 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LatLng montreal = new LatLng(45.5016889, -73.56725599999999);
         mMap.moveCamera(CameraUpdateFactory.newCameraPosition(new CameraPosition.Builder().target(montreal).zoom(18).build()));
         strategy = new Default(params);
+
+        if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_LOCATION_ON_MAP_READY);
+            return;
+        }
+        mMap.setMyLocationEnabled(true);
     }
 
     @Override
