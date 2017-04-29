@@ -199,7 +199,7 @@ public class GoItinerary extends Strategy{
         if(marker == first || marker == last)
             return false;
         if(marker.getTag() != null){
-            // TODO Show picture
+            activity.zoomImage(marker);
             return true;
         }
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
