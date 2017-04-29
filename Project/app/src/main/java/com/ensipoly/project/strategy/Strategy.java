@@ -14,6 +14,7 @@ import com.google.android.gms.maps.GoogleMap;
 public abstract class Strategy implements GoogleMap.OnMarkerClickListener, GoogleMap.OnMapClickListener {
 
     protected final RecyclerView recyclerView;
+    protected final FloatingActionButton fab;
     protected TextView mInfoView;
     protected GoogleMap mMap;
 
@@ -45,6 +46,7 @@ public abstract class Strategy implements GoogleMap.OnMarkerClickListener, Googl
         public TextView infoView;
         public GoogleMap map;
         public RecyclerView recyclerView;
+        public FloatingActionButton fab;
     }
 
     protected Strategy(StrategyParameters params) {
@@ -61,8 +63,9 @@ public abstract class Strategy implements GoogleMap.OnMarkerClickListener, Googl
         activity = params.activity;
         mBottomSheetBehavior1 = params.mBottomSheetBehavior1;
         recyclerView = params.recyclerView;
+        fab = params.fab;
         initialButtonState();
-        mInfoView.setVisibility(View.INVISIBLE);
+        mInfoView.setVisibility(View.GONE);
     }
 
     public abstract boolean onBackPressed();

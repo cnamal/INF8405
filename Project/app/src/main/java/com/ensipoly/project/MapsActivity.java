@@ -40,9 +40,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public static final int GO_STRATEGY = 2;
 
     private BottomSheetBehavior mBottomSheetBehavior1;
-    private int mMaxHeight;
     private NestedScrollView mNestedScrollView;
-    private FloatingActionButton mFAB;
     private RecyclerView recyclerView;
     private CheckConnection mCheckConnection;
     private TextView mConnectionTextView;
@@ -62,16 +60,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         FloatingActionButton done = (FloatingActionButton) findViewById(R.id.done);
         FloatingActionButton go = (FloatingActionButton) findViewById(R.id.go);
         FloatingActionButton create = (FloatingActionButton) findViewById(R.id.create);
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab_done);
 
         mNestedScrollView = (NestedScrollView) findViewById(R.id.bottom_sheet1);
-        mMaxHeight = mNestedScrollView.getLayoutParams().height;
         mBottomSheetBehavior1 = BottomSheetBehavior.from(mNestedScrollView);
         mBottomSheetBehavior1.setHideable(true);
         mBottomSheetBehavior1.setPeekHeight(300);
         mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_HIDDEN);
 
-        mFAB = (FloatingActionButton) findViewById(R.id.fab_done);
-        mFAB.hide(false);
+        fab.hide(false);
         recyclerView = (RecyclerView) findViewById(R.id.myList);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -86,6 +83,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         params.activity = this;
         params.mBottomSheetBehavior1 = mBottomSheetBehavior1;
         params.recyclerView = recyclerView;
+        params.fab = fab;
         stepsCounter = new StepsCounter(this);
 
     }

@@ -52,6 +52,7 @@ public class GoItinerary extends Strategy{
     private Marker first;
     private Marker last;
     private Polyline line;
+    private View mSelectedView;
 
     private static class ItineraryViewHolder extends RecyclerView.ViewHolder {
         TextView itineraryTextView;
@@ -85,18 +86,37 @@ public class GoItinerary extends Strategy{
                         viewHolder.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                showItinerary(model);
+                                select(view,model);
+                                showItinerary();
                             }
                         });
+
                     }
                 };
         recyclerView.setAdapter(adapter);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                selecting = false;
+                mBottomSheetBehavior1.setHideable(true);
+                mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_HIDDEN);
+                fab.setVisibility(View.GONE);
+            }
+        });
     }
 
-    private void showItinerary(Itinerary itinerary){
-        selecting = false;
-        mBottomSheetBehavior1.setHideable(true);
-        mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_HIDDEN);
+    private void select(View v, Itinerary i){
+        if(mSelectedView!=null)
+            mSelectedView.setBackgroundColor(Color.WHITE);
+        mSelectedView = v;
+        mSelectedView.setTag(i);
+        mSelectedView.setBackgroundResource(R.color.colorAccent);
+        fab.setVisibility(View.VISIBLE);
+    }
+
+    private void showItinerary(){
+        cleanupMap();
+        Itinerary itinerary = (Itinerary) mSelectedView.getTag();
         waypoints = itinerary.getGMapsWaypoints();
         List<LatLng> picturesLatLng = itinerary.getGMapsPictures();
         first = mMap.addMarker(new MarkerOptions().position(waypoints.get(0)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
@@ -121,6 +141,7 @@ public class GoItinerary extends Strategy{
         cleanupMap();
         mBottomSheetBehavior1.setHideable(false);
         mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        mSelectedView.setBackgroundColor(Color.WHITE);
         return true;
     }
 
@@ -133,7 +154,7 @@ public class GoItinerary extends Strategy{
     public void cleanup() {
         mBottomSheetBehavior1.setHideable(true);
         mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_HIDDEN);
-
+        fab.setVisibility(View.GONE);
         cleanupMap();
     }
 
