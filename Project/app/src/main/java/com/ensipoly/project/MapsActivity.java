@@ -48,11 +48,8 @@ import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-<<<<<<< HEAD
 import com.google.android.gms.maps.model.Marker;
-=======
 import com.google.firebase.database.DatabaseReference;
->>>>>>> 4dc6c52a34e13c1ac56416d01384ba144f63a8d1
 
 import static com.ensipoly.project.R.id.map;
 
