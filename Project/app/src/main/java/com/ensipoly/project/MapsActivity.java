@@ -17,6 +17,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
+import android.os.BatteryManager;
 import android.os.Bundle;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.ActivityCompat;
@@ -138,6 +139,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
             editor.putString(USER_ID_KEY_PREFERENCE, userID);
             editor.commit();
         }
+
     }
 
     @Override
@@ -377,6 +379,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 mCurrentAnimator = set;
             }
         });
+    }
+
+    public float getBatteryLevel(){
+        IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
+        Intent batteryStatus = getApplicationContext().registerReceiver(null, ifilter);
+        int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+        int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+
+        return level / (float)scale;
     }
 
 }

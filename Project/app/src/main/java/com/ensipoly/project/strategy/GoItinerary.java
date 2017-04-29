@@ -11,8 +11,10 @@ import android.provider.MediaStore;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.content.FileProvider;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.ensipoly.project.R;
 import com.ensipoly.project.models.Itinerary;
@@ -53,6 +55,9 @@ public class GoItinerary extends Strategy{
     private Marker last;
     private Polyline line;
     private View mSelectedView;
+    private int numberOfPhotosTaken = 0;
+
+    private float batteryLevelAtStart;
 
     private static class ItineraryViewHolder extends RecyclerView.ViewHolder {
         TextView itineraryTextView;
@@ -103,6 +108,7 @@ public class GoItinerary extends Strategy{
                 fab.setVisibility(View.GONE);
             }
         });
+        batteryLevelAtStart = activity.getBatteryLevel();
     }
 
     private void select(View v, Itinerary i){
@@ -196,7 +202,7 @@ public class GoItinerary extends Strategy{
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        if(marker == first || marker == last)
+        if(marker.equals(first) || marker.equals(last))
             return false;
         if(marker.getTag() != null){
             activity.zoomImage(marker);
@@ -236,6 +242,22 @@ public class GoItinerary extends Strategy{
             mPhotoData = stream.toByteArray();
             currMarker.setTag(mPhotoData);
             currMarker = null;
+            updateNumberOfPhotoTaken();
+        }
+    }
+
+    private void updateNumberOfPhotoTaken(){
+        numberOfPhotosTaken++;
+        if(numberOfPhotosTaken == pictures.size()){
+            float newBatteryLevel = activity.getBatteryLevel();
+            int diff = (int)Math.ceil((batteryLevelAtStart - newBatteryLevel) * 100.0);
+            String extra_message = "";
+            if(diff < 0){
+                extra_message =  activity.getString(R.string.battery_level_negative);
+            } else if(diff >= 10){
+                extra_message =  activity.getString(R.string.battery_level_positive);
+            }
+            Toast.makeText(activity.getApplicationContext(), activity.getString(R.string.battery_level) + " " + diff + "% " + extra_message, Toast.LENGTH_LONG).show();
         }
     }
 
