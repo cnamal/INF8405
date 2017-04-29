@@ -1,8 +1,10 @@
 package com.ensipoly.project;
 
 import android.Manifest;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
@@ -21,6 +23,7 @@ import com.ensipoly.project.strategy.GoItinerary;
 import com.ensipoly.project.strategy.Strategy;
 import com.ensipoly.project.utils.CheckConnection;
 import com.ensipoly.project.utils.CheckLocation;
+import com.ensipoly.project.utils.FirebaseUtils;
 import com.ensipoly.project.utils.Utils;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
@@ -30,6 +33,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.firebase.database.DatabaseReference;
 
 import static com.ensipoly.project.R.id.map;
 
@@ -52,6 +56,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private TextView mConnectionTextView;
 
     private static final int REQUEST_LOCATION_ON_MAP_READY = 0;
+    private static final String USER_ID_KEY_PREFERENCE = "user_id";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,6 +99,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         params.fab = fab;
         stepsCounter = new StepsCounter(this);
 
+        SharedPreferences sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+        String userID = sharedPref.getString(USER_ID_KEY_PREFERENCE, "");
+        if(userID.equals("")){
+            DatabaseReference userDB = FirebaseUtils.getUserDBReference();
+            DatabaseReference user = userDB.push();
+            userID = user.getKey();
+            user.setValue(true);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString(USER_ID_KEY_PREFERENCE, userID);
+            editor.commit();
+        }
     }
 
     @Override
