@@ -17,6 +17,7 @@ import com.ensipoly.project.R;
 import com.ensipoly.project.models.History;
 import com.ensipoly.project.models.Itinerary;
 import com.ensipoly.project.utils.FirebaseUtils;
+import com.ensipoly.project.utils.LatLng;
 import com.ensipoly.project.utils.Utils;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.maps.model.Marker;
@@ -29,8 +30,10 @@ import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -47,6 +50,7 @@ public class GoItinerary extends ShowItinerary {
     private int numberOfPhotosTaken = 0;
     private Date startTime;
     private Date endTime;
+    private List<LatLng> locations;
 
     private float batteryLevelAtStart;
 
@@ -94,13 +98,20 @@ public class GoItinerary extends ShowItinerary {
                     fab.setImageResource(R.drawable.ic_timer_white_24dp);
                 } else if (state == NOT_START) {
                     state = STARTED;
+                    locations = new ArrayList<>();
+                    activity.startLocationUpdates(locations);
                     startTime = new Date();
                     batteryLevelAtStart = activity.getBatteryLevel();
                     fab.setImageResource(R.drawable.ic_timer_off_white_24dp);
                 } else {
+                    activity.stopLocationUpdates();
                     endTime = new Date();
                     fab.hide(true);
                     Toast.makeText(activity, "Uploading...", Toast.LENGTH_SHORT).show();
+                    if(numberOfPhotosTaken ==0){
+                        uploadHistory(new History(((Itinerary) mSelectedView.getTag()).getId(), null, startTime, endTime,Utils.getUserID(activity),locations));
+                        return;
+                    }
                     StorageReference storage = FirebaseStorage.getInstance().getReference("photos");
                     final HashMap<String, String> map = new HashMap<>();
 
@@ -119,20 +130,7 @@ public class GoItinerary extends ShowItinerary {
                                     map.put("id"+finalI , photo.fileName);
                                     if (map.size() == numberOfPhotosTaken) {
                                         numberOfPhotosTaken = 0;
-                                        DatabaseReference historyDB = FirebaseUtils.getHistoryDBReference();
-                                        String key = historyDB.push().getKey();
-                                        Map<String, Object> children = new HashMap<>();
-                                        children.put("users/" + Utils.getUserID(activity) + "/history/" + key, false);
-                                        History history = new History(((Itinerary) mSelectedView.getTag()).getId(), map, startTime, endTime,Utils.getUserID(activity));
-                                        children.put("history/" + key, history);
-                                        FirebaseUtils.getDatabase().getReference().updateChildren(children).addOnSuccessListener(new OnSuccessListener<Void>() {
-                                            @Override
-                                            public void onSuccess(Void aVoid) {
-                                                state = NOT_START;
-                                                fab.show(true);
-                                                onBackPressed();
-                                            }
-                                        });
+                                        uploadHistory(new History(((Itinerary) mSelectedView.getTag()).getId(), map, startTime, endTime,Utils.getUserID(activity),locations));
                                     }
                                 }
                             }
@@ -143,6 +141,21 @@ public class GoItinerary extends ShowItinerary {
         });
     }
 
+    private void uploadHistory(History history){
+        DatabaseReference historyDB = FirebaseUtils.getHistoryDBReference();
+        String key = historyDB.push().getKey();
+        Map<String, Object> children = new HashMap<>();
+        children.put("users/" + Utils.getUserID(activity) + "/history/" + key, false);
+        children.put("history/" + key, history);
+        FirebaseUtils.getDatabase().getReference().updateChildren(children).addOnSuccessListener(new OnSuccessListener<Void>() {
+            @Override
+            public void onSuccess(Void aVoid) {
+                state = NOT_START;
+                fab.show(true);
+                onBackPressed();
+            }
+        });
+    }
 
     @Override
     public boolean onBackPressed() {

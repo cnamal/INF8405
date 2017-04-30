@@ -39,20 +39,14 @@ public class Itinerary {
 
     @Exclude
     public List<com.google.android.gms.maps.model.LatLng> getGMapsWaypoints(){
-        List<com.google.android.gms.maps.model.LatLng> res = new ArrayList<>();
-        for(LatLng waypoint : waypoints)
-            res.add(waypoint.convert());
-        return res;
+        return LatLng.convertList(waypoints);
     }
 
     @Exclude
     public List<com.google.android.gms.maps.model.LatLng> getGMapsPictures(){
         if(pictures == null)
             return null;
-        List<com.google.android.gms.maps.model.LatLng> res = new ArrayList<>();
-        for(LatLng picture : pictures)
-            res.add(picture.convert());
-        return res;
+        return LatLng.convertList(pictures);
     }
 
     @Exclude

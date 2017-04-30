@@ -64,6 +64,7 @@ abstract class ShowItinerary extends Strategy {
         mSelectedView.setTag(i);
         mSelectedView.setBackgroundResource(R.color.colorAccent);
         fab.setVisibility(View.VISIBLE);
+        cleanupMap();
     }
 
     protected void showItinerary() {
@@ -72,7 +73,6 @@ abstract class ShowItinerary extends Strategy {
     }
 
     protected void showItinerary(Itinerary itinerary) {
-        cleanupMap();
         waypoints = itinerary.getGMapsWaypoints();
         List<LatLng> picturesLatLng = itinerary.getGMapsPictures();
         first = mMap.addMarker(new MarkerOptions().position(waypoints.get(0)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));

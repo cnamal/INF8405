@@ -15,10 +15,13 @@ import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.location.Location;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.os.BatteryManager;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentActivity;
@@ -42,6 +45,10 @@ import com.ensipoly.project.utils.FirebaseUtils;
 import com.ensipoly.project.utils.Utils;
 import com.github.clans.fab.FloatingActionButton;
 import com.github.clans.fab.FloatingActionMenu;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
+import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -52,10 +59,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.firebase.database.DatabaseReference;
 
+import java.util.List;
+
 import static com.ensipoly.project.R.id.map;
 import static com.ensipoly.project.utils.Utils.USER_ID_KEY_PREFERENCE;
 
-public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
+public class MapsActivity extends FragmentActivity implements OnMapReadyCallback, GoogleApiClient.ConnectionCallbacks, LocationListener {
 
     private GoogleMap mMap;
     private Strategy strategy;
@@ -73,6 +82,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private CheckConnection mCheckConnection;
     private CheckLocation mCheckLocation;
     private TextView mConnectionTextView;
+    private GoogleApiClient mGoogleApiClient;
+    private LocationRequest mLocationRequest;
 
     // Hold a reference to the current animator,
     // so that it can be canceled mid-way.
@@ -84,10 +95,15 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private int mShortAnimationDuration = 300;
 
     private static final int REQUEST_LOCATION_ON_MAP_READY = 0;
+    private static final int REQUEST_LOCATION_START_LOCATION_UPDATES = 1;
+    private List<com.ensipoly.project.utils.LatLng> locations;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        buildGoogleApiClient();
+
         setContentView(R.layout.activity_maps);
         TextView infoView = (TextView) findViewById(R.id.info_text_view);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
@@ -143,8 +159,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        mGoogleApiClient.connect();
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
+
+        if (mGoogleApiClient.isConnected() && locations != null) {
+            startLocationUpdates();
+        }
+
         stepsCounter.registerListener();
         mConnectionTextView = (TextView) findViewById(R.id.connection_text_view);
         Utils.ConnectionInfoManager manager = new Utils.ConnectionInfoManager(mConnectionTextView);
@@ -165,9 +192,47 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     @Override
     public void onPause() {
         super.onPause();
+
+        if (mGoogleApiClient.isConnected() && locations != null) {
+            stopLocationUpdates(false);
+        }
+
         stepsCounter.unregisterListener();
         unregisterReceiver(mCheckConnection);
         unregisterReceiver(mCheckLocation);
+    }
+
+    @Override
+    protected void onStop() {
+        mGoogleApiClient.disconnect();
+        super.onStop();
+    }
+
+    private synchronized void buildGoogleApiClient() {
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .addConnectionCallbacks(this)
+                .addApi(LocationServices.API)
+                .build();
+        createLocationRequest();
+    }
+
+    private void createLocationRequest() {
+        mLocationRequest = new LocationRequest();
+
+        // Get frequency from preferences
+        long freq = 5000;
+
+        // Sets the desired interval for active location updates. This interval is
+        // inexact. You may not receive updates at all if no location sources are available, or
+        // you may receive them slower than requested. You may also receive updates faster than
+        // requested if other applications are requesting location at a faster interval.
+        mLocationRequest.setInterval(freq);
+
+        // Sets the fastest rate for active location updates. This interval is exact, and your
+        // application will never receive updates faster than this value.
+        mLocationRequest.setFastestInterval(freq / 2);
+
+        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
     }
 
     @Override
@@ -182,10 +247,29 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    REQUEST_LOCATION_ON_MAP_READY);
+                    REQUEST_LOCATION_START_LOCATION_UPDATES);
             return;
         }
         mMap.setMyLocationEnabled(true);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           @NonNull String permissions[], @NonNull int[] grantResults) {
+        if (grantResults.length == 0)
+            return;
+        switch (requestCode) {
+            case REQUEST_LOCATION_ON_MAP_READY:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                    onMapReady(mMap);
+                break;
+            case REQUEST_LOCATION_START_LOCATION_UPDATES:
+                if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                    startLocationUpdates();
+                break;
+            default:
+                super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        }
     }
 
     @Override
@@ -391,6 +475,54 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
 
         return level / (float) scale;
+    }
+
+    private void startLocationUpdates() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    REQUEST_LOCATION_START_LOCATION_UPDATES);
+            return;
+        }
+        LocationServices.FusedLocationApi.requestLocationUpdates(
+                mGoogleApiClient, mLocationRequest, this);
+    }
+
+    public void startLocationUpdates(List<com.ensipoly.project.utils.LatLng> list) {
+        locations = list;
+        startLocationUpdates();
+    }
+
+    public void stopLocationUpdates() {
+        stopLocationUpdates(true);
+    }
+
+    private void stopLocationUpdates(boolean reset) {
+        if (reset)
+            locations = null;
+        // It is a good practice to remove location requests when the activity is in a paused or
+        // stopped state. Doing so helps battery performance and is especially
+        // recommended in applications that request frequent location updates.
+
+        // The final argument to {@code requestLocationUpdates()} is a LocationListener
+        // (http://developer.android.com/reference/com/google/android/gms/location/LocationListener.html).
+        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        locations.add(new com.ensipoly.project.utils.LatLng(location));
+    }
+
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        mGoogleApiClient.connect();
     }
 
 }

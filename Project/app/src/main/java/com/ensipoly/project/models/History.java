@@ -1,7 +1,11 @@
 package com.ensipoly.project.models;
 
+import com.ensipoly.project.utils.LatLng;
+import com.google.firebase.database.Exclude;
+
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 
 public class History {
 
@@ -10,17 +14,23 @@ public class History {
     private Date startTime;
     private Date endTime;
     private String user;
+    private List<LatLng> locations;
 
     public History() {
 
     }
 
-    public History(String itineraryId, HashMap<String, String> pictures, Date startTime, Date endTime,String user) {
+    public History(String itineraryId, HashMap<String, String> pictures, Date startTime, Date endTime,String user,List<LatLng> locations) {
         this.itinerary = itineraryId;
         this.pictures = pictures;
         this.startTime = startTime;
         this.endTime = endTime;
         this.user = user;
+        this.locations = locations;
+    }
+
+    public History(String itineraryId, Date startTime, Date endTime, String user,List<LatLng> locations){
+        this(itineraryId,null,startTime,endTime,user,locations);
     }
 
     public String getItinerary() {
@@ -62,5 +72,20 @@ public class History {
 
     public void setUser(String user) {
         this.user = user;
+    }
+
+    public List<LatLng> getLocations() {
+        return locations;
+    }
+
+    public void setLocations(List<LatLng> locations) {
+        this.locations = locations;
+    }
+
+    @Exclude
+    public List<com.google.android.gms.maps.model.LatLng> getGMapsLocations(){
+        if(pictures == null)
+            return null;
+        return LatLng.convertList(locations);
     }
 }

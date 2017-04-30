@@ -9,9 +9,12 @@ import com.ensipoly.project.R;
 import com.ensipoly.project.models.History;
 import com.ensipoly.project.models.Itinerary;
 import com.ensipoly.project.utils.FirebaseUtils;
+import com.ensipoly.project.utils.LatLng;
 import com.ensipoly.project.utils.Utils;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.Circle;
+import com.google.android.gms.maps.model.CircleOptions;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DataSnapshot;
@@ -20,11 +23,14 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class HistoryItinerary extends ShowItinerary {
 
     private boolean selecting = true;
+    private List<Circle> locations;
 
     public HistoryItinerary(StrategyParameters params) {
         super(params);
@@ -44,6 +50,12 @@ public class HistoryItinerary extends ShowItinerary {
                             @Override
                             public void onClick(View view) {
                                 select(view, model);
+                                if (model.getLocations() != null) {
+                                    locations = new ArrayList<>();
+                                    for (LatLng location : model.getLocations()) {
+                                        locations.add(mMap.addCircle(new CircleOptions().center(location.convert()).radius(1).zIndex(1).fillColor(Color.parseColor("#5EBFFF")).strokeColor(Color.parseColor("#5EBFFF"))));
+                                    }
+                                }
                                 DatabaseReference itineraryDB = FirebaseUtils.getItinerariesDBReference();
                                 itineraryDB.child(model.getItinerary()).addListenerForSingleValueEvent(new ValueEventListener() {
                                     @Override
@@ -110,8 +122,8 @@ public class HistoryItinerary extends ShowItinerary {
         if (marker.equals(first) || marker.equals(last))
             return false;
         if (marker.getTag() != null) {
-            Toast.makeText(activity,"Loading image...",Toast.LENGTH_SHORT).show();
-            FirebaseStorage.getInstance().getReference("photos").child((String) marker.getTag()).getBytes(20*(1<<20)).addOnSuccessListener(new OnSuccessListener<byte[]>() {
+            Toast.makeText(activity, "Loading image...", Toast.LENGTH_SHORT).show();
+            FirebaseStorage.getInstance().getReference("photos").child((String) marker.getTag()).getBytes(20 * (1 << 20)).addOnSuccessListener(new OnSuccessListener<byte[]>() {
                 @Override
                 public void onSuccess(byte[] bytes) {
                     activity.zoomImage(bytes, marker);
@@ -120,5 +132,14 @@ public class HistoryItinerary extends ShowItinerary {
             return true;
         }
         return false;
+    }
+
+    @Override
+    protected void cleanupMap() {
+        super.cleanupMap();
+        if (locations != null)
+            for (Circle location : locations)
+                location.remove();
+
     }
 }
