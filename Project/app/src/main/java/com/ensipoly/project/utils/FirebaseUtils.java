@@ -8,9 +8,8 @@ public class FirebaseUtils {
 
     private static FirebaseDatabase mDatabase;
     private static DatabaseReference mUserDBReference;
-    private static DatabaseReference mGroupDBReference;
-    private static DatabaseReference mLocationDBReference;
-    private static DatabaseReference mEventDBReference;
+    private static DatabaseReference mItineraryDBReference;
+    private static DatabaseReference mHistoryDBReference;
 
     public static FirebaseDatabase getDatabase() {
         if (mDatabase == null) {
@@ -30,10 +29,18 @@ public class FirebaseUtils {
     }
 
     public static DatabaseReference getItinerariesDBReference() {
-        if (mGroupDBReference == null) {
-            mGroupDBReference = getDatabase().getReference("itineraries");
-            mGroupDBReference.keepSynced(true);
+        if (mItineraryDBReference == null) {
+            mItineraryDBReference = getDatabase().getReference("itineraries");
+            mItineraryDBReference.keepSynced(true);
         }
-        return mGroupDBReference;
+        return mItineraryDBReference;
+    }
+
+    public static DatabaseReference getHistoryDBReference() {
+        if (mHistoryDBReference == null) {
+            mHistoryDBReference = getDatabase().getReference("history");
+            mHistoryDBReference.keepSynced(true);
+        }
+        return mHistoryDBReference;
     }
 }

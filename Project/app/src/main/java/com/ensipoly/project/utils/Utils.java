@@ -1,5 +1,7 @@
 package com.ensipoly.project.utils;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.view.View;
 import android.widget.TextView;
 
@@ -7,6 +9,20 @@ import com.ensipoly.project.R;
 
 public class Utils {
 
+    public static final String USER_ID_KEY_PREFERENCE = "user_id";
+
+    private static String mUserId;
+
+    public static String getUserID(Context context) {
+        if (mUserId == null) {
+            SharedPreferences sharedPref = context.getSharedPreferences(context.getString(R.string.preference_file_key), Context.MODE_PRIVATE);
+            String tmp = sharedPref.getString(USER_ID_KEY_PREFERENCE, "");
+            if (tmp.equals(""))
+                return null;
+            mUserId = tmp;
+        }
+        return mUserId;
+    }
     public static void showInfo(TextView view, String text, @android.support.annotation.DrawableRes int resId) {
         view.setText(text);
         view.setVisibility(View.VISIBLE);

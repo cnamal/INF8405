@@ -11,7 +11,7 @@ import android.provider.MediaStore;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.content.FileProvider;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
+import android.util.SparseArray;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,6 +19,7 @@ import android.widget.Toast;
 import com.ensipoly.project.R;
 import com.ensipoly.project.models.Itinerary;
 import com.ensipoly.project.utils.FirebaseUtils;
+import com.ensipoly.project.utils.Utils;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.Circle;
@@ -29,12 +30,19 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static android.app.Activity.RESULT_OK;
@@ -42,12 +50,11 @@ import static android.app.Activity.RESULT_OK;
 public class GoItinerary extends Strategy{
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
-    private byte[] mPhotoData;
-    private String mFileName;
-    private String mAbsolutePath;
-    private Marker currMarker;
-
-    boolean selecting = true;
+    private Photo currPhoto;
+    int selecting = SELECTING;
+    private static final int SELECTING = 0;
+    private static final int NOT_START = 1;
+    private static final int STARTED = 2;
     private List<LatLng> waypoints;
     private List<Marker> pictures;
     private List<Circle> circles;
@@ -59,6 +66,13 @@ public class GoItinerary extends Strategy{
 
     private float batteryLevelAtStart;
 
+    public static class Photo{
+        public byte[] photoData;
+        private String fileName;
+        private String absolutePath;
+        public Marker marker;
+    }
+
     private static class ItineraryViewHolder extends RecyclerView.ViewHolder {
         TextView itineraryTextView;
         View v;
@@ -68,7 +82,7 @@ public class GoItinerary extends Strategy{
             this.v = v;
         }
 
-        public void setOnClickListener(View.OnClickListener listener){
+        void setOnClickListener(View.OnClickListener listener){
             v.setOnClickListener(listener);
         }
     }
@@ -87,6 +101,7 @@ public class GoItinerary extends Strategy{
                 ) {
                     @Override
                     protected void populateViewHolder(ItineraryViewHolder viewHolder, final Itinerary model, int position) {
+                        model.setId(getRef(position).getKey());
                         viewHolder.itineraryTextView.setText("Itinerary " + position);
                         viewHolder.setOnClickListener(new View.OnClickListener() {
                             @Override
@@ -102,13 +117,63 @@ public class GoItinerary extends Strategy{
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                selecting = false;
-                mBottomSheetBehavior1.setHideable(true);
-                mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_HIDDEN);
-                fab.setVisibility(View.GONE);
+                if(selecting == SELECTING) {
+                    selecting = NOT_START;
+                    mBottomSheetBehavior1.setHideable(true);
+                    mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_HIDDEN);
+                    fab.setImageResource(R.drawable.ic_timer_white_24dp);
+                }else if(selecting == NOT_START){
+                    selecting = STARTED;
+                    batteryLevelAtStart = activity.getBatteryLevel();
+                    fab.setImageResource(R.drawable.ic_timer_off_white_24dp);
+                }else{
+                    fab.hide(true);
+                    Toast.makeText(activity,"Uploading...",Toast.LENGTH_SHORT).show();
+                    StorageReference storage = FirebaseStorage.getInstance().getReference("photos");
+                    final SparseArray<String> map = new SparseArray<>();
+
+                    for(int i =0;i<pictures.size();i++){
+                        Marker picture = pictures.get(i);
+                        if(picture .getTag()==null)
+                            continue;
+                        Photo photo = (Photo) picture.getTag();
+                        StorageReference photoRef = storage.child(photo.fileName);
+                        final int finalI = i;
+                        photoRef.putBytes(photo.photoData).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                            @SuppressWarnings("VisibleForTests")
+                            @Override
+                            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                Uri downloadUrl = taskSnapshot.getDownloadUrl();
+                                synchronized (this){
+                                    map.append(finalI, downloadUrl.toString());
+                                    if (map.size() == numberOfPhotosTaken) {
+                                        numberOfPhotosTaken = 0;
+                                        DatabaseReference history = FirebaseUtils.getHistoryDBReference();
+                                        String key = history.push().getKey();
+                                        Map<String,Object> children = new HashMap<>();
+                                        children.put("users/"+ Utils.getUserID(activity)+"/history/"+key,false);
+                                        for(int i =0;i<map.size();i++) {
+                                            int id = map.indexOfKey(i);
+                                            String url = map.valueAt(i);
+                                            children.put("history/" + key+"/"+id, url);
+                                        }
+                                        children.put("history/" + key+"/itinerary",((Itinerary)mSelectedView.getTag()).getId());
+                                        FirebaseUtils.getDatabase().getReference().updateChildren(children).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                            @Override
+                                            public void onSuccess(Void aVoid) {
+                                                selecting = NOT_START;
+                                                fab.show(true);
+                                                onBackPressed();
+                                            }
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    }
+                }
             }
         });
-        batteryLevelAtStart = activity.getBatteryLevel();
     }
 
     private void select(View v, Itinerary i){
@@ -141,9 +206,13 @@ public class GoItinerary extends Strategy{
 
     @Override
     public boolean onBackPressed() {
-        if(selecting)
+        if(selecting == SELECTING)
             return false;
-        selecting = true;
+        if(selecting == STARTED)
+            return true;
+        selecting = SELECTING;
+        fab.setImageResource(R.drawable.ic_done_white_24dp);
+        fab.hide(true);
         cleanupMap();
         mBottomSheetBehavior1.setHideable(false);
         mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_COLLAPSED);
@@ -185,29 +254,33 @@ public class GoItinerary extends Strategy{
     }
 
     private File createImageFile() throws IOException {
+        currPhoto = new Photo();
         // Create an image file name
-        mFileName = UUID.randomUUID().toString();
+        currPhoto.fileName = UUID.randomUUID().toString();
         File storageDir = activity.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
         File image = File.createTempFile(
-                mFileName,  /* prefix */
+                currPhoto.fileName,  /* prefix */
                 ".jpg",         /* suffix */
                 storageDir      /* directory */
         );
 
         // Save a file: path for use with ACTION_VIEW intents
-        mAbsolutePath = image.getAbsolutePath();
+        currPhoto.absolutePath = image.getAbsolutePath();
         return image;
     }
 
 
     @Override
     public boolean onMarkerClick(Marker marker) {
+        if(selecting != STARTED)
+            return false;
         if(marker.equals(first) || marker.equals(last))
             return false;
         if(marker.getTag() != null){
-            activity.zoomImage(marker);
+            activity.zoomImage((Photo) marker.getTag());
             return true;
         }
+
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(activity.getPackageManager()) != null) {
@@ -221,7 +294,7 @@ public class GoItinerary extends Strategy{
             }
             // Continue only if the File was successfully created
             if (photoFile != null) {
-                currMarker = marker;
+                currPhoto.marker = marker;
                 Uri photoURI = FileProvider.getUriForFile(activity,
                         "com.ensipoly.project.provider",
                         photoFile);
@@ -236,12 +309,12 @@ public class GoItinerary extends Strategy{
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == REQUEST_IMAGE_CAPTURE && resultCode == RESULT_OK) {
             // Get photo data and show it
-            Bitmap imageBitmap = BitmapFactory.decodeFile(mAbsolutePath);
+            Bitmap imageBitmap = BitmapFactory.decodeFile(currPhoto.absolutePath);
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             imageBitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            mPhotoData = stream.toByteArray();
-            currMarker.setTag(mPhotoData);
-            currMarker = null;
+            currPhoto.photoData = stream.toByteArray();
+            currPhoto.marker.setTag(currPhoto);
+            currPhoto = null;
             updateNumberOfPhotoTaken();
         }
     }

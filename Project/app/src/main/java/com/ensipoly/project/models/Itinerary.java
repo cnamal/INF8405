@@ -11,6 +11,7 @@ import java.util.List;
 public class Itinerary {
     private List<LatLng> waypoints;
     private List<LatLng> pictures;
+    private String id;
 
     public Itinerary(){
 
@@ -52,5 +53,15 @@ public class Itinerary {
         for(LatLng picture : pictures)
             res.add(picture.convert());
         return res;
+    }
+
+    @Exclude
+    public String getId() {
+        return id;
+    }
+
+    @Exclude
+    public void setId(String id) {
+        this.id = id;
     }
 }

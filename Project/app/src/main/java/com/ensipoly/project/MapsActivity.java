@@ -49,10 +49,10 @@ import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.firebase.database.DatabaseReference;
 
 import static com.ensipoly.project.R.id.map;
+import static com.ensipoly.project.utils.Utils.USER_ID_KEY_PREFERENCE;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
@@ -83,7 +83,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private int mShortAnimationDuration = 300;
 
     private static final int REQUEST_LOCATION_ON_MAP_READY = 0;
-    private static final String USER_ID_KEY_PREFERENCE = "user_id";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,13 +127,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         params.fab = fab;
         stepsCounter = new StepsCounter(this);
 
-        SharedPreferences sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
-        String userID = sharedPref.getString(USER_ID_KEY_PREFERENCE, "");
-        if(userID.equals("")){
+        String userID = Utils.getUserID(this);
+        if(userID == null){
             DatabaseReference userDB = FirebaseUtils.getUserDBReference();
             DatabaseReference user = userDB.push();
             userID = user.getKey();
             user.setValue(true);
+            SharedPreferences sharedPref = getSharedPreferences(getString(R.string.preference_file_key), Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sharedPref.edit();
             editor.putString(USER_ID_KEY_PREFERENCE, userID);
             editor.commit();
@@ -221,7 +220,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     // Adapted from https://developer.android.com/training/animation/zoom.html
-    public void zoomImage(Marker marker) {
+    public void zoomImage(GoItinerary.Photo photo) {
         // If there's an animation in progress, cancel it
         // immediately and proceed with this one.
         if (mCurrentAnimator != null) {
@@ -229,7 +228,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
 
         // Load data from marker tag and rotate it to the right
-        byte[] data = (byte[])marker.getTag();
+        byte[] data = photo.photoData;
         Bitmap image = BitmapFactory.decodeByteArray(data, 0, data.length);
         Matrix matrix = new Matrix();
         matrix.postRotate(90);
@@ -237,7 +236,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Set the start point at the marker position
         Projection projection = mMap.getProjection();
-        LatLng markerLocation = marker.getPosition();
+        LatLng markerLocation = photo.marker.getPosition();
         Point screenPosition = projection.toScreenLocation(markerLocation);
 
         // Load the high-resolution "zoomed-in" image.
