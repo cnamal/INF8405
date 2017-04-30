@@ -21,15 +21,7 @@ import com.ensipoly.project.models.Itinerary;
 import com.ensipoly.project.utils.FirebaseUtils;
 import com.ensipoly.project.utils.Utils;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.Circle;
-import com.google.android.gms.maps.model.CircleOptions;
-import com.google.android.gms.maps.model.JointType;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.storage.FirebaseStorage;
@@ -39,34 +31,25 @@ import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 import static android.app.Activity.RESULT_OK;
 
-public class GoItinerary extends Strategy{
+public class GoItinerary extends ShowItinerary {
 
     private static final int REQUEST_IMAGE_CAPTURE = 1;
     private Photo currPhoto;
-    int selecting = SELECTING;
+    private int state = SELECTING;
     private static final int SELECTING = 0;
     private static final int NOT_START = 1;
     private static final int STARTED = 2;
-    private List<LatLng> waypoints;
-    private List<Marker> pictures;
-    private List<Circle> circles;
-    private Marker first;
-    private Marker last;
-    private Polyline line;
-    private View mSelectedView;
     private int numberOfPhotosTaken = 0;
 
     private float batteryLevelAtStart;
 
-    public static class Photo{
+    public static class Photo {
         public byte[] photoData;
         private String fileName;
         private String absolutePath;
@@ -76,23 +59,22 @@ public class GoItinerary extends Strategy{
     private static class ItineraryViewHolder extends RecyclerView.ViewHolder {
         TextView itineraryTextView;
         View v;
+
         public ItineraryViewHolder(View v) {
             super(v);
             itineraryTextView = (TextView) itemView.findViewById(R.id.itinerary);
             this.v = v;
         }
 
-        void setOnClickListener(View.OnClickListener listener){
+        void setOnClickListener(View.OnClickListener listener) {
             v.setOnClickListener(listener);
         }
     }
 
     public GoItinerary(StrategyParameters params) {
         super(params);
-        mBottomSheetBehavior1.setHideable(false);
-        mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_COLLAPSED);
 
-        FirebaseRecyclerAdapter<Itinerary,ItineraryViewHolder> adapter =
+        FirebaseRecyclerAdapter<Itinerary, ItineraryViewHolder> adapter =
                 new FirebaseRecyclerAdapter<Itinerary, ItineraryViewHolder>(
                         Itinerary.class,
                         R.layout.item_itinerary,
@@ -106,7 +88,7 @@ public class GoItinerary extends Strategy{
                         viewHolder.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                select(view,model);
+                                select(view, model);
                                 showItinerary();
                             }
                         });
@@ -117,24 +99,24 @@ public class GoItinerary extends Strategy{
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(selecting == SELECTING) {
-                    selecting = NOT_START;
+                if (state == SELECTING) {
+                    state = NOT_START;
                     mBottomSheetBehavior1.setHideable(true);
                     mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_HIDDEN);
                     fab.setImageResource(R.drawable.ic_timer_white_24dp);
-                }else if(selecting == NOT_START){
-                    selecting = STARTED;
+                } else if (state == NOT_START) {
+                    state = STARTED;
                     batteryLevelAtStart = activity.getBatteryLevel();
                     fab.setImageResource(R.drawable.ic_timer_off_white_24dp);
-                }else{
+                } else {
                     fab.hide(true);
-                    Toast.makeText(activity,"Uploading...",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(activity, "Uploading...", Toast.LENGTH_SHORT).show();
                     StorageReference storage = FirebaseStorage.getInstance().getReference("photos");
                     final SparseArray<String> map = new SparseArray<>();
 
-                    for(int i =0;i<pictures.size();i++){
+                    for (int i = 0; i < pictures.size(); i++) {
                         Marker picture = pictures.get(i);
-                        if(picture .getTag()==null)
+                        if (picture.getTag() == null)
                             continue;
                         Photo photo = (Photo) picture.getTag();
                         StorageReference photoRef = storage.child(photo.fileName);
@@ -144,24 +126,24 @@ public class GoItinerary extends Strategy{
                             @Override
                             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                                 Uri downloadUrl = taskSnapshot.getDownloadUrl();
-                                synchronized (this){
+                                synchronized (this) {
                                     map.append(finalI, downloadUrl.toString());
                                     if (map.size() == numberOfPhotosTaken) {
                                         numberOfPhotosTaken = 0;
                                         DatabaseReference history = FirebaseUtils.getHistoryDBReference();
                                         String key = history.push().getKey();
-                                        Map<String,Object> children = new HashMap<>();
-                                        children.put("users/"+ Utils.getUserID(activity)+"/history/"+key,false);
-                                        for(int i =0;i<map.size();i++) {
+                                        Map<String, Object> children = new HashMap<>();
+                                        children.put("users/" + Utils.getUserID(activity) + "/history/" + key, false);
+                                        for (int i = 0; i < map.size(); i++) {
                                             int id = map.indexOfKey(i);
                                             String url = map.valueAt(i);
-                                            children.put("history/" + key+"/"+id, url);
+                                            children.put("history/" + key + "/" + id, url);
                                         }
-                                        children.put("history/" + key+"/itinerary",((Itinerary)mSelectedView.getTag()).getId());
+                                        children.put("history/" + key + "/itinerary", ((Itinerary) mSelectedView.getTag()).getId());
                                         FirebaseUtils.getDatabase().getReference().updateChildren(children).addOnSuccessListener(new OnSuccessListener<Void>() {
                                             @Override
                                             public void onSuccess(Void aVoid) {
-                                                selecting = NOT_START;
+                                                state = NOT_START;
                                                 fab.show(true);
                                                 onBackPressed();
                                             }
@@ -176,41 +158,14 @@ public class GoItinerary extends Strategy{
         });
     }
 
-    private void select(View v, Itinerary i){
-        if(mSelectedView!=null)
-            mSelectedView.setBackgroundColor(Color.WHITE);
-        mSelectedView = v;
-        mSelectedView.setTag(i);
-        mSelectedView.setBackgroundResource(R.color.colorAccent);
-        fab.setVisibility(View.VISIBLE);
-    }
-
-    private void showItinerary(){
-        cleanupMap();
-        Itinerary itinerary = (Itinerary) mSelectedView.getTag();
-        waypoints = itinerary.getGMapsWaypoints();
-        List<LatLng> picturesLatLng = itinerary.getGMapsPictures();
-        first = mMap.addMarker(new MarkerOptions().position(waypoints.get(0)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
-        last = mMap.addMarker(new MarkerOptions().position(waypoints.get(waypoints.size()-1)));
-        line = mMap.addPolyline(new PolylineOptions().color(Color.RED).jointType(JointType.ROUND));
-        line.setPoints(waypoints);
-        circles = new ArrayList<>();
-        for(int i=1;i<waypoints.size()-1;i++)
-            circles.add(mMap.addCircle(new CircleOptions().center(waypoints.get(i)).radius(0.5).zIndex(1)));
-        if(picturesLatLng!=null){
-            pictures = new ArrayList<>();
-            for(LatLng picture : picturesLatLng)
-                pictures.add(mMap.addMarker(new MarkerOptions().position(picture).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))));
-        }
-    }
 
     @Override
     public boolean onBackPressed() {
-        if(selecting == SELECTING)
+        if (state == SELECTING)
             return false;
-        if(selecting == STARTED)
+        if (state == STARTED)
             return true;
-        selecting = SELECTING;
+        state = SELECTING;
         fab.setImageResource(R.drawable.ic_done_white_24dp);
         fab.hide(true);
         cleanupMap();
@@ -220,38 +175,6 @@ public class GoItinerary extends Strategy{
         return true;
     }
 
-    @Override
-    protected int initiallyShownButtons() {
-        return 0;
-    }
-
-    @Override
-    public void cleanup() {
-        mBottomSheetBehavior1.setHideable(true);
-        mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_HIDDEN);
-        fab.setVisibility(View.GONE);
-        cleanupMap();
-    }
-
-    private void cleanupMap(){
-        if(first!=null)
-            first.remove();
-        if(last!=null)
-            last.remove();
-        if(line != null)
-            line.remove();
-        if(pictures!=null)
-        for(Marker marker : pictures)
-            marker.remove();
-        if(circles!=null)
-        for(Circle circle : circles)
-            circle.remove();
-    }
-
-    @Override
-    public void onMapClick(LatLng latLng) {
-
-    }
 
     private File createImageFile() throws IOException {
         currPhoto = new Photo();
@@ -272,11 +195,11 @@ public class GoItinerary extends Strategy{
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        if(selecting != STARTED)
+        if (state != STARTED)
             return false;
-        if(marker.equals(first) || marker.equals(last))
+        if (marker.equals(first) || marker.equals(last))
             return false;
-        if(marker.getTag() != null){
+        if (marker.getTag() != null) {
             activity.zoomImage((Photo) marker.getTag());
             return true;
         }
@@ -319,16 +242,16 @@ public class GoItinerary extends Strategy{
         }
     }
 
-    private void updateNumberOfPhotoTaken(){
+    private void updateNumberOfPhotoTaken() {
         numberOfPhotosTaken++;
-        if(numberOfPhotosTaken == pictures.size()){
+        if (numberOfPhotosTaken == pictures.size()) {
             float newBatteryLevel = activity.getBatteryLevel();
-            int diff = (int)Math.ceil((batteryLevelAtStart - newBatteryLevel) * 100.0);
+            int diff = (int) Math.ceil((batteryLevelAtStart - newBatteryLevel) * 100.0);
             String extra_message = "";
-            if(diff < 0){
-                extra_message =  activity.getString(R.string.battery_level_negative);
-            } else if(diff >= 10){
-                extra_message =  activity.getString(R.string.battery_level_positive);
+            if (diff < 0) {
+                extra_message = activity.getString(R.string.battery_level_negative);
+            } else if (diff >= 10) {
+                extra_message = activity.getString(R.string.battery_level_positive);
             }
             Toast.makeText(activity.getApplicationContext(), activity.getString(R.string.battery_level) + " " + diff + "% " + extra_message, Toast.LENGTH_LONG).show();
         }
