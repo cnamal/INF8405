@@ -10,13 +10,11 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.v4.content.FileProvider;
-import android.support.v7.widget.RecyclerView;
-import android.util.SparseArray;
 import android.view.View;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.ensipoly.project.R;
+import com.ensipoly.project.models.History;
 import com.ensipoly.project.models.Itinerary;
 import com.ensipoly.project.utils.FirebaseUtils;
 import com.ensipoly.project.utils.Utils;
@@ -31,6 +29,7 @@ import com.google.firebase.storage.UploadTask;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -46,6 +45,8 @@ public class GoItinerary extends ShowItinerary {
     private static final int NOT_START = 1;
     private static final int STARTED = 2;
     private int numberOfPhotosTaken = 0;
+    private Date startTime;
+    private Date endTime;
 
     private float batteryLevelAtStart;
 
@@ -56,35 +57,22 @@ public class GoItinerary extends ShowItinerary {
         public Marker marker;
     }
 
-    private static class ItineraryViewHolder extends RecyclerView.ViewHolder {
-        TextView itineraryTextView;
-        View v;
-
-        public ItineraryViewHolder(View v) {
-            super(v);
-            itineraryTextView = (TextView) itemView.findViewById(R.id.itinerary);
-            this.v = v;
-        }
-
-        void setOnClickListener(View.OnClickListener listener) {
-            v.setOnClickListener(listener);
-        }
-    }
 
     public GoItinerary(StrategyParameters params) {
         super(params);
 
-        FirebaseRecyclerAdapter<Itinerary, ItineraryViewHolder> adapter =
-                new FirebaseRecyclerAdapter<Itinerary, ItineraryViewHolder>(
+        FirebaseRecyclerAdapter<Itinerary, ViewHolder> adapter =
+                new FirebaseRecyclerAdapter<Itinerary, ViewHolder>(
                         Itinerary.class,
                         R.layout.item_itinerary,
-                        ItineraryViewHolder.class,
+                        ViewHolder.class,
                         FirebaseUtils.getItinerariesDBReference()
                 ) {
                     @Override
-                    protected void populateViewHolder(ItineraryViewHolder viewHolder, final Itinerary model, int position) {
+                    protected void populateViewHolder(ViewHolder viewHolder, final Itinerary model, int position) {
                         model.setId(getRef(position).getKey());
-                        viewHolder.itineraryTextView.setText("Itinerary " + position);
+                        viewHolder.textView.setText("Itinerary " + position);
+                        //viewHolder.descView.setVisibility(View.GONE);
                         viewHolder.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
@@ -106,40 +94,37 @@ public class GoItinerary extends ShowItinerary {
                     fab.setImageResource(R.drawable.ic_timer_white_24dp);
                 } else if (state == NOT_START) {
                     state = STARTED;
+                    startTime = new Date();
                     batteryLevelAtStart = activity.getBatteryLevel();
                     fab.setImageResource(R.drawable.ic_timer_off_white_24dp);
                 } else {
+                    endTime = new Date();
                     fab.hide(true);
                     Toast.makeText(activity, "Uploading...", Toast.LENGTH_SHORT).show();
                     StorageReference storage = FirebaseStorage.getInstance().getReference("photos");
-                    final SparseArray<String> map = new SparseArray<>();
+                    final HashMap<String, String> map = new HashMap<>();
 
                     for (int i = 0; i < pictures.size(); i++) {
                         Marker picture = pictures.get(i);
                         if (picture.getTag() == null)
                             continue;
-                        Photo photo = (Photo) picture.getTag();
+                        final Photo photo = (Photo) picture.getTag();
                         StorageReference photoRef = storage.child(photo.fileName);
                         final int finalI = i;
                         photoRef.putBytes(photo.photoData).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                             @SuppressWarnings("VisibleForTests")
                             @Override
                             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                                Uri downloadUrl = taskSnapshot.getDownloadUrl();
                                 synchronized (this) {
-                                    map.append(finalI, downloadUrl.toString());
+                                    map.put("id"+finalI , photo.fileName);
                                     if (map.size() == numberOfPhotosTaken) {
                                         numberOfPhotosTaken = 0;
-                                        DatabaseReference history = FirebaseUtils.getHistoryDBReference();
-                                        String key = history.push().getKey();
+                                        DatabaseReference historyDB = FirebaseUtils.getHistoryDBReference();
+                                        String key = historyDB.push().getKey();
                                         Map<String, Object> children = new HashMap<>();
                                         children.put("users/" + Utils.getUserID(activity) + "/history/" + key, false);
-                                        for (int i = 0; i < map.size(); i++) {
-                                            int id = map.indexOfKey(i);
-                                            String url = map.valueAt(i);
-                                            children.put("history/" + key + "/" + id, url);
-                                        }
-                                        children.put("history/" + key + "/itinerary", ((Itinerary) mSelectedView.getTag()).getId());
+                                        History history = new History(((Itinerary) mSelectedView.getTag()).getId(), map, startTime, endTime,Utils.getUserID(activity));
+                                        children.put("history/" + key, history);
                                         FirebaseUtils.getDatabase().getReference().updateChildren(children).addOnSuccessListener(new OnSuccessListener<Void>() {
                                             @Override
                                             public void onSuccess(Void aVoid) {

@@ -3,7 +3,9 @@ package com.ensipoly.project.strategy;
 
 import android.graphics.Color;
 import android.support.design.widget.BottomSheetBehavior;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.TextView;
 
 import com.ensipoly.project.R;
 import com.ensipoly.project.models.Itinerary;
@@ -20,6 +22,8 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.ensipoly.project.R.id.itinerary;
+
 abstract class ShowItinerary extends Strategy {
 
     protected View mSelectedView;
@@ -30,13 +34,30 @@ abstract class ShowItinerary extends Strategy {
     protected Marker last;
     protected Polyline line;
 
+    protected static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView textView;
+        TextView descView;
+        View v;
+
+        public ViewHolder(View v) {
+            super(v);
+            textView = (TextView) itemView.findViewById(itinerary);
+            descView = (TextView) itemView.findViewById(R.id.desc);
+            this.v = v;
+        }
+
+        void setOnClickListener(View.OnClickListener listener) {
+            v.setOnClickListener(listener);
+        }
+    }
+
     protected ShowItinerary(Strategy.StrategyParameters params) {
         super(params);
         mBottomSheetBehavior1.setHideable(false);
         mBottomSheetBehavior1.setState(BottomSheetBehavior.STATE_COLLAPSED);
     }
 
-    protected void select(View v, Itinerary i) {
+    protected void select(View v, Object i) {
         if (mSelectedView != null)
             mSelectedView.setBackgroundColor(Color.WHITE);
         mSelectedView = v;
@@ -46,8 +67,12 @@ abstract class ShowItinerary extends Strategy {
     }
 
     protected void showItinerary() {
-        cleanupMap();
         Itinerary itinerary = (Itinerary) mSelectedView.getTag();
+        showItinerary(itinerary);
+    }
+
+    protected void showItinerary(Itinerary itinerary) {
+        cleanupMap();
         waypoints = itinerary.getGMapsWaypoints();
         List<LatLng> picturesLatLng = itinerary.getGMapsPictures();
         first = mMap.addMarker(new MarkerOptions().position(waypoints.get(0)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));

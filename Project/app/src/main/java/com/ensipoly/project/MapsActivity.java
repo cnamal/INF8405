@@ -34,7 +34,7 @@ import android.widget.TextView;
 import com.ensipoly.project.strategy.CreateItinerary;
 import com.ensipoly.project.strategy.Default;
 import com.ensipoly.project.strategy.GoItinerary;
-import com.ensipoly.project.strategy.History;
+import com.ensipoly.project.strategy.HistoryItinerary;
 import com.ensipoly.project.strategy.Strategy;
 import com.ensipoly.project.utils.CheckConnection;
 import com.ensipoly.project.utils.CheckLocation;
@@ -49,6 +49,7 @@ import com.google.android.gms.maps.Projection;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.firebase.database.DatabaseReference;
 
 import static com.ensipoly.project.R.id.map;
@@ -128,7 +129,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         stepsCounter = new StepsCounter(this);
 
         String userID = Utils.getUserID(this);
-        if(userID == null){
+        if (userID == null) {
             DatabaseReference userDB = FirebaseUtils.getUserDBReference();
             DatabaseReference user = userDB.push();
             userID = user.getKey();
@@ -189,17 +190,17 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onBackPressed() {
-        if(!strategy.onBackPressed()){
-            if(strategy instanceof Default)
+        if (!strategy.onBackPressed()) {
+            if (strategy instanceof Default)
                 super.onBackPressed();
             else
                 switchStrategy(DEFAULT_STRATEGY);
         }
     }
 
-    public void switchStrategy(int strategy){
+    public void switchStrategy(int strategy) {
         this.strategy.cleanup();
-        switch (strategy){
+        switch (strategy) {
             case DEFAULT_STRATEGY:
                 this.strategy = new Default(params);
                 return;
@@ -210,25 +211,28 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 this.strategy = new GoItinerary(params);
                 return;
             case HISTORY_STRATEGY:
-                this.strategy = new History(params);
+                this.strategy = new HistoryItinerary(params);
         }
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        strategy.onActivityResult(requestCode,resultCode,data);
+        strategy.onActivityResult(requestCode, resultCode, data);
+    }
+
+    public void zoomImage(GoItinerary.Photo photo) {
+        zoomImage(photo.photoData, photo.marker);
     }
 
     // Adapted from https://developer.android.com/training/animation/zoom.html
-    public void zoomImage(GoItinerary.Photo photo) {
+    public void zoomImage(byte[] data, Marker marker) {
+
         // If there's an animation in progress, cancel it
         // immediately and proceed with this one.
         if (mCurrentAnimator != null) {
             mCurrentAnimator.cancel();
         }
 
-        // Load data from marker tag and rotate it to the right
-        byte[] data = photo.photoData;
         Bitmap image = BitmapFactory.decodeByteArray(data, 0, data.length);
         Matrix matrix = new Matrix();
         matrix.postRotate(90);
@@ -236,7 +240,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         // Set the start point at the marker position
         Projection projection = mMap.getProjection();
-        LatLng markerLocation = photo.marker.getPosition();
+        LatLng markerLocation = marker.getPosition();
         Point screenPosition = projection.toScreenLocation(markerLocation);
 
         // Load the high-resolution "zoomed-in" image.
@@ -380,13 +384,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         });
     }
 
-    public float getBatteryLevel(){
+    public float getBatteryLevel() {
         IntentFilter ifilter = new IntentFilter(Intent.ACTION_BATTERY_CHANGED);
         Intent batteryStatus = getApplicationContext().registerReceiver(null, ifilter);
         int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
         int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
 
-        return level / (float)scale;
+        return level / (float) scale;
     }
 
 }

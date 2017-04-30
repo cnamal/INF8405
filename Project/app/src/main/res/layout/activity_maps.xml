@@ -183,6 +183,8 @@
         app:layout_behavior="android.support.design.widget.BottomSheetBehavior">
         <android.support.v7.widget.RecyclerView
             android:id="@+id/myList"
+            android:paddingTop="8dp"
+            android:clipToPadding="false"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
         </android.support.v4.widget.NestedScrollView>
