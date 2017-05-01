@@ -104,6 +104,7 @@ public class GoItinerary extends ShowItinerary {
                     batteryLevelAtStart = activity.getBatteryLevel();
                     fab.setImageResource(R.drawable.ic_timer_off_white_24dp);
                 } else {
+                    showBatteryText();
                     activity.stopLocationUpdates();
                     endTime = new Date();
                     fab.hide(true);
@@ -242,6 +243,9 @@ public class GoItinerary extends ShowItinerary {
 
     private void updateNumberOfPhotoTaken() {
         numberOfPhotosTaken++;
+    }
+
+    private void showBatteryText(){
         if (numberOfPhotosTaken == pictures.size()) {
             float newBatteryLevel = activity.getBatteryLevel();
             int diff = (int) Math.ceil((batteryLevelAtStart - newBatteryLevel) * 100.0);

@@ -511,7 +511,8 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onLocationChanged(Location location) {
-        locations.add(new com.ensipoly.project.utils.LatLng(location));
+        if(location != null)
+            locations.add(new com.ensipoly.project.utils.LatLng(location));
     }
 
 
