@@ -246,7 +246,7 @@ public class GoItinerary extends ShowItinerary {
     }
 
     private void showBatteryText(){
-        if (numberOfPhotosTaken == pictures.size()) {
+        //if (numberOfPhotosTaken == pictures.size()) {
             float newBatteryLevel = activity.getBatteryLevel();
             int diff = (int) Math.ceil((batteryLevelAtStart - newBatteryLevel) * 100.0);
             String extra_message = "";
@@ -256,7 +256,7 @@ public class GoItinerary extends ShowItinerary {
                 extra_message = activity.getString(R.string.battery_level_positive);
             }
             Toast.makeText(activity.getApplicationContext(), activity.getString(R.string.battery_level) + " " + diff + "% " + extra_message, Toast.LENGTH_LONG).show();
-        }
+        //}
     }
 
 }
