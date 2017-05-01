@@ -1,0 +1,81 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[USenglish]{babel}
+\usepackage{gensymb}
+\usepackage{hyperref}
+\usepackage{etoolbox}
+\usepackage{graphicx}
+\usepackage{geometry}
+\usepackage{xifthen}
+\usepackage{float}
+\usepackage{ulem}
+\usepackage{multirow}
+\edef\restoreparindent{\parindent=\the\parindent\relax}
+\usepackage[parfill]{parskip}
+\restoreparindent
+\usepackage{indentfirst}
+
+\title{Report: Project\\ INF8405 \textit{Informatique mobile}\\ Winter 2017 }
+\author{GRAILLE Raphaël  (1815074), LOGUT Adrien (1815142) \\ \& NAMALGAMUWA Chathura (1815118)\\ Ecole Polytechnique de Montréal}
+\date{April 30, 2017}
+
+
+
+\begin{document}
+\maketitle
+
+Submitted to: \textbf{Fabien Berquez}
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Introduction}
+
+This is the report for the project in the course INF8405. The objective was to create a health app through discovering a city. The user goes on a certain itinerary, shown in a Google map, and can take pictures at some key areas. In a real application, these areas would be well-known points in a city, like Saint Joseph's Oratory. Throughout the lifetime of the application, we show the number of steps done by the user. 
+
+\section{Technical details}
+
+
+\subsection{\href{http://data.whicdn.com/images/28718572/large.gif}{Activities}}
+
+The app only has one activity which shows the Google Maps fragment. We added a menu in order to switch between different stages of the app. 
+
+To show different itineraries, we used \href{https://material.io/guidelines/components/bottom-sheets.html}{bottom sheets}, \textit{à la} Google Maps. We think it blends well with the map and still allows the user to see the itineraries while selecting one. 
+
+\subsection{\href{http://bestanimations.com/Nature/Fire/simpsons-fire-gif.gif}{Firebase}}
+
+For our backend we used Firebase. Furthermore, for our local cache we also used Firebase instead of SQLLite. While this solution is said to be limiting for large applications, it was sufficient for us. 
+
+We used a flatten structure as advised by the Firebase guidelines. 
+
+A \textit{user} only has the history of his runs. A user id is created when the user first installs the application. 
+
+An \textit{itinerary} has a path, ie. a list of locations (lat/lng), and picture locations (lat/lng).
+
+A \textit{history} is a run that the user has done. It has a start time, end time, the itinerary and user associated. If the user adds pictures, it will also contain the filenames of the picture for each location. Furthermore, if geolocation is enable, it will also save the positions of the user.
+
+\subsection{\href{https://media.giphy.com/media/ZvJ0bHvAy1N9S/giphy.gif}{Workflow}}
+
+The user has a initial menu. He can create an itinerary, go on a run and take pictures or watch previous runs.
+
+Creating an itinerary is a two step process: create the path (at least two points) and create points to take pictures.
+Going on a run is a four step process: choose an itinerary, start running, run/take pictures, end running. At the end, a history is created and synchronized on Firebase.
+Watching previous runs is a two step process: selecting a previous run, admiring how athletic we are/the beauty of the landscape.
+
+\subsection{\href{https://youtu.be/KQ5_jumTeT4?t=11m}{Battery}}
+
+When the user has gone on a run, the percentage of battery lost is shown. We don't constantly show that information because it would drain the battery.
+\section{Issues encountered}
+
+No particular issues were encountered since a lot of the frameworks were already know. Keeping the cleanest code was the hardest.
+
+\section{Additional notes and recommendations}
+
+Histories are linked to a user but itineraries aren't. The reasoning behind it is that a user might want to go on a run using a better itinerary created by someone else, however he/she doesn't necessarily want to share positions nor the pictures taken. 
+
+The paths created don't take into account buildings, or in general whether a path is \textit{feasible}. The Google Maps API didn't seem to allow us to do that.
+
+\end{document}
